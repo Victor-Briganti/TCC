@@ -12,3 +12,13 @@
 *.nls
 *.gz
 *.xmpi
+*.aux
+*.toc
+*.idx
+*.ilg
+*.lot
+*.log
+*.fls
+*.fdb_latexmk
+*.ind
+*.blg
