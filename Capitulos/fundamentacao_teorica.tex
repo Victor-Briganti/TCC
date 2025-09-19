@@ -79,6 +79,84 @@ As implementações dessa técnica costumam adotar uma taxa de descarte, que def
 
 \section{Computação paralela}\label{sec:compParalela}
 
+A computação paralela é uma área da computação que busca explorar arquiteturas modernas, cada vez mais baseadas em processadores \textit{multicore}. Esse conceito pode ser melhor compreendido a partir da taxonomia de Flynn~\cite{flynn1972}, que classifica as arquiteturas de computadores de acordo com o fluxo de instruções e de dados:
+
+\begin{itemize}
+    \item \textbf{SISD (\textit{Single Instruction, Single Data stream}):} Instrução única que atua sobre uma única fonte de dados.
+    \item \textbf{SIMD (\textit{Single Instruction, Multiple Data stream}):} Instrução única que é aplicada simultaneamente a múltiplos dados.
+    \item \textbf{MISD (\textit{Multiple Instructions, Single Data stream}):} Múltiplas instruções atuando sobre uma mesma fonte de dados.
+    \item \textbf{MIMD (\textit{Multiple Instructions, Multiple Data stream}):} Múltiplas instruções atuando em paralelo sobre múltiplas fontes de dados.
+\end{itemize}
+
+Dentro desse modelo, o paralelismo pode ser explorado de diferentes maneiras. No nível do processador, técnicas como \textit{pipeline}, predição de desvios (\textit{branch prediction}) e escalonamento dinâmico permitem dividir o código em pequenas unidades que podem ser executadas simultaneamente.
+
+Algumas arquiteturas foram além e incorporaram extensões \gls{simd}, permitindo a utilização de processadores vetoriais capazes de realizar a mesma operação sobre múltiplos elementos de um vetor unidimensional em um único ciclo de instrução. Em cenários mais especializados, como nas \glspl{gpu}, esse modelo é expandido para múltiplas dimensões de dados, possibilitando que milhares de operações sejam executadas em paralelo e tornando-as altamente adequadas para cargas de trabalho massivamente paralelizáveis~\cite{hennessy2017}. Outro mecanismo fundamental é o uso de \textit{threads}, que representam abstrações de execução em nível de software, permitindo que diferentes unidades computacionais operem concorrentemente em múltiplos processadores. Cada \textit{thread} possui seu próprio contexto de execução, mas pode compartilhar recursos como memória e dispositivos de entrada/saída, viabilizando desde o paralelismo de tarefas independentes até a cooperação em algoritmos que exploram granularidades mais finas~\cite{tanenbaum2015,hennessy2017}.
+
+É nesse contexto que surge o OpenMP, uma \gls{api} projetada para estender C, C++ e Fortran com suporte à paralelização de aplicações por meio de anotações de código. Essas anotações especificam o como aquela região de código deve ser executada. Seu modelo de programação permite explorar automaticamente diferentes formas de paralelismo, seja pelo \textit{offloading} para \glspl{gpu}, pelo uso de múltiplas \textit{threads}, ou ainda pela vetorização via \gls{simd}, aproveitando as unidades vetoriais das arquiteturas modernas~\cite{mattson2019}.
+
+O OpenMP é estruturado em uma arquitetura em camadas, composta por anotações de código, suporte da \textit{runtime} e configurações do ambiente de execução, conforme ilustrado na FIGURA. Esse modelo permite ao programador controlar diversos aspectos da execução por meio de diretivas e chamadas à biblioteca, como a definição do número de \textit{threads} em uma região paralela e a escolha do comportamento do escalonador. Dessa forma, o OpenMP oferece um controle flexível sobre o paralelismo do programa.
+
+A \autoref{code:produtoVet} apresenta a implementação sequencial de um produto escalar entre vetores. A paralelização utilizando a biblioteca \texttt{pthreads}, apresentada no \autoref{code:produtoThread}, exige a criação explícita de \textit{threads}, gerenciamento de regiões de memória e sincronização dos resultados parciais. Em contraste, o ALGORITMO implementado com o OpenMP, evidencia a simplicidade proporcionada pelas diretivas: uma única anotação é suficiente para paralelizar o laço de cálculo, delegando à \textit{runtime} a criação e sincronização das \textit{threads}.
+
+\begin{sourcecode}[htb]\caption{\label{code:produtoVet}Estrutura de um laço canônico}
+    \begin{lstlisting}[frame=single, language=C++]
+        for (int i = 0; i < N; i++) {
+            result += a[i] * b[i];
+        }
+    \end{lstlisting}
+    \fonte{}
+\end{sourcecode}
+
+\begin{sourcecode}[htb]\caption{\label{code:produtoThread}Estrutura de um laço canônico}
+    \begin{lstlisting}[frame=single, language=C++]
+        void *compute_partial_dot(void *arg) {
+            ThreadArgs *args = (ThreadArgs *)arg;
+            args->partial_sum = 0.0;
+            
+            for (int i = args->start; i < args->end; i++) {
+                args->partial_sum = 0.0; += args->a[i] * args->b[i];
+            }
+
+            return NULL;
+        }
+
+    ...
+
+    pthread_t threads[NUM_THREADS];
+    ThreadArgs args[NUM_THREADS];
+    result = 0.0;
+    chunk_size = N / NUM_THREADS;
+
+    for (int i = 0; i < NUM_THREADS; i++) {
+        args[i].start = i * chunk_size;
+        args[i].end = (i == NUM_THREADS - 1) ? N : (i + 1) * chunk_size;
+        args[i].a = a;
+        args[i].b = b;
+        pthread_create(&threads[i], NULL, compute_partial_dot, &args[i]);
+    }
+
+    for (int i = 0; i < NUM_THREADS; i++) {
+        pthread_join(threads[i], NULL);
+        result += args[i].partial_sum;    
+    }
+    \end{lstlisting}
+    \fonte{}
+\end{sourcecode}
+
+\begin{sourcecode}[htb]\caption{\label{code:loopCanon}Estrutura de um laço canônico}
+    \begin{lstlisting}[frame=single, language=C++]
+        #pragma omp parallel for reduction(+ : result)
+        for (int i = 0; i < N; i++) {
+            result += a[i] * b[i];
+        }
+    \end{lstlisting}
+    \fonte{}
+\end{sourcecode}
+
+Tipicamente, uma diretiva OpenMP é aplicada a um laço para indicar que ele pode ser executado em paralelo. Durante a compilação, esse bloco de código é isolado e transformado em tarefas, enquanto a \textit{runtime} prepara as estruturas necessárias para o modelo \textit{fork-join}. Por exemplo, a diretiva \texttt{\#pragma omp parallel} cria um time de \textit{threads}, cada uma executando uma cópia do código anotado. O compilador gerencia variáveis privadas, memória de pilha e pontos de sincronização automaticamente. Ao final, as \textit{threads} são reunificadas (\textit{joined}), e a execução retorna ao fluxo sequencial. Essa abordagem permite paralelizar regiões de código com esforço reduzido de gerenciamento, mantendo controle sobre sincronização e compartilhamento de dados~\cite{mattson2019}.
+
+O modelo \textit{fork-join} pode ser observado de forma esquemática na FIGURA. Nele, a \textit{runtime} cria múltiplas \textit{threads} para a execução paralela, que são sincronizadas ao final, restando apenas a \textit{thread} principal para continuar a execução sequencial. O OpenMP também suporta regiões paralelas aninhadas, possibilitando hierarquias de paralelismo.
 
 \section{Trabalhos relacionados}\label{sec:trabRelac}
+
 \section{Considerações do capítulo}
