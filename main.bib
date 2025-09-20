@@ -115,7 +115,7 @@
   booktitle  = {Proceedings of the 2018 {{International Conference}} on {{Supercomputing}}},
   author     = {Li, Shikai and Park, Sunghyun and Mahlke, Scott},
   date       = {2018-06-12},
-  date       = {2018},
+  year       = {2018},
   pages      = {341--351},
   publisher  = {ACM},
   location   = {Beijing China},
@@ -417,6 +417,115 @@
   keywords  = {Operating systems (Computers)},
   file      = {/home/nessuno/Zotero/storage/3F2VBB5D/Sistemas Operacionais Modernos (Andrew S. Tanenbaum, Herbert Bos).pdf;/home/nessuno/Zotero/storage/6YHQTI9W/Andrew S. Tanenbaum, Herbert Bos - Modern Operating Systems-Pearson (2023).pdf;/home/nessuno/Zotero/storage/8J8KRCIF/Tanenbaum - 2015 - Modern operating systems.pdf}
 }
+
+@inproceedings{goiri2015,
+  title      = {{{ApproxHadoop}}: {{Bringing Approximations}} to {{MapReduce Frameworks}}},
+  shorttitle = {{{ApproxHadoop}}},
+  booktitle  = {Proceedings of the {{Twentieth International Conference}} on {{Architectural Support}} for {{Programming Languages}} and {{Operating Systems}}},
+  author     = {Goiri, Inigo and Bianchini, Ricardo and Nagarakatte, Santosh and Nguyen, Thu D.},
+  date       = {2015-03-14},
+  year       = {2015},
+  pages      = {383--397},
+  publisher  = {ACM},
+  location   = {Istanbul Turkey},
+  doi        = {10.1145/2694344.2694351},
+  url        = {https://dl.acm.org/doi/10.1145/2694344.2694351},
+  urldate    = {2023-10-05},
+  abstract   = {We propose and evaluate a framework for creating and running approximation-enabled MapReduce programs. Specifically, we propose approximation mechanisms that fit naturally into the MapReduce paradigm, including input data sampling, task dropping, and accepting and running a precise and a user-defined approximate version of the MapReduce code. We then show how to leverage statistical theories to compute error bounds for popular classes of MapReduce programs when approximating with input data sampling and/or task dropping. We implement the proposed mechanisms and error bound estimations in a prototype system called ApproxHadoop. Our evaluation uses MapReduce applications from different domains, including data analytics, scientific computing, video encoding, and machine learning. Our results show that ApproxHadoop can significantly reduce application execution time and/or energy consumption when the user is willing to tolerate small errors. For example, ApproxHadoop can reduce runtimes by up to 32× when the user can tolerate an error of 1\% with 95\% confidence. We conclude that our framework and system can make approximation easily accessible to many application domains using the MapReduce model.},
+  eventtitle = {{{ASPLOS}} '15: {{Architectural Support}} for {{Programming Languages}} and {{Operating Systems}}},
+  isbn       = {978-1-4503-2835-7},
+  langid     = {english},
+  file       = {/home/nessuno/Zotero/storage/DJLAHMS5/Goiri et al. - 2015 - ApproxHadoop Bringing Approximations to MapReduce.pdf}
+}
+
+@inproceedings{rinard2006,
+  title      = {Probabilistic Accuracy Bounds for Fault-Tolerant Computations That Discard Tasks},
+  booktitle  = {Proceedings of the 20th Annual International Conference on {{Supercomputing}}},
+  author     = {Rinard, Martin},
+  date       = {2006-06-28},
+  year       = {2006},
+  pages      = {324--334},
+  publisher  = {ACM},
+  location   = {Cairns Queensland Australia},
+  doi        = {10.1145/1183401.1183447},
+  url        = {https://dl.acm.org/doi/10.1145/1183401.1183447},
+  urldate    = {2023-08-26},
+  abstract   = {We present a new technique for enabling computations to survive errors and faults while providing a bound on any resulting output distortion. A developer using the technique first partitions the computation into tasks. The execution platform then simply discards any task that encounters an error or a fault and completes the computation by executing any remaining tasks. This technique can substantially improve the robustness of the computation in the face of errors and faults. A potential concern is that discarding tasks may change the result that the computation produces.},
+  eventtitle = {{{ICS06}}: {{International Conference}} on {{Supercomputing}} 2006},
+  isbn       = {978-1-59593-282-2},
+  langid     = {english},
+  file       = {/home/nessuno/Zotero/storage/8966QE7D/Rinard - 2006 - Probabilistic accuracy bounds for fault-tolerant c.pdf}
+}
+
+@inproceedings{lashgar2018,
+  title      = {Loop {{Perforation}} in {{OpenACC}}},
+  booktitle  = {2018 {{IEEE Intl Conf}} on {{Parallel}} \& {{Distributed Processing}} with {{Applications}}, {{Ubiquitous Computing}} \& {{Communications}}, {{Big Data}} \& {{Cloud Computing}}, {{Social Computing}} \& {{Networking}}, {{Sustainable Computing}} \& {{Communications}} ({{ISPA}}/{{IUCC}}/{{BDCloud}}/{{SocialCom}}/{{SustainCom}})},
+  author     = {Lashgar, Ahmad and Atoofian, Ehsan and Baniasadi, Amirali},
+  date       = {2018-12},
+  year       = {2018},
+  pages      = {163--170},
+  publisher  = {IEEE},
+  location   = {Melbourne, Australia},
+  doi        = {10.1109/BDCloud.2018.00036},
+  url        = {https://ieeexplore.ieee.org/document/8672231/},
+  urldate    = {2023-11-02},
+  abstract   = {High-level programming models such as OpenMP and OpenACC are used to accelerate loop-parallelizable applications. In such applications, a very large number of loop iterations are launched as threads on the accelerator, where every iteration executes the same code sequence (loop body or kernel) but on different data. In such workloads, similarities in the input lead to wide similarities in the outputs. Motivated by this observation, we propose to run only a subset of loop iterations, accurately calculating some outputs and approximating the rest. To this end, we propose employing a new directive in OpenACC to trade off performance for accuracy by perforating loop iterations. The directive is only applicable to parallel loops with a perforation rate adjusted by the programmer. Moreover, we investigate the quality and runtime impact of this directive. In summary, first, we show that naïvely applying loop perforation to OpenACC, degrades performance significantly. This is because OpenACC parallel loops are often output-parallelized and every iteration calculates one single entry in the output. Consequently, dropping k iterations leads to k erroneous entries in the output. Second and in order to address this we propose an efficient lowoverhead mechanism to recover the value of these missing output entries. Third, we show that due to the SIMD organization of accelerators, perforation does not always translate to runtime improvements. Our study shows that perforation can change the memory coalescing behavior and negatively impact runtime. In order to provide better insight we present workload characteristics that benefit from perforation the most. Our evaluations using a diverse set of benchmarks indicate that our proposed technique can improve performance up to 93\%, while maintaining the quality loss at a rate below 10\%.},
+  eventtitle = {2018 {{IEEE Intl Conf}} on {{Parallel}} \& {{Distributed Processing}} with {{Applications}}, {{Ubiquitous Computing}} \& {{Communications}}, {{Big Data}} \& {{Cloud Computing}}, {{Social Computing}} \& {{Networking}}, {{Sustainable Computing}} \& {{Communications}} ({{ISPA}}/{{IUCC}}/{{BDCloud}}/{{SocialCom}}/{{SustainCom}})},
+  isbn       = {978-1-7281-1141-4},
+  langid     = {english},
+  file       = {/home/nessuno/Zotero/storage/LH87PST5/Lashgar et al. - 2018 - Loop Perforation in OpenACC.pdf}
+}
+
+@inproceedings{jiang2022,
+  title      = {{{SampleMine}}: {{A Framework}} for {{Applying Random Sampling}} to {{Subgraph Pattern Mining}} through {{Loop Perforation}}},
+  shorttitle = {{{SampleMine}}},
+  booktitle  = {Proceedings of the {{International Conference}} on {{Parallel Architectures}} and {{Compilation Techniques}}},
+  author     = {Jiang, Peng and Wei, Yihua and Su, Jiya and Wang, Rujia and Wu, Bo},
+  date       = {2022-10-08},
+  year       = {2022},
+  pages      = {185--197},
+  publisher  = {ACM},
+  location   = {Chicago Illinois},
+  doi        = {10.1145/3559009.3569658},
+  url        = {https://dl.acm.org/doi/10.1145/3559009.3569658},
+  urldate    = {2024-03-05},
+  abstract   = {Subgraph Pattern Mining (SPM) is an important class of graph applications that aim to discover structural patterns in a graph. Due to the enormous exploration space, SPM is in general computationally challenging. To accelerate SPM, many random sampling techniques have been proposed. While the existing sampling techniques are effective for conventional SPM tasks such as motif counting and frequent subgraph mining, they cannot be easily adapted for new applications.},
+  eventtitle = {{{PACT}} '22: {{International Conference}} on {{Parallel Architectures}} and {{Compilation Techniques}}},
+  isbn       = {978-1-4503-9868-8},
+  langid     = {english},
+  file       = {/home/nessuno/Zotero/storage/V4AL947V/Jiang et al. - 2022 - SampleMine A Framework for Applying Random Sampli.pdf}
+}
+
+@article{vassiliadis2015,
+  title     = {A programming model and runtime system for significance-aware energy-efficient computing},
+  author    = {Vassiliadis, Vassilis and Parasyris, Konstantinos and Chalios, Charalambos and Antonopoulos, Christos D and Lalis, Spyros and Bellas, Nikolaos and Vandierendonck, Hans and Nikolopoulos, Dimitrios S},
+  journal   = {ACM SIGPLAN Notices},
+  volume    = {50},
+  number    = {8},
+  pages     = {275--276},
+  year      = {2015},
+  publisher = {ACM New York, NY, USA}
+}
+
+@inproceedings{parasyris2021,
+  title      = {{{HPAC}}: Evaluating Approximate Computing Techniques on {{HPC OpenMP}} Applications},
+  shorttitle = {{{HPAC}}},
+  booktitle  = {Proceedings of the {{International Conference}} for {{High Performance Computing}}, {{Networking}}, {{Storage}} and {{Analysis}}},
+  author     = {Parasyris, Konstantinos and Georgakoudis, Giorgis and Menon, Harshitha and Diffenderfer, James and Laguna, Ignacio and Osei-Kuffuor, Daniel and Schordan, Markus},
+  date       = {2021-11-14},
+  year       = {2021},
+  pages      = {1--14},
+  publisher  = {ACM},
+  location   = {St. Louis Missouri},
+  doi        = {10.1145/3458817.3476216},
+  url        = {https://dl.acm.org/doi/10.1145/3458817.3476216},
+  urldate    = {2023-10-11},
+  eventtitle = {{{SC}} '21: {{The International Conference}} for {{High Performance Computing}}, {{Networking}}, {{Storage}} and {{Analysis}}},
+  isbn       = {978-1-4503-8442-1},
+  langid     = {english},
+  file       = {/home/nessuno/Zotero/storage/YSULSZLZ/Parasyris et al_2021_HPAC.pdf}
+}
+
 
 CÂNDIDO, A. A literatura e a formação do homem. In: Textos de intervenção. São
 Paulo: Duas Cidades, 2002. p. 67. (Coleção espírito crítico). (Modelo de referência:
