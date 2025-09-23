@@ -23,3 +23,5 @@
 *.ind
 *.blg
 *.pdf
+
+!figuras/Figuras/*.pdf

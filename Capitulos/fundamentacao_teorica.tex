@@ -59,7 +59,7 @@ Na prática, as saídas são armazenadas em uma estrutura de dados e reutilizada
 
 \subsection{Aproximação de ponto flutuante}\label{subsec:pontoFlut}
 
-A representação de números reais por meio de números de ponto flutuante envolvem aproximação por padrão devido a impossibilidade de representar valores contínuos, se torna impossível representar um número infinito com um número finito de \textit{bits}~\cite{monniaux2008}. Por esse motivo aritmética com números de ponto flutuante usualmente introduzem erros de aproximação que variam conforme a ordem de execução dessas operações, resultando em um valor completamente diferente do esperado. Um exemplo disso pode ser obervado na \autoref{fig:perfoMod}.
+A representação de números reais por meio de números de ponto flutuante envolvem aproximação por padrão devido a impossibilidade de representar valores contínuos, se torna impossível representar um número infinito com um número finito de \textit{bits}~\cite{monniaux2008}. Por esse motivo aritmética com números de ponto flutuante usualmente introduzem erros de aproximação que variam conforme a ordem de execução dessas operações, resultando em um valor completamente diferente do esperado. Um exemplo disso pode ser obervado na \autoref{fig:floatPoint}.
 
 \begin{figure}[htb]
     \caption{Erro introduzido na aritmética de ponto flutuante.}
@@ -93,6 +93,14 @@ Dentro desse modelo, o paralelismo pode ser explorado de diferentes maneiras. No
 Algumas arquiteturas foram além e incorporaram extensões \gls{simd}, permitindo a utilização de processadores vetoriais capazes de realizar a mesma operação sobre múltiplos elementos de um vetor unidimensional em um único ciclo de instrução. Em cenários mais especializados, como nas \glspl{gpu}, esse modelo é expandido para múltiplas dimensões de dados, possibilitando que milhares de operações sejam executadas em paralelo e tornando-as altamente adequadas para cargas de trabalho massivamente paralelizáveis~\cite{hennessy2017}. Outro mecanismo fundamental é o uso de \textit{threads}, que representam abstrações de execução em nível de software, permitindo que diferentes unidades computacionais operem concorrentemente em múltiplos processadores. Cada \textit{thread} possui seu próprio contexto de execução, mas pode compartilhar recursos como memória e dispositivos de entrada/saída, viabilizando desde o paralelismo de tarefas independentes até a cooperação em algoritmos que exploram granularidades mais finas~\cite{tanenbaum2015,hennessy2017}.
 
 É nesse contexto que surge o OpenMP, uma \gls{api} projetada para estender C, C++ e Fortran com suporte à paralelização de aplicações por meio de anotações de código. Essas anotações especificam o como aquela região de código deve ser executada. Seu modelo de programação permite explorar automaticamente diferentes formas de paralelismo, seja pelo \textit{offloading} para \glspl{gpu}, pelo uso de múltiplas \textit{threads}, ou ainda pela vetorização via \gls{simd}, aproveitando as unidades vetoriais das arquiteturas modernas~\cite{mattson2019}.
+
+\begin{figure}[htb]
+    \caption{Arquitetura do \texttt{OpenMP}.}
+    \label{fig:ompArchitecture}
+    \includegraphics[scale=0.7]{Figuras/omp_architecture.pdf}
+    \fonte{}
+    \addcontentsline{loge}{figure}{\protect\numberline{\thefigure}Arquitetura do \texttt{OpenMP}.}
+\end{figure}
 
 O OpenMP é estruturado em uma arquitetura em camadas, composta por anotações de código, suporte da \textit{runtime} e configurações do ambiente de execução, conforme ilustrado na FIGURA. Esse modelo permite ao programador controlar diversos aspectos da execução por meio de diretivas e chamadas à biblioteca, como a definição do número de \textit{threads} em uma região paralela e a escolha do comportamento do escalonador. Dessa forma, o OpenMP oferece um controle flexível sobre o paralelismo do programa.
 
@@ -155,7 +163,15 @@ A \autoref{code:produtoVet} apresenta a implementação sequencial de um produto
 
 Tipicamente, uma diretiva OpenMP é aplicada a um laço para indicar que ele pode ser executado em paralelo. Durante a compilação, esse bloco de código é isolado e transformado em tarefas, enquanto a \textit{runtime} prepara as estruturas necessárias para o modelo \textit{fork-join}. Por exemplo, a diretiva \texttt{\#pragma omp parallel} cria um time de \textit{threads}, cada uma executando uma cópia do código anotado. O compilador gerencia variáveis privadas, memória de pilha e pontos de sincronização automaticamente. Ao final, as \textit{threads} são reunificadas (\textit{joined}), e a execução retorna ao fluxo sequencial. Essa abordagem permite paralelizar regiões de código com esforço reduzido de gerenciamento, mantendo controle sobre sincronização e compartilhamento de dados~\cite{mattson2019}.
 
-O modelo \textit{fork-join} pode ser observado de forma esquemática na FIGURA. Nele, a \textit{runtime} cria múltiplas \textit{threads} para a execução paralela, que são sincronizadas ao final, restando apenas a \textit{thread} principal para continuar a execução sequencial. O OpenMP também suporta regiões paralelas aninhadas, possibilitando hierarquias de paralelismo.
+\begin{figure}[htb]
+    \caption{Modelo \textit{fork-join} de execução do \texttt{OpenMP}.}
+    \label{fig:ompExec}
+    \includegraphics[scale=0.7]{Figuras/omp_exec.pdf}
+    \fonte{}
+    \addcontentsline{loge}{figure}{\protect\numberline{\thefigure}Modelo \textit{fork-join} de execução do \texttt{OpenMP}.}
+\end{figure}
+
+O modelo \textit{fork-join} pode ser observado de forma esquemática na \autoref{fig:ompExec}. Nele, a \textit{runtime} cria múltiplas \textit{threads} para a execução paralela, que são sincronizadas ao final, restando apenas a \textit{thread} principal para continuar a execução sequencial. O OpenMP também suporta regiões paralelas aninhadas, possibilitando hierarquias de paralelismo.
 
 \section{Trabalhos relacionados}\label{sec:trabRelac}
 
