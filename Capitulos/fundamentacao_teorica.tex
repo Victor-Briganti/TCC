@@ -104,7 +104,7 @@ Algumas arquiteturas foram além e incorporaram extensões \gls{simd}, permitind
 
 O OpenMP é estruturado em uma arquitetura em camadas, composta por anotações de código, suporte da \textit{runtime} e configurações do ambiente de execução, conforme ilustrado na FIGURA. Esse modelo permite ao programador controlar diversos aspectos da execução por meio de diretivas e chamadas à biblioteca, como a definição do número de \textit{threads} em uma região paralela e a escolha do comportamento do escalonador. Dessa forma, o OpenMP oferece um controle flexível sobre o paralelismo do programa.
 
-A \autoref{code:produtoVet} apresenta a implementação sequencial de um produto escalar entre vetores. A paralelização utilizando a biblioteca \texttt{pthreads}, apresentada no \autoref{code:produtoThread}, exige a criação explícita de \textit{threads}, gerenciamento de regiões de memória e sincronização dos resultados parciais. Em contraste, o ALGORITMO implementado com o OpenMP, evidencia a simplicidade proporcionada pelas diretivas: uma única anotação é suficiente para paralelizar o laço de cálculo, delegando à \textit{runtime} a criação e sincronização das \textit{threads}.
+A \autoref{code:produtoVet} apresenta a implementação sequencial de um produto escalar entre vetores. A paralelização utilizando a biblioteca \texttt{pthreads}, apresentada no \autoref{code:produtoThread}, exige a criação explícita de \textit{threads}, gerenciamento de regiões de memória e sincronização dos resultados parciais. Em contraste, o \autoref{code:produtoOmp} implementado com o OpenMP, evidencia a simplicidade proporcionada pelas diretivas: uma única anotação é suficiente para paralelizar o laço de cálculo, delegando à \textit{runtime} a criação e sincronização das \textit{threads}.
 
 \begin{sourcecode}[htb]\caption{\label{code:produtoVet}Estrutura de um laço canônico}
     \begin{lstlisting}[frame=single, language=C++]
@@ -151,7 +151,7 @@ A \autoref{code:produtoVet} apresenta a implementação sequencial de um produto
     \fonte{}
 \end{sourcecode}
 
-\begin{sourcecode}[htb]\caption{\label{code:loopCanon}Estrutura de um laço canônico}
+\begin{sourcecode}[htb]\caption{\label{code:produtoOmp}Estrutura de um laço canônico}
     \begin{lstlisting}[frame=single, language=C++]
         #pragma omp parallel for reduction(+ : result)
         for (int i = 0; i < N; i++) {
