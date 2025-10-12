@@ -238,24 +238,6 @@
   file       = {/home/nessuno/Zotero/storage/MX9ULM9V/Reis et al. - 2024 - Towards Just-In-Time Software Approximations.pdf}
 }
 
-@inproceedings{oliveira2024b,
-  title      = {Multithread {{Approximation}}: {{A}} New {{OpenMP}} Construct},
-  shorttitle = {Multithread {{Approximation}}},
-  booktitle  = {Anais Do {{XXV Simpósio}} Em {{Sistemas Computacionais}} de {{Alto Desempenho}} ({{SSCAD}} 2024)},
-  author     = {Oliveira, João B. and Gonçalves, Rogério A. and Fabrício Filho, João},
-  date       = {2024-10-23},
-  year       = {2024},
-  pages      = {372--383},
-  publisher  = {Sociedade Brasileira de Computação},
-  location   = {Brasil},
-  doi        = {10.5753/sscad.2024.244776},
-  url        = {https://sol.sbc.org.br/index.php/sscad/article/view/31012},
-  urldate    = {2025-05-17},
-  abstract   = {This study presents a new construct in OpenMP designed to facilitate the implementation of approximate computing techniques within parallel programming environments. By integrating approximation methods such as task dropping, loop perforation, and floating-point relaxation, the proposed construct aims to enhance performance and energy efficiency while maintaining acceptable accuracy levels. Experimental results on benchmark applications demonstrate a trade-off of up to 490.83\%, with 55.1\% of quality loss, highlighting the potential and limitations of approximate computing in parallel contexts.},
-  eventtitle = {Simpósio Em {{Sistemas Computacionais}} de {{Alto Desempenho}}},
-  file       = {/home/nessuno/Zotero/storage/LGZLFA8J/Oliveira et al. - 2024 - Multithread Approximation A new OpenMP construct.pdf}
-}
-
 @inproceedings{oliveira2024a,
   title      = {OpenMP em Direção à Aproximação: Loop Perforation e Multithreading},
   shorttitle = {OpenMP em Direção à Aproximação},
@@ -273,6 +255,24 @@
   eventtitle = {Escola Regional de Alto Desempenho de São Paulo},
   langid     = {portuguese},
   file       = {/home/nessuno/Zotero/storage/9FCPJYE3/Oliveira et al. - 2024 - OpenMP em Direção à Aproximação Loop Perforation .pdf}
+}
+
+@inproceedings{oliveira2024b,
+  title      = {Multithread {{Approximation}}: {{A}} New {{OpenMP}} Construct},
+  shorttitle = {Multithread {{Approximation}}},
+  booktitle  = {Anais Do {{XXV Simpósio}} Em {{Sistemas Computacionais}} de {{Alto Desempenho}} ({{SSCAD}} 2024)},
+  author     = {Oliveira, João B. and Gonçalves, Rogério A. and Fabrício Filho, João},
+  date       = {2024-10-23},
+  year       = {2024},
+  pages      = {372--383},
+  publisher  = {Sociedade Brasileira de Computação},
+  location   = {Brasil},
+  doi        = {10.5753/sscad.2024.244776},
+  url        = {https://sol.sbc.org.br/index.php/sscad/article/view/31012},
+  urldate    = {2025-05-17},
+  abstract   = {This study presents a new construct in OpenMP designed to facilitate the implementation of approximate computing techniques within parallel programming environments. By integrating approximation methods such as task dropping, loop perforation, and floating-point relaxation, the proposed construct aims to enhance performance and energy efficiency while maintaining acceptable accuracy levels. Experimental results on benchmark applications demonstrate a trade-off of up to 490.83\%, with 55.1\% of quality loss, highlighting the potential and limitations of approximate computing in parallel contexts.},
+  eventtitle = {Simpósio Em {{Sistemas Computacionais}} de {{Alto Desempenho}}},
+  file       = {/home/nessuno/Zotero/storage/LGZLFA8J/Oliveira et al. - 2024 - Multithread Approximation A new OpenMP construct.pdf}
 }
 
 @inproceedings{felzmann2021,
@@ -547,6 +547,46 @@
   file       = {/home/nessuno/Zotero/storage/YSULSZLZ/Parasyris et al_2021_HPAC.pdf}
 }
 
+@inproceedings{fink2023,
+  title      = {{{HPAC-Offload}}: {{Accelerating HPC Applications}} with {{Portable
+                Approximate Computing}} on the {{GPU}}},
+  shorttitle = {{{HPAC-Offload}}},
+  booktitle  = {Proceedings of the {{International Conference}} for {{High
+                Performance Computing}}, {{Networking}}, {{Storage}} and {{
+                Analysis}}},
+  author     = {Fink, Zane and Parasyris, Konstantinos and Georgakoudis, Giorgis and
+                Menon, Harshitha},
+  year       = {2023},
+  date       = {2023-11-12},
+  pages      = {1--14},
+  publisher  = {ACM},
+  location   = {Denver CO USA},
+  doi        = {10.1145/3581784.3607095},
+  url        = {https://dl.acm.org/doi/10.1145/3581784.3607095},
+  urldate    = {2025-10-09},
+  abstract   = {The end of Dennard scaling and the slowdown of Moore’s law led to
+                a shift in technology trends towards parallel architectures,
+                particularly in HPC systems. To continue providing performance
+                benefits, HPC should embrace Approximate Computing (AC), which
+                trades application quality loss for improved performance. However,
+                existing AC techniques have not been extensively applied and
+                evaluated in state-of-the-art hardware architectures such as GPUs,
+                the primary execution vehicle for HPC applications today. This
+                paper presents HPAC-Offload, a pragma-based programming model that
+                extends OpenMP offload applications to support AC techniques,
+                allowing portable approximations across different GPU
+                architectures. We conduct a comprehensive performance analysis of
+                HPAC-Offload across GPU-accelerated HPC applications, revealing
+                that AC techniques can significantly accelerate HPC applications
+                (1.64x LULESH on AMD, 1.57x NVIDIA) with minimal quality loss (0.1
+                \%). Our analysis offers deep insights into the performance of
+                GPU-based AC that guide the future development of AC algorithms and
+                systems for these architectures.},
+  eventtitle = {{{SC}} '23: {{International Conference}} for {{High Performance
+                Computing}}, {{Networking}}, {{Storage}} and {{Analysis}}},
+  isbn       = {979-8-4007-0109-2},
+  langid     = {english}
+}
 
 CÂNDIDO, A. A literatura e a formação do homem. In: Textos de intervenção. São
 Paulo: Duas Cidades, 2002. p. 67. (Coleção espírito crítico). (Modelo de referência:

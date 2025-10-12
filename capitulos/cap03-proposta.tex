@@ -1,6 +1,6 @@
 \chapter{Proposta}\label{cap:proposta}
 
-Este trabalho apresenta um novo construtor para o \texttt{OpenMP} que facilita a implementação de algoritmos de aproximação. Assim como outros construtores da API, a proposta utiliza anotações de código — os \texttt{pragma} em C/C++ — para identificar regiões que podem ser executadas de forma aproximada. A integração dessas anotações ao arcabouço do \texttt{OpenMP} assegura que as técnicas sejam portáteis e facilmente adaptáveis a diferentes trechos de código.
+Este trabalho apresenta um novo construtor para o \texttt{OpenMP} que facilita a implementação de algoritmos de aproximação. Assim como outros construtores da API, a proposta utiliza anotações de código, para identificar regiões que podem ser executadas de forma aproximada. A integração dessas anotações ao arcabouço do \texttt{OpenMP} assegura que as técnicas sejam portáteis e facilmente adaptáveis a diferentes trechos de código.
 
 O \autoref{code:pragmaApprox} apresenta a anotação \texttt{pragma approx}, que delimita uma região de código a ser aproximada e especifica a técnica a ser aplicada. Múltiplas cláusulas podem ser combinadas em um único construtor para indicar diferentes parâmetros de aproximação. Entretanto, a implementação atual suporta apenas uma técnica de aproximação
 
