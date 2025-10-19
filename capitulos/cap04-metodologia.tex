@@ -58,9 +58,9 @@ O algoritmo de multiplicação de matrizes empregado segue o padrão clássico~\
 	\hrule
 	\begin{algorithmic}[1]
 		\REQUIRE Matrizes $A$ de tamanho $n \times m$, $B$ de tamanho $m \times p$, $C$ de tamanho $n \times p$
-		\FOR{$i = 0$ até $n$}
-		\FOR{$j = 0$ até $p$}
-		\FOR{$k = 0$ até $m$}
+		\FOR{$i = 0$ até $n$, com passo $1$}
+		\FOR{$j = 0$ até $p$, com passo $1$}
+		\FOR{$k = 0$ até $m$, com passo $1$}
 		\STATE $C[i][j] = C[i][j] + A[i][k] \cdot B[k][j]$
 		\ENDFOR
 		\ENDFOR
@@ -81,12 +81,12 @@ O principal benefício dessa otimização está no uso mais eficiente da \textit
 	\begin{algorithmic}[1]
 		\REQUIRE Matrizes $A$, $B$ e $C$ de tamanho $n \times n$
 		\REQUIRE Tamanho do bloco $bs$
-		\FOR{$ii = 0$ até $n$, em passos de $bs$}
-		\FOR{$kk = 0$ até $n$, em passos de $bs$}
+		\FOR{$ii = 0$ até $n$, com passo $bs$}
+		\FOR{$kk = 0$ até $n$, com passo $bs$}
 		\FOR{$i = ii$ até $\min(ii + bs, n)$}
 		\FOR{$k = kk$ até $\min(kk + bs, n)$}
 		\STATE $a\_val \gets A[i][k]$
-		\FOR{$j = 0$ até $n$}
+		\FOR{$j = 0$ até $n$, com passo $1$}
 		\STATE $C[i][j] \gets C[i][j] + a\_val \times B[k][j]$
 		\ENDFOR
 		\ENDFOR
@@ -121,8 +121,8 @@ A fórmula comumente utilizada para calcular a correlação é chamada de \texti
 	\hrule
 	\begin{algorithmic}[1]
 		\REQUIRE Matrizes $C$ e $D$ de tamanho $n \times m$
-		\FOR{$i = 0$ até $n$, em passos de $1$}
-		\FOR{$j = 0$ até $n$, em passos de $1$}
+		\FOR{$i = 0$ até $n$, com passo $1$}
+		\FOR{$j = 0$ até $n$, com passo $1$}
 		\STATE $r = (j == i)\ ?\ 1.0\ :\ \texttt{correlation}(\texttt{linha}(D, i),\ \texttt{linha}(D, j),\ m)$
 		\STATE $C[i][j] = r$
 		\STATE $C[j][i] = r$
@@ -190,7 +190,33 @@ Em análise numérica, o método de Jacobi é um algoritmo iterativo utilizado p
 
 Esse algoritmo foi selecionado como parte do conjunto de \textit{benchmarks} adotados neste trabalho por sua natureza iterativa e previsível em termos de comportamento computacional. O processo inicia-se com a atribuição de valores iniciais arbitrários ao vetor $x$. Em seguida, realiza-se uma iteração para calcular uma nova estimativa da solução, com base exclusivamente nos valores da iteração anterior. Esses novos valores são utilizados como entrada para a próxima iteração. Esse procedimento é repetido até que a diferença entre iterações consecutivas seja inferior a um limiar de tolerância pré-definido, indicando a convergência para uma solução estável.
 
-O Jacobi 2D é uma aplicação do método de Jacobi adaptado para problemas discretizados em duas dimensões. Sua implementação se baseia em um algoritmo de estêncil, no qual cada ponto de uma malha bidimensional é atualizado com base na média artimética dos seus quatro vizinhos imediatos (acima, abaixo, esquerda e a direita), como mostra a \autoref{fig:jacobi2d}. Após um número suficiente de iterações, a malha converge para uma configuração estável que representa uma aproximação da solução contínua do problema.
+O Jacobi 2D é uma aplicação do método de Jacobi adaptado para problemas discretizados em duas dimensões. Sua implementação se baseia em um algoritmo de estêncil, no qual cada ponto de uma malha bidimensional é atualizado com base na média artimética dos seus quatro vizinhos imediatos (acima, abaixo, esquerda e a direita), como mostra a \autoref{fig:jacobi2d}. Após um número suficiente de iterações, a malha converge para uma configuração estável que representa uma aproximação da solução contínua do problema. O \autoref{alg:jacobi2d} apresenta a implementação utilizada pelo \textit{benchmark}.
+
+\begin{algorithm}[htb]
+	\caption{Método de Jacobi em duas dimensões}
+	\label{alg:jacobi2d}
+	\hrule
+	\begin{algorithmic}[1]
+		\REQUIRE Matriz $A$ e $B$ de tamanho $n \times n$
+		\REQUIRE $p$, descreve a quantidade de passos do algoritmo
+		\FOR{$t = 0$ até $p - 1$, com passo $1$}
+		\FOR{$i = 1$ até $n - 1$, com passo $1$}
+		\FOR{$j = 1$ até $n - 1$, com passo $1$}
+		\STATE $B[i][j] = (A[i][j] + A[i][j - 1] + A[i - 1][j] + A[i+1][j]) / 4$
+		\ENDFOR
+		\ENDFOR
+		\FOR{$i = 1$ até $n - 1$, com passo $1$}
+		\FOR{$j = 1$ até $n - 1$, com passo $1$}
+		\STATE $A[i][j] = (B[i][j] + B[i][j - 1] + B[i - 1][j] + B[i+1][j]) / 4$
+		\ENDFOR
+		\ENDFOR
+		\ENDFOR
+	\end{algorithmic}
+	\hrule
+	\fonte{}
+\end{algorithm}
+
+O \autoref{alg:jacobi2d} apresenta dependência sequencial entre as etapas de atualização, o que dificulta a paralelização total. Para contornar isso, a paralelização foi aplicada no laço mais externo, permitindo que cada etapa de varredura seja executada em paralelo. Já os laços internos foram anotados com diretivas de sincronização, assegurando que os dados produzidos em uma etapa estejam disponíveis antes da próxima atualização.
 
 \subsection{K-means}\label{subsec:kmeans}
 
