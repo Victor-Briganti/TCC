@@ -345,14 +345,36 @@ No caso específico da estimativa de $\pi$, o método pode ser aplicado de forma
 
 A partir disso, é possível aplicar o método de Monte Carlo para estimar o valor de $\pi$. Como o círculo está inscrito no quadrado, o domínio de amostragem é o próprio quadrado. Gera-se então, um grande número de pontos aleatórios dentro do quadrado. Para cada ponto $(x, y)$, calcula-se sua distância até a origem. Se a distância for menor ou igual a 1, o ponto está dentro do círculo.
 
-A estimativa de $\pi$ é obtida pela razão entre o número de pontos que caíram dentro do círculo e o número total de pontos gerados, multiplicada por 4, como mostra a \autoref{eq:pi_monte}.
+A estimativa de $\pi$ é obtida pela razão entre o número de pontos que caíram dentro do círculo e o número total de pontos gerados, multiplicada por 4, como mostra a \autoref{eq:pi_monte}, a \autoref{fig:pi} apresenta uma ilustração desse processo de amostragem e da aproximação de $\pi$. O \autoref{alg:pi} apresenta a implementação dessas equações utilizada no \textit{benchmark}.
 
 \begin{equation}
 	\label{eq:pi_monte}
 	\pi \approx 4 \times \frac{\text{pontos dentro do círculo}}{\text{total de pontos}}
 \end{equation}
 
-A \autoref{fig:pi} apresenta uma ilustração desse processo de amostragem e da aproximação de $\pi$.
+\begin{algorithm}[htb]
+	\caption{Cálculo de PI pelo método de Monte Carlo}
+	\label{alg:pi}
+	\hrule
+	\begin{algorithmic}[1]
+		\REQUIRE Quantidade de iterações $n$
+		\STATE $hit \gets 0$
+		\STATE $tid \gets \texttt{thread\_num}()$
+		\STATE $seedState \gets \{tid, tid + 1\}$
+		\FOR{$i = 0$ até $n$, com passo $1$}
+		\STATE $x \gets \texttt{random}(seedState)$
+		\STATE $y \gets \texttt{random}(seedState)$
+		\IF{$(x \times x + y \times y) \leq 1$}
+		\STATE $hit \gets hit + 1$
+		\ENDIF
+		\ENDFOR
+		\RETURN $(4.0 \times hit) / n$
+	\end{algorithmic}
+	\hrule
+	\fonte{}
+\end{algorithm}
+
+Na implementação apresentada no \autoref{alg:pi}, o laço principal foi paralelizado de forma que cada \textit{thread} execute uma fração do espaço total de iterações. Outra otimização introduzida nessa implementação, foi na geração de números pseudoaleatórios com o algoritmo \texttt{xorshift128+}, escolhido por sua alta velocidade e boa qualidade estatística.
 
 \section{Análise de Desempenho}\label{sec:desempenho}
 
