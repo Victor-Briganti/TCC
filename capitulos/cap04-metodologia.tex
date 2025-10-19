@@ -61,7 +61,7 @@ O algoritmo de multiplicação de matrizes empregado segue o padrão clássico~\
 		\FOR{$i = 0$ até $n$, com passo $1$}
 		\FOR{$j = 0$ até $p$, com passo $1$}
 		\FOR{$k = 0$ até $m$, com passo $1$}
-		\STATE $C[i][j] = C[i][j] + A[i][k] \cdot B[k][j]$
+		\STATE $C[i][j] \gets C[i][j] + A[i][k] \cdot B[k][j]$
 		\ENDFOR
 		\ENDFOR
 		\ENDFOR
@@ -123,9 +123,13 @@ A fórmula comumente utilizada para calcular a correlação é chamada de \texti
 		\REQUIRE Matrizes $C$ e $D$ de tamanho $n \times m$
 		\FOR{$i = 0$ até $n$, com passo $1$}
 		\FOR{$j = 0$ até $n$, com passo $1$}
-		\STATE $r = (j == i)\ ?\ 1.0\ :\ \texttt{correlation}(\texttt{linha}(D, i),\ \texttt{linha}(D, j),\ m)$
-		\STATE $C[i][j] = r$
-		\STATE $C[j][i] = r$
+		\IF{(j == i)}
+		\STATE $r \gets 1.0$
+		\ELSE
+		\STATE $r \gets \texttt{correlation}(\texttt{linha}(D, i),\ \texttt{linha}(D, j),\ m)$
+		\ENDIF
+		\STATE $C[i][j] \gets r$
+		\STATE $C[j][i] \gets r$
 		\ENDFOR
 		\ENDFOR
 	\end{algorithmic}
@@ -139,13 +143,17 @@ A fórmula comumente utilizada para calcular a correlação é chamada de \texti
 	\hrule
 	\begin{algorithmic}[1]
 		\REQUIRE \textit{Array} $X$ e $Y$ de tamanho $m$
-		\REQUIRE Acumuladores \texttt{sumX}, \texttt{sumY}, \texttt{sumXY}, \texttt{sumX2} e \texttt{sumY2}, todos iniciados em $0$
+		\STATE $sumX \gets 0$
+		\STATE $sumY \gets 0$
+		\STATE $sumXY \gets 0$
+		\STATE $sumX2 \gets 0$
+		\STATE $sumY2 \gets 0$
 		\FOR{$i = 0$ até $n$, em passos de $1$}
-		\STATE $\texttt{sumX} = \texttt{sumX} + X[i]$
-		\STATE $\texttt{sumY} = \texttt{sumY} + Y[i]$
-		\STATE $\texttt{sumXY} = \texttt{sumXY} + X[i] * Y[i]$
-		\STATE $\texttt{sumX2} = \texttt{sumX2} + X[i] * X[i]$
-		\STATE $\texttt{sumY2} = \texttt{sumY2} + Y[i] * Y[i]$
+		\STATE $\texttt{sumX} \gets \texttt{sumX} + X[i]$
+		\STATE $\texttt{sumY} \gets \texttt{sumY} + Y[i]$
+		\STATE $\texttt{sumXY} \gets \texttt{sumXY} + X[i] * Y[i]$
+		\STATE $\texttt{sumX2} \gets \texttt{sumX2} + X[i] * X[i]$
+		\STATE $\texttt{sumY2} \gets \texttt{sumY2} + Y[i] * Y[i]$
 		\ENDFOR
 	\end{algorithmic}
 	\hrule
@@ -198,16 +206,16 @@ O Jacobi 2D é uma aplicação do método de Jacobi adaptado para problemas disc
 	\hrule
 	\begin{algorithmic}[1]
 		\REQUIRE Matriz $A$ e $B$ de tamanho $n \times n$
-		\REQUIRE $p$, descreve a quantidade de passos do algoritmo
+		\REQUIRE Quantidade de passos do algoritmo $p$
 		\FOR{$t = 0$ até $p - 1$, com passo $1$}
 		\FOR{$i = 1$ até $n - 1$, com passo $1$}
 		\FOR{$j = 1$ até $n - 1$, com passo $1$}
-		\STATE $B[i][j] = (A[i][j] + A[i][j - 1] + A[i - 1][j] + A[i+1][j]) / 4$
+		\STATE $B[i][j] \gets (A[i][j] + A[i][j + 1] + A[i][j - 1] + A[i - 1][j] + A[i + 1][j]) / 4$
 		\ENDFOR
 		\ENDFOR
 		\FOR{$i = 1$ até $n - 1$, com passo $1$}
 		\FOR{$j = 1$ até $n - 1$, com passo $1$}
-		\STATE $A[i][j] = (B[i][j] + B[i][j - 1] + B[i - 1][j] + B[i+1][j]) / 4$
+		\STATE $A[i][j] \gets (B[i][j] + B[i][j + 1] + B[i][j - 1] + B[i - 1][j] + B[i+1][j]) / 4$
 		\ENDFOR
 		\ENDFOR
 		\ENDFOR
@@ -251,7 +259,63 @@ Os valores de $c$ são escolhidos em um retângulo do plano complexo, com a part
 	c_y = y_{\text{min}} + \frac{p_y}{\text{altura da imagem}} \cdot (y_{\text{max}} - y_{\text{min}})
 \end{equation}
 
-Inserimos os valores $c_x$ e $c_y$, nas iterações do Mandelbrot. Cada ponto da imagem é testado, e se a sequência $z_n$ não divergir após um número máximo de iterações, o pixel correspondente é colorido. A \autoref{fig:mandelbrot} apresenta uma visualização típica do conjutno de Mandelbrot.
+Inserimos os valores $c_x$ e $c_y$, nas iterações do Mandelbrot. Cada ponto da imagem é testado, e se a sequência $z_n$ não divergir após um número máximo de iterações, o pixel correspondente é colorido. A \autoref{fig:mandelbrot} apresenta uma visualização típica do conjunto de Mandelbrot. O \autoref{alg:mandelbrot} apresenta o cálculo do conjunto, e \autoref{alg:mandelbrot_image} contém o algoritmo utilizado para desenhar a imagem do conjunto.
+
+\begin{algorithm}[htb]
+	\caption{Cálculo do conjunto Mandelbrot}
+	\label{alg:mandelbrot}
+	\hrule
+	\begin{algorithmic}[1]
+		\REQUIRE Número complexo $c$
+		\STATE $z \gets 0 + 0i$
+		\FOR{$i = 0$ até $100$, com passo $1$}
+		\STATE $z \gets z^2 + c$
+		\IF{$|z| > 2.0$}
+		\RETURN Falso
+		\ENDIF
+		\ENDFOR
+		\RETURN Verdadeiro
+	\end{algorithmic}
+	\hrule
+	\fonte{}
+\end{algorithm}
+
+\begin{algorithm}[htb]
+	\caption{Geração da imagem do conjunto de Mandelbrot}
+	\label{alg:mandelbrot_image}
+	\hrule
+	\begin{algorithmic}[1]
+		\REQUIRE Tamanho da imagem base $n$
+		\STATE $imageSize \gets (n / 8) \times 8$
+		\STATE $pixels \gets$ vetor de tamanho $(imageSize \times imageSize) / 8$, inicializado com $0$
+		\STATE $scaleX \gets (1.0 - (-2.0)) / imageSize$
+		\STATE $scaleY \gets (1.5 - (-1.5)) / imageSize$
+
+		\FOR{$pixel = 0$ até \texttt{tamanho}($pixels) - 1$}
+		\STATE $byte \gets 0$
+		\STATE $byteRow \gets imageSize / 8$
+		\STATE $pixelColumn \gets pixel \bmod byteRow$
+		\STATE $y \gets pixel / byteRow$
+
+		\FOR{$bit = 0$ até $7$}
+		\STATE $x \gets pixelColumn \times 8 + bit$
+		\STATE $cx \gets -2.0 + x \times scaleX$
+		\STATE $cy \gets -1.5 + y \times scaleY$
+		\IF{$\texttt{mandelbrot}(cx,\ cy) =\ $Verdadeiro}
+		\STATE $byte \gets byte\ |\ (1 \ll (7 - bit))$
+		\ENDIF
+		\ENDFOR
+
+		\STATE $pixels[pixel] \gets byte$
+		\ENDFOR
+	\end{algorithmic}
+	\hrule
+	\fonte{}
+\end{algorithm}
+
+Na implementação apresentada, duas otimizações foram aplicadas, no \autoref{alg:mandelbrot_image}, com o objetivo de melhorar o desempenho do algoritmo. A primeira delas foi a adição de diretivas de paralelização, inseridas em seu laço mais externo, permitindo que diferentes regiões da imagem fossem processadas de forma concorrente.
+
+A segunda otimização foi a aplicação da técnica conhecida como \textit{loop unrolling}, que consiste em transformar parte das iterações de um laço em instruções sequenciais explícitas. Essa técnica visa reduzir o overhead associado ao controle do laço, como verificações de condição e saltos, e pode beneficiar aspectos como \textit{branch prediction} e uso mais eficiente do \textit{pipeline} do processador.
 
 \subsection{PI de Monte Carlo}\label{subsec:pi}
 
