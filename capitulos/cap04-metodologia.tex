@@ -163,6 +163,7 @@ A fórmula comumente utilizada para calcular a correlação é chamada de \texti
 O cálculo da correlação entre as diferentes variáveis está apresentado na \autoref{tab:correlation}. Uma importante propriedade desse cálculo, está no fato de que ela é uma matriz simétrica, isto é, os valores localizados na parte inferior da matriz são iguais aos da parte superior em relação à diagonal principal. Essa diagonal principal contém valores iguais a $1.0$, correspondentes a autocorrelação perfeita de cada variável. Essa simetria permite otimizar o cálculo, reduzindo o número de iterações, uma vez que é suficiente computar os coeficientes para somente uma das metades da matriz.
 
 \begin{table}[htb]
+	\caption{Representação da correlação entre as diferentes variáveis}
 	\centering
 	\begin{tabular}{|c|c|c|c|c|}
 		\hline
@@ -177,7 +178,6 @@ O cálculo da correlação entre as diferentes variáveis está apresentado na \
 		\textbf{d} & ad         & bd         & cd         & 1.0        \\
 		\hline
 	\end{tabular}
-	\caption{Representação da correlação entre as diferentes variáveis}
 	\fonte{}
 	\label{tab:correlation}
 \end{table}
@@ -230,9 +230,78 @@ O \autoref{alg:jacobi2d} apresenta dependência sequencial entre as etapas de at
 
 O algoritmo K-means é uma técnica de agrupamento, que tem como objetivo particionar um conjunto de dados em $k$ grupos, de forma que os dados dentro de um mesmo grupo de modo que eles sejam semelhantes entre si.
 
-A ideia central do algoritmo consiste em definir inicialmente $k$ centróides, que são pontos de referência no espaço de amostragem. Em seguida, cada ponto de dado é associado ao centróide mais próximo, com base em uma medidade de distância, usualmente a distância euclidiana. Após essa etapa de atribuição, o algoritmo calcula a média dos pontos atribuídos a cada grupo e atualiza a posição dos centróides com base nesses valores.
+A ideia central do algoritmo consiste em definir inicialmente $k$ centróides, que são pontos de referência no espaço de amostragem. Em seguida, cada ponto de dado é associado ao centróide mais próximo, com base em uma medidade de distância, usualmente a distância euclidiana. Após essa etapa de atribuição, o algoritmo calcula a média dos pontos atribuídos a cada grupo e atualiza a posição dos centróides com base nesses valores. A \autoref{fig:kmeans} ilustra o agrupamento dos dados.
 
-Esse processo é repetido iterativamente, os dados são reagrupados com base nos novos centróides e os centróides são novamente recalculados. O algoritmo continua até atingir um critério de parada, que pode ser um número fixo de iterações ou a estabilização dos centróides. Durante a execuçõa, o algoritmo também avalia a variância, uma medida que indica o quão disperso os pontos estão em relação ao seu centróide. Quanto menor essa variância, mais compactos são os grupos formados. Embora o objetivo não seja minimizar a variância até zero, uma variância excessivamente alta pode indicar que os dados não estão sendo agrupados de maneira eficiente.
+Esse processo é repetido iterativamente, os dados são reagrupados com base nos novos centróides e os centróides são novamente recalculados. O algoritmo continua até atingir um critério de parada, que pode ser um número fixo de iterações ou a estabilização dos centróides.
+
+A \autoref{alg:kmeans} apresenta a implementação desse algoritmo, que reflete essa lógica de forma detalhada, incluindo a etapa de inicialização dos centróides, a atribuição de ponots, o recálculo dos centróides e a verificação do critério de parada
+
+Durante a execução, o algoritmo também avalia a variância, uma medida que indica o quão disperso os pontos estão em relação ao seu centróide. Quanto menor essa variância, mais compactos são os grupos formados. Embora o objetivo não seja minimizar a variância até zero, uma variância excessivamente alta pode indicar que os dados não estão sendo agrupados de maneira eficiente.
+
+\begin{algorithm}[htb!]
+	\caption{Algoritmo K-means}
+	\label{alg:kmeans}
+	\hrule
+	\begin{algorithmic}[1]
+		\REQUIRE Matriz $features$ de dimensão $numPoints$ $\times$ $numFeatures$ \\
+		\REQUIRE $numClusters$, número de $clusters$ que serão formados
+		\REQUIRE $iterations$, quantidade de iterações realizada pelo algoritmo
+		\REQUIRE $threshold$, limiar de parada do algoritmo
+
+		\STATE Matriz $centroids$ de tamanho $numClusters \times numFeatures$, iniciado com $0$
+		\STATE Matriz $newCentroids$ de tamanho $numClusters \times numFeatures$, iniciado com $0$
+		\STATE \textit{Array} $membership$ de tamanho $numPoints$, iniciado com $-1$
+		\STATE \textit{Array} $newCentroidsLen$ de tamanho $numClusters$, iniciado com $0$
+
+		\FOR{$i = 0$ até $numClusters$, com passo $1$}
+		\STATE $n \gets$ índice aleatório entre $0$ e $numPoints - 1$
+		\FOR{$j = 0$ até $numFeatures$, com passo $1$}
+		\STATE $\textit{centroids}[i][j] \gets \textit{features}[n][j]$
+		\ENDFOR
+		\ENDFOR
+
+		\FOR{$iter = 0$ até $iterations$}
+		\STATE $\textit{delta} \gets 0$
+
+		\FOR{$j = 0$ até $numPoints$}
+		\STATE $index \gets \texttt{find\_nearest\_point}(centroids, features[j], numFeatures)$
+
+		\IF{$membership[j] \neq index$}
+		\STATE $delta \gets delta + 1$
+		\ENDIF
+
+		\STATE $membership[j] \gets index$
+		\STATE $newCentroidsLen[index] \gets newCentroidsLen[index] + 1$
+
+		\FOR{$k = 0$ até $numFeatures$}
+		\STATE $newCentroids[index][k] \gets newCentroids[index][k] + features[j][k]$
+		\ENDFOR
+		\ENDFOR
+
+		\FOR{$j = 0$ até $numClusters$}
+		\IF{$newCentroidsLen[j] > 0$}
+		\FOR{$k = 0$ até $numFeatures$}
+		\STATE $centroids[j][k] \gets newCentroids[j][k] / newCentroidsLen[j]$
+		\ENDFOR
+		\ENDIF
+		\ENDFOR
+
+		\STATE Zerar $newCentroids$
+		\STATE Zerar $newCentroidsLen$
+
+		\IF{$delta \leq threshold$}
+		\STATE $break$
+		\ENDIF
+		\ENDFOR
+
+		\RETURN  $centroids$
+
+	\end{algorithmic}
+	\hrule
+	\fonte{}
+\end{algorithm}
+
+Na implementação apresentada no \autoref{alg:kmeans}, a paralelização foi introduziada por meio de anotações dos laços internos, responsáveis pelas maiores cargas computacionais. Em particular, foram paralelizados os laços que percorrem os pontos de dados (\textit{numPoints}) e o laço que percorre os agrupamentos (\texttt{numclusters}).
 
 \subsection{Mandelbrot}\label{subsec:mandelbrot}
 
