@@ -108,6 +108,15 @@ A correlação é uma medida estatística que expressa o grau de associação en
 
 A correlação pode ser positiva quando, ambas as variáveis aumentam ou diminuem juntas, ou negativa, quando uma variável aumenta enquanto a outra diminui. O valor da correlação varia de -1 a 1. Valores próximos de 1 indicam uma forte correlação positiva, enquanto valores próximos de -1, uma forte correlação negativa e valores próximos de 0 indicam uma fraca ou nenhuma correlação. A \autoref{fig:correlation}, ilustra esses três tipos de correlação, nos quais é possível observar visualmente o comportamento das variáveis em cada caso.
 
+\begin{figure}[htb]
+	\caption{Gráfico do cálculo de coeficiente de correlação de Pearson}
+	\centering
+	\includegraphics[scale=0.7]{figuras/correlation.png}
+	\label{fig:correlation}
+	\fonte{\citet{wikimediaCorrelation}}
+	\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Gráfico do cálculo de coeficiente de correlação de Pearson}
+\end{figure}
+
 A fórmula comumente utilizada para calcular a correlação é chamada de \textit{Pearson Correlation Formula}, apresentada na \autoref{eq:correlation}. Nessa equação, $x$ e $y$ representam os valores das variáveis, enquanto $m_x$ e $m_y$ correspondem as suas respectivas médias. A implementação utilizada pelo \textit{benchmark} é apresentada em \autoref{alg:correlation_matrix} e \autoref{alg:correlation}, as quais são respectivamente o algoritmo para a construção da matriz de correlação e o cálculo do coeficiente em si.
 
 \begin{equation}
@@ -198,6 +207,15 @@ Em análise numérica, o método de Jacobi é um algoritmo iterativo utilizado p
 
 Esse algoritmo foi selecionado como parte do conjunto de \textit{benchmarks} adotados neste trabalho por sua natureza iterativa e previsível em termos de comportamento computacional. O processo inicia-se com a atribuição de valores iniciais arbitrários ao vetor $x$. Em seguida, realiza-se uma iteração para calcular uma nova estimativa da solução, com base exclusivamente nos valores da iteração anterior. Esses novos valores são utilizados como entrada para a próxima iteração. Esse procedimento é repetido até que a diferença entre iterações consecutivas seja inferior a um limiar de tolerância pré-definido, indicando a convergência para uma solução estável.
 
+\begin{figure}[htb]
+	\caption{Execução do algoritmo de estêncil}
+	\centering
+	\includegraphics[scale=5]{figuras/jacobi2d.pdf}
+	\label{fig:jacobi2d}
+	\fonte{\citet{wikimediaJacobi2D}}
+	\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Execução do algoritmo de estêncil}
+\end{figure}
+
 O Jacobi 2D é uma aplicação do método de Jacobi adaptado para problemas discretizados em duas dimensões. Sua implementação se baseia em um algoritmo de estêncil, no qual cada ponto de uma malha bidimensional é atualizado com base na média artimética dos seus quatro vizinhos imediatos (acima, abaixo, esquerda e a direita), como mostra a \autoref{fig:jacobi2d}. Após um número suficiente de iterações, a malha converge para uma configuração estável que representa uma aproximação da solução contínua do problema. O \autoref{alg:jacobi2d} apresenta a implementação utilizada pelo \textit{benchmark}.
 
 \begin{algorithm}[htb]
@@ -230,7 +248,16 @@ O \autoref{alg:jacobi2d} apresenta dependência sequencial entre as etapas de at
 
 O algoritmo K-means é uma técnica de agrupamento, que tem como objetivo particionar um conjunto de dados em $k$ grupos, de forma que os dados dentro de um mesmo grupo de modo que eles sejam semelhantes entre si.
 
-A ideia central do algoritmo consiste em definir inicialmente $k$ centróides, que são pontos de referência no espaço de amostragem. Em seguida, cada ponto de dado é associado ao centróide mais próximo, com base em uma medidade de distância, usualmente a distância euclidiana. Após essa etapa de atribuição, o algoritmo calcula a média dos pontos atribuídos a cada grupo e atualiza a posição dos centróides com base nesses valores. A \autoref{fig:kmeans} ilustra o agrupamento dos dados.
+A ideia central do algoritmo consiste em definir inicialmente $k$ centróides, que são pontos de referência no espaço de amostragem. Em seguida, cada ponto de dado é associado ao centróide mais próximo, com base em uma medida de distância, usualmente a distância euclidiana. Após essa etapa de atribuição, o algoritmo calcula a média dos pontos atribuídos a cada grupo e atualiza a posição dos centróides com base nesses valores. A \autoref{fig:kmeans} ilustra o agrupamento dos dados ao longo das iterações do algoritmo K-means. Na figura, os triângulos representam os centróides, os pontos correspondem aos dados e as regiões coloridas indicam as áreas que delimitam os agrupamentos formados.
+
+\begin{figure}[htb]
+	\caption{Agrupamentos ao longo das iterações do algoritmo K-means}
+	\centering
+	\includegraphics[scale=0.7]{figuras/kmeans.png}
+	\label{fig:kmeans}
+	\fonte{\citet{wikimediaKmeans}}
+	\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Agrupamentos ao longo das iterações do algoritmo K-means}
+\end{figure}
 
 Esse processo é repetido iterativamente, os dados são reagrupados com base nos novos centróides e os centróides são novamente recalculados. O algoritmo continua até atingir um critério de parada, que pode ser um número fixo de iterações ou a estabilização dos centróides.
 
@@ -304,6 +331,15 @@ Durante a execução, o algoritmo também avalia a variância, uma medida que in
 Na implementação apresentada no \autoref{alg:kmeans}, a paralelização foi introduziada por meio de anotações dos laços internos, responsáveis pelas maiores cargas computacionais. Em particular, foram paralelizados os laços que percorrem os pontos de dados (\textit{numPoints}) e o laço que percorre os agrupamentos (\texttt{numclusters}).
 
 \subsection{Mandelbrot}\label{subsec:mandelbrot}
+
+\begin{figure}[htb]
+	\caption{Representação do conjunto Mandelbrot}
+	\centering
+	\includegraphics[scale=0.15]{figuras/mandelbrot.png}
+	\label{fig:mandelbrot}
+	\fonte{}
+	\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Representação do conjunto Mandelbrot}
+\end{figure}
 
 Mandelbrot é um conjunto de duas dimensções, definida no conjunto dos números complexos. Ele é construído a partir da iteração da função apresentada na \autoref{eq:mandelbrot}, onde $z$ e $c$ são números complexos, com $c$ constante para cada ponto avaliado e a condição inicial $z_0 = 0$.
 
@@ -390,7 +426,16 @@ A segunda otimização foi a aplicação da técnica conhecida como \textit{loop
 
 O método de Monte Carlo consiste em um conjunto de algoritmos estatísticos que utilizam amostragem aleatória para resolver problemas determinísticos ou estimar valores numérico. Sua principal característica é a geração de entradas aleatórias dentro de um domínio previamente definido, seguido da aplicação de uma regra ou função para computar a saída, cujo resultados são então agregados para formar uma estimativa.
 
-No caso específico da estimativa de $\pi$, o método pode ser aplicado de forma bastante intuitiva. Considere um cículo de raio $r = 1$, inscrito em um quadrado de lado $2$, conforme ilustrado na \autoref{fig:pi_circle}. As áreas do círculo e do quadrado são dadas, respectivamente, pela \autoref{eq:area_circle} e \autoref{eq:area_square}. A razão entre essas duas áreas é apresentado na \autoref{eq:rational_area}. Por fim ao isolarmos o $\pi$, obtemos a \autoref{eq:rational_pi}.
+\begin{figure}[htb]
+	\caption{Método de Monte Carlo}
+	\centering
+	\includegraphics[scale=0.5]{figuras/pi.png}
+	\label{fig:pi}
+	\fonte{\citet{wikimediaPi}}
+	\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Método de Monte Carlo}
+\end{figure}
+
+No caso específico da estimativa de $\pi$, o método pode ser aplicado de forma bastante intuitiva. Considere um cículo de raio $r = 1$, inscrito em um quadrado de lado $2$, conforme ilustrado na \autoref{fig:pi}. As áreas do círculo e do quadrado são dadas, respectivamente, pela \autoref{eq:area_circle} e \autoref{eq:area_square}. A razão entre essas duas áreas é apresentado na \autoref{eq:rational_area}. Por fim ao isolarmos o $\pi$, obtemos a \autoref{eq:rational_pi}.
 
 \begin{equation}
 	\label{eq:area_circle}

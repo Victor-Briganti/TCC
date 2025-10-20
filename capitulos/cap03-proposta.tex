@@ -126,10 +126,11 @@ O conceito de tarefas no \texttt{OpenMP} permite a execução assíncrona de reg
 O construtor \texttt{taskloop} estende esse conceito para laços. Cada laço é particionado em pedaços, definidos pelo parâmetro \texttt{grainsize}, e uma tarefa é criada para cada pedaço. Essas tarefas podem então ser executadas de forma independente por diferentes \textit{threads}.
 
 \begin{figure}[htb]
+    \caption{Modelo de execução da cláusula \texttt{drop}.}
     \centering
     \includegraphics[width=\textwidth]{figuras/task.pdf}
-    \caption{Modelo de execução da cláusula \texttt{drop}.}
     \label{fig:task_drop}
+    \fonte{}
 \end{figure}
 
 Neste trabalho, propomos a cláusula \texttt{drop}, que pode ser usada em conjunto com \texttt{taskloop} para implementar uma estratégia de aproximação baseada no descarte de tarefas. De forma similar à técnica de perforação de laço, essa cláusula permite que o usuário especifique uma taxa de descarte, que define quantas tarefas serão eliminadas. A \autoref{eq:perfo} é utilizada para determinar quais tarefas devem ser descartadas.
@@ -180,10 +181,11 @@ O \autoref{code:pragmaMemo} apresenta a sintaxe da cláusula \texttt{memo}. Essa
 \end{sourcecode}
 
 \begin{figure}[htb]
+    \caption{Modelo de execução da cláusula \texttt{memo}.}
     \centering
     \includegraphics[scale=0.5]{figuras/memo.pdf}
-    \caption{Modelo de execução da cláusula \texttt{memo}.}
     \label{fig:memo}
+    \fonte{}
 \end{figure}
 
 Internamente, a técnica é implementada usando uma árvore AVL, cujos nós folha são estruturas \textit{hash map}. Em tempo de execução, as chamadas à função interceptam a região de código anotada e verificam se existe algum resultado previamente armazenado válido para aquela região. Se houver um resultado válido, ele é reutilizado; caso contrário, o bloco de código é executado normalmente e o resultado é armazenado para uso futuro. O fluxo de execução está ilustrado na \autoref{fig:memo}. É importante ressaltar que, nesta versão da implementação, a verificação de validade é feita exclusivamente com base na região de código, sem considerar diretamente os valores de entrada. Portanto, o reuso é determinado apenas pela execução da mesma região, independentemente das entradas fornecidas.
