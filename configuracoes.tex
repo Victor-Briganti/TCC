@@ -35,7 +35,7 @@
 \usepackage{subfig}             % para adicionar figuras lado a lado no texto                    
 \usepackage{pdfpages}           % para adicionar documentos pdf ao trabalho
 \usepackage{xspace}
-
+\usepackage{graphicx}
 
 % luiz: primeira letra maiúscula
 % solução 1
@@ -110,23 +110,23 @@
 % para siglas em português
 \newcommand{\siglaPt}[2]
 {
- \newglossaryentry{#1}{
-  name=#1,
-  description={#2},
-  first={#2 (#1)},
-  long={#2}
- }  
+    \newglossaryentry{#1}{
+        name=#1,
+        description={#2},
+        first={#2 (#1)},
+        long={#2}
+    }
 }
 
 % para siglas de língua estrangeira, nessas a descrição longa fica em itálico.
 \newcommand{\siglaIt}[2]
 {
- \newglossaryentry{#1}{
-  name=#1,
-  description={\textit{#2}},
-  first={\textit{#2} ({#1})},
-  long={\textit{#2}}
- }  
+    \newglossaryentry{#1}{
+        name=#1,
+        description={\textit{#2}},
+        first={\textit{#2} ({#1})},
+        long={\textit{#2}}
+    }
 }
 
 %% luiz - para fazer os avisos
@@ -135,9 +135,9 @@
 % use para criar caixas de avisos, pode ser utilizado para fazer anotações de tarefas indicadas pelo orientador/banca.
 % \caixa{Atenção}{texto...}
 \newcommand{\caixa}[2]{
-\begin{tcolorbox}[colback=red!5!white,colframe=red!45!white, title = #1, fonttitle=\bfseries]
-#2
-\end{tcolorbox}
+    \begin{tcolorbox}[colback=red!5!white,colframe=red!45!white, title = #1, fonttitle=\bfseries]
+        #2
+    \end{tcolorbox}
 }
 
 % Luiz - Linhas órfãs e viúvas

@@ -2,7 +2,7 @@
 
 Este capítulo apresenta a metodologia e os recursos utilizados no desenvolvimento deste trabalho. A \autoref{sec:espec_maq} descreve as configurações de \textit{hardware} das máquinas empregadas na execução dos experimentos. Em seguida, a \autoref{sec:benchmark} detalha as aplicações selecionadas para os testes, bem como as técnicas de otimização adotadas e o posicionamento das regiões paralelas. A \autoref{sec:desempenho} aborda os métodos utilizados para a coleta e análise dos dados de desempenho. Por fim, a \autoref{sec:resumo_exp} apresenta uma síntese de todos os experimentos realizados, organizada em formato tabular.
 
-\section{Especificações das Máquinas Usadas}\label{sec:espec_maq}
+\section{Ambiente e Configuração Experimental}\label{sec:config}
 
 Todos os experimentos deste trabalho foram realizados em um computador equipado com um processador Intel Core i7-4690, com frequência de 3.6 GHz, quatro núcleos físicos e suporte a oito \textit{threads}. A hierarquia de memória \textit{cache} apresenta 32 KB, 256 KB e 8 MB nos níveis L1, L2 e L3, respectivamente. O sistema possui 32 GB de memória RAM DDR3, distribuídos em quatro módulos de 8 GB configurados em \textit{dual-channel}, cada um operando a 1600 MT/s. O sistema operacional utilizado foi o Ubuntu 22.04 LTS. A \autoref{fig:compArchitecture} apresenta a hierarquia de memória e a disposição dos núcleos do processador utilizados nos testes.
 
@@ -13,6 +13,8 @@ Todos os experimentos deste trabalho foram realizados em um computador equipado 
 	\fonte{}
 	\addcontentsline{loge}{figure}{\protect\numberline{\thefigure}Especificação do computador utilizado em testes.}
 \end{figure}
+
+Cada aplicação foi executada com diferentes quantidades de \textit{threads} (1, 2, 4 e 8), totalizando 10 execuções por configuração para reduzir variações no ambiente. Nos algoritmos que envolvem aleatoriedade, como \texttt{perfo} e \texttt{drop}, foi utilizada uma semente fixa para garantir a reprodutibilidade dos resultados. As técnicas \texttt{perfo}, \texttt{drop} e \texttt{memo} foram testadas com cinco níveis de taxa de exclusão: 0.1, 0.2, 0.3, 0.4 e 0.5.
 
 \section{Conjunto de \textit{Benchmarks}}\label{sec:benchmark}
 
@@ -491,4 +493,120 @@ Na implementação apresentada no \autoref{alg:pi}, o laço principal foi parale
 
 \section{Análise de Desempenho}\label{sec:desempenho}
 
-\section{Resumo dos Experimentos}\label{sec:resumo_exp}
+Para avaliar o impacto das otimizações propostas, foram conduzidos experimentos com as aplicações 2MM (sem a otimização de \textit{tiling}) e K-Means. Os testes foram executados variando o número de \textit{threads}, sendo testado com 1, 2, 4 e 8, com o objetivo de analisar os diferentes níveis de variação nos métodos de medição.
+
+As medições foram realizadas utilizando a ferramenta \texttt{perf}, que permite coletar métricas de baixo nível do \textit{hardware} e do sistema operacional. Entre os principais eventos monitorados, destacam-se o número total de ciclos de CPU e o tempo total de execução das aplicações. Na \autoref{subfig:2mm_cycles_avg} e na \autoref{subfig:2mm_cycles_std} apresentam, respectivamente, a média de ciclos e o coeficiente de variação da aplicação 2MM. Já a \autoref{subfig:2mm_time_avg} e a \autoref{subfig:2mm_time_std} mostram a média do tempo de execução e o respectivo coeficiente de variação. O mesmo pode ser observado em relação ao K-Means, na \autoref{subfig:kmeans_cycles_avg} e na \autoref{subfig:kmeans_cycles_std}, que ilustram os resultados para os ciclos da aplicação, enquanto a \autoref{subfig:kmeans_time_avg} e a \autoref{subfig:kmeans_time_std} apresentam as medições referentes ao tempo de execução.
+
+\begin{figure}[htbp]
+	\centering
+	\subfloat[Média de ciclos]{
+		\includegraphics[width=0.45\textwidth]{2mm_cycles_avg.pdf}
+		\label{subfig:2mm_cycles_avg}
+	}
+	\hfill
+	\subfloat[Coeficiente de variação dos ciclos]{
+		\includegraphics[width=0.45\textwidth]{2mm_cycles_std.pdf}
+		\label{subfig:2mm_cycles_std}
+	}
+	\caption{Medição de ciclos na aplicação 2MM.}
+	\label{fig:2mm_cycles}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\subfloat[Média de ciclos]{
+		\includegraphics[width=0.45\textwidth]{kmeans_cycles_avg.pdf}
+		\label{subfig:kmeans_cycles_avg}
+	}
+	\hfill
+	\subfloat[Coeficiente de variação dos ciclos]{
+		\includegraphics[width=0.45\textwidth]{kmeans_cycles_std.pdf}
+		\label{subfig:kmeans_cycles_std}
+	}
+	\caption{Medição de ciclos na aplicação K-Means.}
+	\label{fig:kmeans_cycles}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\subfloat[Média de tempo]{
+		\includegraphics[width=0.45\textwidth]{2mm_time_avg.pdf}
+		\label{subfig:2mm_time_avg}
+	}
+	\hfill
+	\subfloat[Coeficiente de variação do tempo]{
+		\includegraphics[width=0.45\textwidth]{2mm_time_std.pdf}
+		\label{subfig:2mm_time_std}
+	}
+	\caption{Medição de tempo na aplicação 2MM.}
+	\label{fig:2mm_time}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\subfloat[Média de tempo]{
+		\includegraphics[width=0.45\textwidth]{kmeans_time_avg.pdf}
+		\label{subfig:kmeans_time_avg}
+	}
+	\hfill
+	\subfloat[Coeficiente de variação do tempo]{
+		\includegraphics[width=0.45\textwidth]{kmeans_time_std.pdf}
+		\label{subfig:kmeans_time_std}
+	}
+	\caption{Medição de tempo na aplicação K-Means.}
+	\label{fig:kmeans_time}
+\end{figure}
+
+Com base nessa análise, optou-se por utilizar o tempo de execução como métrica principal para as medições de desempenho, uma vez que apresentou maior estabilidade entre as execuções e refletiu de forma mais consistente o comportamento das aplicações.
+
+\section{Métricas de Qualidade}\label{sec:qualidade}
+
+Para avaliar a perda de acurácia das aplicações, foram utilizadas duas métricas distintas: o \gls{smape} e o \gls{mcr}, definidos, respectivamente, em \autoref{eq:smape} e \autoref{eq:mcr}.
+
+\begin{equation}
+	SMAPE(A, F) = \frac{100}{n} \sum^{n}_{t=1}\frac{|F_t - A_t|}{|A_t| + |F_t|}
+	\label{eq:smape}
+\end{equation}
+
+\begin{equation}
+	MCR(A, F) = \frac{1}{n} \sum^{n}_{t=1} \iota (A_t \neq F_t)
+	\label{eq:mcr}
+\end{equation}
+
+Em que as variáveis são definidas como:
+\begin{itemize}
+	\item $n$: número de elementos no \textit{array} de dados;
+	\item $A_t$: $t$-ésimo elemento obtido pela execução acurada;
+	\item $F_t$: $t$-ésimo elemento obtido pela execução aproximada;
+	\item $\iota$: função indicadora que retorna 1 quando a condição é verdadeira e 0 caso contrário.
+\end{itemize}
+
+\section{Resumo dos \textit{Benchmarks}}\label{sec:resumo_exp}
+
+Os experimentos realizados durante esse trabalho foram sumarizado na \autoref{tab:benchmarks}.
+
+Os \textit{benchmarks} definidos neste trabalho foram sumarizados na \autoref{tab:benchmarks}. Cada conjunto de testes teve como objetivo avaliar o desempenho e a acurácia das técnicas de aproximação implementadas.
+
+\begin{table}[htb]
+	\centering
+	\begin{tabular}{|l|l|l|l|}
+		\hline
+		\textbf{Aplicação} & \textbf{Fonte}                                     & \textbf{Domínio}            & \textbf{Métrica de Qualidade} \\
+		\hline
+		2MM                & PolyBench~\cite{polybench}                         & Álgebra Linear              & SMAPE                         \\
+		\hline
+		Correlação         & PolyBench~\cite{polybench}                         & Probabilidade e Estatística & SMAPE                         \\
+		\hline
+		Jacobi 2D          & PolyBench~\cite{polybench}                         & Solução Numérica            & SMAPE                         \\
+		\hline
+		K-Means            & Rodinia~\cite{rodinia}                             & Aprendizado de Máquina      & MCR                           \\
+		\hline
+		Mandelbrot         & Debian Benchmarks Game~\cite{debianBenchmarksGame} & Visualização Computacional  & SMAPE                         \\
+		\hline
+		PI de Monte Carlo  & Debian Benchmarks Game~\cite{debianBenchmarksGame} & Probabilidade e Estatística & SMAPE                         \\
+		\hline
+	\end{tabular}
+	\fonte{}
+	\label{tab:benchmarks}
+	\caption{Resumo das aplicações utilizadas nos experimentos}
+\end{table}
