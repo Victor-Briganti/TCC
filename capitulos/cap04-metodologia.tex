@@ -262,6 +262,7 @@ O nível dessa suavização é controlado pelo parâmetro $\alpha$, que ajusta a
 O filtro implementado segue o padrão do \textit{benchmarks}~\cite{polybench}, ou seja, apenas a suavização foi implementada, não há uma geração das bordas da imagem. O \autoref{alg:deriche}, apresenta a implementação desse algoritmo de suavização, na alteração desse \textit{benchmark} foi adicionado uma região paralela que englobava todos os laços do algoritmo.
 
 \begin{figure}[htbp]
+	\caption{Aplicação do filtro de Deriche.}
 	\centering
 	\subfloat[Imagem original]{
 		\includegraphics[width=0.45\textwidth]{sunflower_orig.jpg}
@@ -272,7 +273,7 @@ O filtro implementado segue o padrão do \textit{benchmarks}~\cite{polybench}, o
 		\includegraphics[width=0.45\textwidth]{sunflower_deri.jpg}
 		\label{subfig:sunflower_deri}
 	}
-	\caption{Aplicação do filtro de Deriche.}
+	\fonte{}
 	\label{fig:deriche}
 \end{figure}
 
@@ -579,6 +580,7 @@ Para avaliar o impacto das otimizações propostas, foram conduzidos experimento
 As medições foram realizadas utilizando a ferramenta \texttt{perf}, que permite coletar métricas de baixo nível do \textit{hardware} e do sistema operacional. Entre os principais eventos monitorados, destacam-se o número total de ciclos de CPU e o tempo total de execução das aplicações. Na \autoref{subfig:2mm_cycles_avg} e na \autoref{subfig:2mm_cycles_std} apresentam, respectivamente, a média de ciclos e o coeficiente de variação da aplicação 2MM. Já a \autoref{subfig:2mm_time_avg} e a \autoref{subfig:2mm_time_std} mostram a média do tempo de execução e o respectivo coeficiente de variação. O mesmo pode ser observado em relação ao K-Means, na \autoref{subfig:kmeans_cycles_avg} e na \autoref{subfig:kmeans_cycles_std}, que ilustram os resultados para os ciclos da aplicação, enquanto a \autoref{subfig:kmeans_time_avg} e a \autoref{subfig:kmeans_time_std} apresentam as medições referentes ao tempo de execução.
 
 \begin{figure}[htbp]
+	\caption{Medição de ciclos na aplicação 2MM.}
 	\centering
 	\subfloat[Média de ciclos]{
 		\includegraphics[width=0.45\textwidth]{2mm_cycles_avg.pdf}
@@ -589,11 +591,12 @@ As medições foram realizadas utilizando a ferramenta \texttt{perf}, que permit
 		\includegraphics[width=0.45\textwidth]{2mm_cycles_std.pdf}
 		\label{subfig:2mm_cycles_std}
 	}
-	\caption{Medição de ciclos na aplicação 2MM.}
+	\fonte{}
 	\label{fig:2mm_cycles}
 \end{figure}
 
 \begin{figure}[htbp]
+	\caption{Medição de ciclos na aplicação K-Means.}
 	\centering
 	\subfloat[Média de ciclos]{
 		\includegraphics[width=0.45\textwidth]{kmeans_cycles_avg.pdf}
@@ -604,11 +607,12 @@ As medições foram realizadas utilizando a ferramenta \texttt{perf}, que permit
 		\includegraphics[width=0.45\textwidth]{kmeans_cycles_std.pdf}
 		\label{subfig:kmeans_cycles_std}
 	}
-	\caption{Medição de ciclos na aplicação K-Means.}
+	\fonte{}
 	\label{fig:kmeans_cycles}
 \end{figure}
 
 \begin{figure}[htbp]
+	\caption{Medição de tempo na aplicação 2MM.}
 	\centering
 	\subfloat[Média de tempo]{
 		\includegraphics[width=0.45\textwidth]{2mm_time_avg.pdf}
@@ -619,11 +623,12 @@ As medições foram realizadas utilizando a ferramenta \texttt{perf}, que permit
 		\includegraphics[width=0.45\textwidth]{2mm_time_std.pdf}
 		\label{subfig:2mm_time_std}
 	}
-	\caption{Medição de tempo na aplicação 2MM.}
+	\fonte{}
 	\label{fig:2mm_time}
 \end{figure}
 
 \begin{figure}[htbp]
+	\caption{Medição de tempo na aplicação K-Means.}
 	\centering
 	\subfloat[Média de tempo]{
 		\includegraphics[width=0.45\textwidth]{kmeans_time_avg.pdf}
@@ -634,7 +639,7 @@ As medições foram realizadas utilizando a ferramenta \texttt{perf}, que permit
 		\includegraphics[width=0.45\textwidth]{kmeans_time_std.pdf}
 		\label{subfig:kmeans_time_std}
 	}
-	\caption{Medição de tempo na aplicação K-Means.}
+	\fonte{}
 	\label{fig:kmeans_time}
 \end{figure}
 
