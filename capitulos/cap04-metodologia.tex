@@ -14,7 +14,7 @@ Todos os experimentos deste trabalho foram realizados em um computador equipado 
 	\addcontentsline{loge}{figure}{\protect\numberline{\thefigure}Especificação do computador utilizado em testes.}
 \end{figure}
 
-Cada aplicação foi executada com diferentes quantidades de \textit{threads} (1, 2, 4 e 8), totalizando 10 execuções por configuração para reduzir variações no ambiente. Nos algoritmos que envolvem aleatoriedade, como \texttt{perfo} e \texttt{drop}, foi utilizada uma semente fixa para garantir a reprodutibilidade dos resultados. As técnicas \texttt{perfo}, \texttt{drop} e \texttt{memo} foram testadas com cinco níveis de taxa de exclusão: 0.1, 0.2, 0.3, 0.4 e 0.5.
+Cada aplicação foi executada com diferentes quantidades de \textit{threads} (1, 2, 4 e 8), totalizando 10 execuções por configuração para reduzir variações no ambiente, todas compiladas com \textit{flag} de compilação \texttt{-O3} (nível de maior otimização do código gerado pelo compilador). Nos algoritmos que envolvem aleatoriedade, como \texttt{perfo} e \texttt{drop}, foi utilizada uma semente fixa para garantir a reprodutibilidade dos resultados. As técnicas \texttt{perfo}, \texttt{drop} e \texttt{memo} foram testadas com cinco níveis de taxa de exclusão: 0.1, 0.2, 0.3, 0.4 e 0.5.
 
 \section{Conjunto de \textit{Benchmarks}}\label{sec:benchmark}
 
@@ -195,6 +195,89 @@ No \autoref{alg:correlation_matrix} é possível observar que essa propriedade d
 
 \subsection{Deriche}\label{subsec:deriche}
 
+\begin{algorithm}[htb]
+	\caption{Algoritmo Deriche de suavização}
+	\label{alg:deriche1d}
+	\hrule
+	\begin{algorithmic}[1]
+		\REQUIRE Imagem $I_{in}$ de tamanho $h \times w$
+		\REQUIRE Coeficiente de suavização $\alpha$
+		\STATE $I_{out1} \gets$ nova Matriz $h \times w$
+		\STATE $I_{out2} \gets$ nova Matriz $h \times w$
+		\STATE $I_{final} \gets$ nova Matriz $h \times w$
+
+		\COMMENT{Cálculo dos coeficientes de suavização}
+		\STATE $k \gets \frac{(1 - e^{-\alpha})^2}{1 + 2\alpha e^{-\alpha} - e^{-2\alpha}}$
+		\STATE $a_1 \gets k$
+		\STATE $a_2 \gets k \cdot e^{-\alpha} \cdot (\alpha - 1)$
+		\STATE $a_3 \gets k \cdot e^{-\alpha} \cdot (\alpha + 1)$
+		\STATE $a_4 \gets -k \cdot e^{-2\alpha}$
+		\STATE $b_1 \gets 2 \cdot e^{-\alpha}$
+		\STATE $b_2 \gets -e^{-2\alpha}$
+
+		\COMMENT{Varredura horizontal (esquerda para direita)}
+		\FOR{$i = 0$ até $h - 1$, com passo $1$}
+		\STATE $y_{m1} \gets 0$, $y_{m2} \gets 0$
+		\FOR{$j = 0$ até $w - 1$, com passo $1$}
+		\STATE $I_{out1}[i, j] \gets a_1 \cdot I_{in}[i, j] + a_2 \cdot I_{in}[i, j-1] + b_1 \cdot y_{m1} + b_2 \cdot y_{m2}$
+		\STATE $y_{m2} \gets y_{m1}$
+		\STATE $y_{m1} \gets I_{out1}[i, j]$
+		\ENDFOR
+		\ENDFOR
+
+		\COMMENT{Varredura horizontal (direita para esquerda)}
+		\FOR{$i = 0$ até $h - 1$, com passo $1$}
+		\STATE $y_{p1} \gets 0$, $y_{p2} \gets 0$
+		\FOR{$j = w - 1$ até $0$, com passo $-1$}
+		\STATE $I_{out2}[i, j] \gets a_3 \cdot I_{in}[i, j+1] + a_4 \cdot I_{in}[i, j+2] + b_1 \cdot y_{p1} + b_2 \cdot y_{p2}$
+		\STATE $y_{p2} \gets y_{p1}$
+		\STATE $y_{p1} \gets I_{out2}[i, j]$
+		\ENDFOR
+		\ENDFOR
+
+		\COMMENT{Combinação final}
+		\STATE $I_{final} \gets I_{out1} + I_{out2}$
+
+		\RETURN $I_{final}$
+	\end{algorithmic}
+	\hrule
+\end{algorithm}
+
+Em processamento de imagens, o filtro de Deriche é um algoritmo de filtragem recursiva utilizado tanto para suavização de imagens quanto para detecção de bordas~\cite{deriche1987}. Este algoritmo foi desenvolvido como uma otimização do detector de bordas de Canny, buscando aproximar as propriedades de um filtro Gaussiano, por meio de um filtro \gls{iir}.
+
+De forma intuitiva, o filtro de Deriche funciona de maneira diferente de um filtro baseado em uma janela fixa de pixels. Nesse algoritmo, os resultados intermediários de pixels anteriores são armazenados e são utilizados no cálculo dos pixels seguintes. O filtro percorre a imagem duas vezes, primeiramente na horizontal, da esquerda para a direita, e depois da direita para a esquerda, aplicando recursivamente os valores anteiores. Esse procecsso resulta em uma suavização eficiente, mantendo contornos suaves nas bordas da figura.
+
+O nível dessa suavização é controlado pelo parâmetro $\alpha$, que ajusta a supressão de ruído e a precisão na localização da borda. Esse parâmetro define os coeficientes $a$ e $b$, que são utilizados tanto na \autoref{eq:deriche_esq} e \autoref{eq:deriche_dir}, que são aplicados respectivamente da esquerda para a direita e da direita para a esquerda.
+
+\begin{equation}
+	\label{eq:deriche_esq}
+	y^1_{ij} = a_1x_{ij} + a_2x_{ij - 1} + b_1y^1_{ij - 1} + b_2y^1_{ij - 2}
+\end{equation}
+
+\begin{equation}
+	\label{eq:deriche_dir}
+	y^2_{ij} = a_3x_{ij + 1} + a_4x_{ij + 2} + b_1y^2_{ij + 1} + b_2y^2_{ij + 2}
+\end{equation}
+
+O filtro implementado segue o padrão do \textit{benchmarks}~\cite{polybench}, ou seja, apenas a suavização foi implementada, não há uma geração das bordas da imagem. O \autoref{alg:deriche}, apresenta a implementação desse algoritmo de suavização, na alteração desse \textit{benchmark} foi adicionado uma região paralela que englobava todos os laços do algoritmo.
+
+\begin{figure}[htbp]
+	\centering
+	\subfloat[Imagem original]{
+		\includegraphics[width=0.45\textwidth]{sunflower_orig.jpg}
+		\label{subfig:sunflower_orig}
+	}
+	\hfill
+	\subfloat[Imagem com Deriche aplicado]{
+		\includegraphics[width=0.45\textwidth]{sunflower_deri.jpg}
+		\label{subfig:sunflower_deri}
+	}
+	\caption{Aplicação do filtro de Deriche.}
+	\label{fig:deriche}
+\end{figure}
+
+A aplicação desse filtro com um $\alpha = 1.5$ em uma imagem pode ser observado na \autoref{fig:deriche}, aqui temos a \autoref{subfig:sunflower_orig} como sendo a imagem original em preto e branco e a \autoref{subfig:sunflower_deri} com o filtro aplicado. É possível perceber o como o filtro suaviza as bordas das imagens, tornando mais simples o processo de detecção de bordas.
+
 \subsection{Jacobi 2D}\label{subsec:jacobi2d}
 
 Em análise numérica, o método de Jacobi é um algoritmo iterativo utilizado para resolver sistemas de equações lineares do tipo $Ax = b$~\cite{szep2007}. Para que o método funcione adequadamente, o sistema deve atender a algumas condições específicas:
@@ -247,7 +330,6 @@ O \autoref{alg:jacobi2d} apresenta dependência sequencial entre as etapas de at
 \subsection{K-means}\label{subsec:kmeans}
 
 O algoritmo K-means~\cite{macqueen1967} é uma técnica de agrupamento, que tem como objetivo particionar um conjunto de dados em $k$ grupos, de forma que os dados dentro de um mesmo grupo de modo que eles sejam semelhantes entre si.
-
 
 \begin{algorithm}[htb!]
 	\caption{Algoritmo K-means}
@@ -306,7 +388,6 @@ O algoritmo K-means~\cite{macqueen1967} é uma técnica de agrupamento, que tem 
 		\ENDFOR
 
 		\RETURN  $centroids$
-
 	\end{algorithmic}
 	\hrule
 	\fonte{}
@@ -561,7 +642,7 @@ Com base nessa análise, optou-se por utilizar o tempo de execução como métri
 
 \section{Métricas de Qualidade}\label{sec:qualidade}
 
-Para avaliar a perda de acurácia das aplicações, foram utilizadas duas métricas distintas: o \gls{smape} e o \gls{mcr}, definidos, respectivamente, em \autoref{eq:smape} e \autoref{eq:mcr}.
+Para avaliar a perda de acurácia das aplicações, foram utilizadas três métricas distintas: o \gls{smape}, \gls{mcr} e o \gls{ssim}, definidos, respectivamente, em \autoref{eq:smape}, \autoref{eq:mcr} e \autoref{eq:ssim}.
 
 \begin{equation}
 	SMAPE(A, F) = \frac{100}{n} \sum^{n}_{t=1}\frac{|F_t - A_t|}{|A_t| + |F_t|}
@@ -581,6 +662,21 @@ Em que as variáveis são definidas como:
 	\item $\iota$: função indicadora que retorna 1 quando a condição é verdadeira e 0 caso contrário.
 \end{itemize}
 
+\begin{equation}
+	SSIM(x, y) = \frac{(2 \mu_x \mu_y + c_1) \cdot (2 \sigma_{xy} + c_2)}{(\mu_x^2 + \mu_y^2 + c_1) \cdot (\sigma_x^2 + \sigma_y^2 + c_2)}
+	\label{eq:ssim}
+\end{equation}
+
+Em que as variáveis são definidas como:
+\begin{itemize}
+	\item $\mu_x$: média dos pixels da imagem $x$;
+	\item $\mu_y$: média dos pixels da imagem $y$;
+	\item $\sigma_x$: variância dos pixels da imagem $x$;
+	\item $\sigma_y$: variância dos pixels da imagem $y$;
+	\item $\sigma_y$: variância dos pixels da imagem $y$;
+	\item $c_1$ e $c_2$: constante pequena para evitar divisão por $0$;
+\end{itemize}
+
 \section{Resumo dos \textit{Benchmarks}}\label{sec:resumo_exp}
 
 Os \textit{benchmarks} definidos neste trabalho foram sumarizados na \autoref{tab:benchmarks}. Cada conjunto de testes teve como objetivo avaliar o desempenho e a acurácia das técnicas de aproximação implementadas.
@@ -591,17 +687,19 @@ Os \textit{benchmarks} definidos neste trabalho foram sumarizados na \autoref{ta
 		\hline
 		\textbf{Aplicação} & \textbf{Fonte}                                     & \textbf{Domínio}            & \textbf{Métrica de Qualidade} \\
 		\hline
-		2MM                & PolyBench~\cite{polybench}                         & Álgebra Linear              & SMAPE                         \\
+		2MM                & PolyBench~\cite{polybench}                         & Álgebra Linear              & \gls{smape}                   \\
 		\hline
-		Correlação         & PolyBench~\cite{polybench}                         & Probabilidade e Estatística & SMAPE                         \\
+		Correlação         & PolyBench~\cite{polybench}                         & Probabilidade e Estatística & \gls{smape}                   \\
 		\hline
-		Jacobi 2D          & PolyBench~\cite{polybench}                         & Solução Numérica            & SMAPE                         \\
+		Deriche            & PolyBench~\cite{polybench}                         & Processamento de Imagem     & \gls{ssim}                    \\
 		\hline
-		K-Means            & Rodinia~\cite{rodinia}                             & Aprendizado de Máquina      & MCR                           \\
+		Jacobi 2D          & PolyBench~\cite{polybench}                         & Solução Numérica            & \gls{smape}                   \\
 		\hline
-		Mandelbrot         & Debian Benchmarks Game~\cite{debianBenchmarksGame} & Visualização Computacional  & SMAPE                         \\
+		K-Means            & Rodinia~\cite{rodinia}                             & Aprendizado de Máquina      & \gls{mcr}                     \\
 		\hline
-		PI de Monte Carlo  & Debian Benchmarks Game~\cite{debianBenchmarksGame} & Probabilidade e Estatística & SMAPE                         \\
+		Mandelbrot         & Debian Benchmarks Game~\cite{debianBenchmarksGame} & Visualização Computacional  & \gls{smape}                   \\
+		\hline
+		PI de Monte Carlo  & Debian Benchmarks Game~\cite{debianBenchmarksGame} & Probabilidade e Estatística & \gls{smape}                   \\
 		\hline
 	\end{tabular}
 	\fonte{}
