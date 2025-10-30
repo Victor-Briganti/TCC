@@ -1,0 +1,31 @@
+\chapter{Introdução}\label{cap:introducao}
+
+Por décadas, a Lei de Moore e a escala de Dennard impulsionaram melhorias exponenciais no desempenho computacional e na eficiência energética. A Lei de Moore possibilitou maiores densidades de transistores, enquanto a escala de Dennard garantiu que o consumo de energia permanecesse controlado. À medida que a tecnologia se aproximou de limites fundamentais, ambas as tendências entraram em colapso, tornando os ganhos de desempenho cada vez mais difíceis, hoje limitados a apenas alguns poucos por cento ao ano~\cite{hennessy2019}. Mesmo com essas limitações, a crescente demanda por maior desempenho computacional e eficiência energética tem impulsionado inovações em uma ampla variedade de plataformas, desde sistemas embarcados até \textit{datacenters}. Essa demanda é impulsionada pela crescente complexidade das cargas de trabalho modernas, como análise de dados em tempo real, aprendizado de máquina e processamento de sinais, que frequentemente exigem vastos recursos computacionais~\cite{mittal2016, dalloo2024}.
+
+Para atender a essas demandas sob restrições de desempenho e energia, pesquisadores têm explorado paradigmas alternativos de computação. A \gls{ca} é um paradigma que busca equilibrar precisão computacional e eficiência de recursos. Ela parte do princípio de que muitas aplicações não necessitam de resultados exatos, mas sim de resultados suficientemente precisos dentro de limites aceitáveis, definidos pela percepção do usuário ou por métricas de qualidade específicas~\cite{dalloo2024}. Ao explorar a diferença entre a precisão realmente exigida e a tradicionalmente garantida pelos sistemas, a \gls{ca} viabiliza ganhos expressivos em desempenho, consumo de energia e utilização de \textit{hardware}~\cite{xu2016,leon2025a,leon2025b}.
+
+A \gls{cp} é outro paradigma amplamente adotado nos últimos anos, especialmente com a popularização de processadores \textit{multicore} em computadores pessoais e dispositivos móveis. Essa tendência intensificou a necessidade de desenvolver softwares paralelos, estimulando o surgimento de ferramentas que simplificam a criação dessas aplicações~\cite{goncalves2016}. O \texttt{OpenMP} é uma dessas ferramentas: ele permite que desenvolvedores anotem o código para execução paralela, delegando ao compilador a maior parte da complexidade de gerenciamento~\cite{alrawais2021}. Esse paradigma tornou-se essencial em \gls{hpc}, especialmente em simulações científicas, que tipicamente demandam elevado poder de processamento~\cite{adhikari2012}.
+
+Embora as técnicas de \gls{ca} ofereçam benefícios expressivos, sua aplicação eficaz requer a identificação cuidadosa de regiões de código onde a aproximação seja segura e vantajosa. Esse processo normalmente exige análise detalhada do comportamento da aplicação e de seus requisitos de qualidade~\cite{sampson2015,reis2021}. Este trabalho parte da hipótese de que é possível melhorar o desempenho de aplicações combinando técnicas de aproximação e paralelização, preservando a facilidade de uso provida por ferramentas como o \texttt{OpenMP}. Dessa forma, busca-se explorar simultaneamente os ganhos oferecidos pela execução paralela e pela computação aproximada.
+
+\section{Objetivos}\label{cap:objetivos}
+
+O objetivo geral deste trabalho é melhorar o desempenho de aplicações de \gls{hpc} por meio da aplicação combinada de técnicas de aproximação e paralelização.
+
+Para atingir esse objetivo, foram definidos os seguintes objetivos específicos:
+\begin{itemize}
+    \item Desenvolver um \textit{benchmark} voltado à avaliação de técnicas de \gls{ca};
+    \item Implementar uma extensão do \texttt{OpenMP} com suporte a técnicas de aproximação baseadas em anotações;
+    \item Adicionar suporte em tempo de execução para múltiplos algoritmos de aproximação dentro do \texttt{runtime} do \texttt{OpenMP};
+    \item Integrar um passo de perfuração de laços ao pipeline de otimização do LLVM;
+    \item Realizar a avaliação experimental das técnicas propostas em um ambiente de \gls{ca}.
+\end{itemize}
+
+\section{Contribuições}\label{cap:contribuicoes}
+
+As principais contribuições deste trabalho são: o desenvolvimento de um \textit{benchmark suite} voltado à avaliação de \gls{ca}, a implementação de uma extensão do \texttt{OpenMP} com suporte a técnicas de aproximação e a integração dessas funcionalidades à infraestrutura do LLVM. As aplicações que compõem o \textit{benchmark} foram selecionadas com base em conjuntos amplamente utilizados, como o PolyBench~\cite{polybench} e o Debian Benchmarks Game~\cite{debianBenchmarksGame}, e adaptadas para suportar anotações com \texttt{OpenMP}. Também foi implementada uma infraestrutura para avaliação da aceitabilidade dos resultados produzidos. A extensão proposta exigiu modificações na infraestrutura do LLVM, bem como adaptações em algoritmos e escalonadores do \texttt{OpenMP}, a fim de possibilitar o suporte a tarefas aproximadas.
+
+\section{Organização do Trabalho}\label{cap:org_trabalho}
+
+O restante deste trabalho está organizado da seguinte forma: no \autoref{cap:fundamentacaoTeorica} são apresentados os conceitos fundamentais de \gls{ca} e \gls{cp} relacionados a este estudo, incluindo as técnicas de aproximação abordadas — perfuração de laço, memoização aproximada, descarte de tarefas e relaxamento de ponto flutuante, além de uma introdução ao \texttt{OpenMP} e uma revisão de trabalhos correlatos. No \autoref{cap:proposta} é apresentada a proposta dos construtores implementados no \texttt{OpenMP} utilizando a infraestrutura do LLVM. No \autoref{cap:metodologia} são detalhadas a metodologia e as ferramentas empregadas para a realização dos experimentos. Por fim, o \autoref{cap:cronograma} apresenta o cronograma de execução deste trabalho.
+
