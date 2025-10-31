@@ -684,9 +684,7 @@ Em que as variáveis são definidas como:
 
 \section{Resumo dos \textit{Benchmarks}}\label{sec:resumo_exp}
 
-Os \textit{benchmarks} definidos neste trabalho foram sumarizados na \autoref{tab:benchmarks}. Cada conjunto de testes teve como objetivo avaliar o desempenho e a acurácia das técnicas de aproximação implementadas.
-
-\begin{table}[htb]
+\begin{table}[H]
 	\centering
 	\caption{Resumo das aplicações utilizadas nos experimentos}
 	\begin{tabular}{|l|p{3.5cm}|l|l|}
@@ -711,3 +709,47 @@ Os \textit{benchmarks} definidos neste trabalho foram sumarizados na \autoref{ta
 	\fonte{}
 	\label{tab:benchmarks}
 \end{table}
+
+Os \textit{benchmarks} definidos neste trabalho foram sumarizados na \autoref{tab:benchmarks}. Cada conjunto de testes teve como objetivo avaliar o desempenho e a acurácia das técnicas de aproximação implementadas.
+
+\section{Cronograma}\label{sec:cronograma}
+
+\begin{table}[htb]
+	\centering
+	\caption{Cronograma de execução das atividades}
+	\begin{tabular}{|c|c|c|c|c|c|c|c|c|}
+		\hline
+		\textbf{Atividades} & \textbf{Ago} & \textbf{Set} & \textbf{Out} & \textbf{Nov} & \textbf{Dez} & \textbf{Jan} & \textbf{Fev} & \textbf{Mar} \\
+		\hline
+		1                   & X            & X            &              &              &              &              &              &              \\ \hline
+		2                   &              & X            & X            &              &              &              &              &              \\ \hline
+		3                   &              & X            & X            &              &              &              &              &              \\ \hline
+		4                   &              &              & X            & X            &              &              &              &              \\ \hline
+		5                   &              &              & X            & X            &              &              &              &              \\ \hline
+		6                   &              &              & X            & X            &              &              &              &              \\ \hline
+		7                   &              &              &              &              & X            & X            & X            &              \\ \hline
+		8                   &              &              &              &              &              & X            & X            &              \\ \hline
+		9                   &              &              &              &              &              &              & X            & X            \\ \hline
+		10                  & X            & X            & X            & X            & X            & X            & X            & X            \\ \hline
+	\end{tabular}
+	\fonte{}
+	\label{tab:cronograma}
+\end{table}
+
+A realização deste trabalho é organizada em partes, as quais são descritas a seguir:
+
+\begin{enumerate}
+	\item Realizar uma revisão da literatura relacionada à \gls{ca}, técnicas de aproximação e \gls{cp}.
+	\item Revisar a infraestrutura do \texttt{OpenMP}.
+	\item Investigar a infraestrutura do LLVM.
+	\item Revisar aplicações de \textit{benchmark} que podem ser aplicadas em sistemas aproximados.
+	\item Adaptar um \textit{benchmark suite} para que ele se encaixe nas otimizações paralelas e aproximadas.
+	\item Testar e documentar as execuções dessas aplicações.
+	\item Implementar técnicas de aproximação paralela na infraestrutura do \texttt{OpenMP} integrada ao LLVM.
+	\item Testar e documentar as execuções do \textit{benchmark} em conjunto com as novas técnicas apresentadas.
+	\item Investigar e avaliar o desempenho e a acurácia de cada uma das aplicações.
+	\item Documentar todos os procedimentos e resultados.
+\end{enumerate}
+
+A \autoref{tab:cronograma} detalha o planejamento temporal para a execução de cada uma das atividades descritas.
+
