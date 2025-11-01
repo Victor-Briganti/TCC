@@ -24,4 +24,4 @@
 *.blg
 *.pdf
 
-!figuras/Figuras/*.pdf
+!figuras/*.pdf
