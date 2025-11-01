@@ -197,7 +197,7 @@ No \autoref{alg:correlation_matrix} é possível observar que essa propriedade d
 
 \begin{algorithm}[htb]
 	\caption{Algoritmo Deriche de suavização}
-	\label{alg:deriche1d}
+	\label{alg:deriche}
 	\hrule
 	\begin{algorithmic}[1]
 		\REQUIRE Imagem $I_{in}$ de tamanho $h \times w$
@@ -411,7 +411,7 @@ A \autoref{alg:kmeans}~\cite{rodinia} apresenta a implementação desse algoritm
 
 Durante a execução, o algoritmo também avalia a variância, uma medida que indica o quão disperso os pontos estão em relação ao seu centróide. Quanto menor essa variância, mais compactos são os grupos formados. Embora o objetivo não seja minimizar a variância até zero, uma variância excessivamente alta pode indicar que os dados não estão sendo agrupados de maneira eficiente.
 
-Na implementação apresentada no \autoref{alg:kmeans}, a paralelização foi introduziada por meio de anotações dos laços internos, responsáveis pelas maiores cargas computacionais. Em particular, foram paralelizados os laços que percorrem os pontos de dados (\textit{numPoints}) e o laço que percorre os agrupamentos (\texttt{numclusters}).
+Na implementação apresentada no \autoref{alg:kmeans}, a paralelização foi introduziada por meio de anotações dos laços internos, responsáveis pelas maiores cargas computacionais. Em particular, foram paralelizados os laços que percorrem os pontos de dados (\textit{numPoints}) e o laço que percorre os agrupamentos (\textit{numclusters}).
 
 \subsection{Mandelbrot}\label{subsec:mandelbrot}
 
