@@ -645,43 +645,6 @@ As medições foram realizadas utilizando a ferramenta \texttt{perf}, que permit
 
 Com base nessa análise, optou-se por utilizar o tempo de execução como métrica principal para as medições de desempenho, uma vez que apresentou maior estabilidade entre as execuções e refletiu de forma mais consistente o comportamento das aplicações.
 
-\section{Métricas de Qualidade}\label{sec:qualidade}
-
-Para avaliar a perda de acurácia das aplicações, foram utilizadas três métricas distintas: o \gls{smape}, \gls{mcr} e o \gls{ssim}, definidos, respectivamente, em \autoref{eq:smape}, \autoref{eq:mcr} e \autoref{eq:ssim}.
-
-\begin{equation}
-	SMAPE(A, F) = \frac{100}{n} \sum^{n}_{t=1}\frac{|F_t - A_t|}{|A_t| + |F_t|}
-	\label{eq:smape}
-\end{equation}
-
-\begin{equation}
-	MCR(A, F) = \frac{1}{n} \sum^{n}_{t=1} \iota (A_t \neq F_t)
-	\label{eq:mcr}
-\end{equation}
-
-Em que as variáveis são definidas como:
-\begin{itemize}
-	\item $n$: número de elementos no \textit{array} de dados;
-	\item $A_t$: $t$-ésimo elemento obtido pela execução acurada;
-	\item $F_t$: $t$-ésimo elemento obtido pela execução aproximada;
-	\item $\iota$: função indicadora que retorna 1 quando a condição é verdadeira e 0 caso contrário.
-\end{itemize}
-
-\begin{equation}
-	SSIM(x, y) = \frac{(2 \mu_x \mu_y + c_1) \cdot (2 \sigma_{xy} + c_2)}{(\mu_x^2 + \mu_y^2 + c_1) \cdot (\sigma_x^2 + \sigma_y^2 + c_2)}
-	\label{eq:ssim}
-\end{equation}
-
-Em que as variáveis são definidas como:
-\begin{itemize}
-	\item $\mu_x$: média dos pixels da imagem $x$;
-	\item $\mu_y$: média dos pixels da imagem $y$;
-	\item $\sigma_x$: variância dos pixels da imagem $x$;
-	\item $\sigma_y$: variância dos pixels da imagem $y$;
-	\item $\sigma_y$: variância dos pixels da imagem $y$;
-	\item $c_1$ e $c_2$: constante pequena para evitar divisão por $0$;
-\end{itemize}
-
 \section{Resumo dos \textit{Benchmarks}}\label{sec:resumo_exp}
 
 \begin{table}[H]

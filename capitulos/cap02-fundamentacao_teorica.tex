@@ -75,6 +75,49 @@ O descarte de tarefas é um conceito abrangente que engloba diferentes técnicas
 
 As implementações dessa técnica costumam adotar uma taxa de descarte, que define a fração de tarefas a serem eliminadas durante a execução do programa. A \autoref{fig:perfoMod} também pode ser utilizada para ilustrar esse mecanismo: os blocos brancos representam tarefas descartadas, enquanto os blocos azuis indicam as tarefas efetivamente executadas.
 
+\section{Impacto da Aproximação no Resultado de Computações}\label{sec:impacto}
+
+A aplicação de técnicas de aproximação em ambientes computacionais introduz, de forma inerente, erros nas saídas dessas computações. Esses erros podem gerar diferentes consequências para a aplicação, variando desde falhas explícitas até erros silenciosos, como a corrupção de dados~\cite{fabricio2022}. Parte dos estudos em \gls{ca} busca justamente lidar com essas falhas silenciosas, pois, embora resultem em saídas imprecisas, ainda podem gerar resultados utéis, diferentemente das falhas diretas, que usualmente não geram nenhuma saída.
+
+A \gls{ca} busca estabelecer um equilíbrio entre o nível de aproximação aplicado e as falhas resultantes, de modo que o usuário final sofra o menor impacto possível na precisão dos resultados, enquanto se obtém um ganho significativo no uso de recursos computacionais. Entretanto, um dos desafios enfrentados por essas técnicas está na dificuldade de caracterizar como as aproximações afetam o resultado final, especialmente quando se consideram aplicações com naturezas e requisitos de precisão distintos.
+
+Neste trabalho, são utilizadas métricas de qualidade para diferenciar e comparar as saídas aproximadas em relação as saídas extadas. As métricas foram escolhidas com base do que é encontrado na literatura, e conforme o tipo de cada aplicação. No entanto, é importante destacar que a relação entre a qualidade numérica e a aceitabilidade prática de uma aplicação não é necessariamente direta. Existem casos, onde uma alta qualidade pode não ser útil no contexto final da aplicação, enquanto saídas de qualidade inferior ainda podem ser consideradas aceitáveis~\cite{felzmann2021}, um exemplo disso seria uma imagem com muito ruído, apesar de sua qualidade ruim, em certos contextos ela continua sendo aceitável. Dessa forma, a análise baseada apenas em métricas de qualidade pode levar a interpretações incorretas sobre a utilidade real dos resultados.
+
+Para avaliar a perda de acurácia das aplicações, foram adotadas três métricas distintas: o \gls{smape}, o \gls{mcr} e o \gls{ssim}, definidos, respectivamente, nas Equações~\autoref{eq:smape}, \autoref{eq:mcr} e \autoref{eq:ssim}.
+
+\begin{equation}
+    SMAPE(A, F) = \frac{100}{n} \sum^{n}_{t=1}\frac{|F_t - A_t|}{|A_t| + |F_t|}
+    \label{eq:smape}
+\end{equation}
+
+\begin{equation}
+    MCR(A, F) = \frac{1}{n} \sum^{n}_{t=1} \iota (A_t \neq F_t)
+    \label{eq:mcr}
+\end{equation}
+
+Em que as variáveis são definidas como:
+\begin{itemize}
+    \item $n$: número de elementos no \textit{array} de dados;
+    \item $A_t$: $t$-ésimo elemento obtido pela execução acurada;
+    \item $F_t$: $t$-ésimo elemento obtido pela execução aproximada;
+    \item $\iota$: função indicadora que retorna 1 quando a condição é verdadeira e 0 caso contrário.
+\end{itemize}
+
+\begin{equation}
+    SSIM(x, y) = \frac{(2 \mu_x \mu_y + c_1) \cdot (2 \sigma_{xy} + c_2)}{(\mu_x^2 + \mu_y^2 + c_1) \cdot (\sigma_x^2 + \sigma_y^2 + c_2)}
+    \label{eq:ssim}
+\end{equation}
+
+Em que as variáveis são definidas como:
+\begin{itemize}
+    \item $\mu_x$: média dos pixels da imagem $x$;
+    \item $\mu_y$: média dos pixels da imagem $y$;
+    \item $\sigma_x$: variância dos pixels da imagem $x$;
+    \item $\sigma_y$: variância dos pixels da imagem $y$;
+    \item $\sigma_{xy}$: covariância entre as imagens $x$ e $y$;
+    \item $c_1$ e $c_2$: constantes pequenas utilizadas para evitar divisão por zero.
+\end{itemize}
+
 \section{Computação paralela}\label{sec:compParalela}
 
 A \gls{cp} é uma área da computação que busca explorar arquiteturas modernas, cada vez mais baseadas em processadores \textit{multicore}. Esse conceito pode ser melhor compreendido a partir da taxonomia de Flynn~\cite{flynn1972}, que classifica as arquiteturas de computadores de acordo com o fluxo de instruções e de dados:
