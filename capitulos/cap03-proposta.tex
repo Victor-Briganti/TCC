@@ -4,7 +4,9 @@ Este trabalho apresenta um construtor para o \texttt{OpenMP} que facilita a impl
 
 A \autoref{code:pragmaApprox} apresenta a anotação \texttt{pragma approx}, que delimita uma região de código a ser aproximada e específica a técnica a ser aplicada. Múltiplas cláusulas podem ser combinadas em um único construtor para indicar diferentes parâmetros de aproximação. Entretanto, a implementação atual suporta somente uma técnica de aproximação por vez.
 
-\begin{sourcecode}[htb]\caption{\label{code:pragmaApprox}Sintaxe do construtor \texttt{approx}.}
+\begin{sourcecode}[htb]
+    \caption{Sintaxe do construtor \texttt{approx}.}
+    \label{code:pragmaApprox}
     \begin{lstlisting}[frame=single, language=C++]
         #pragma omp approx [clause, [[,]clause]]
     \end{lstlisting}
@@ -31,12 +33,12 @@ A \autoref{code:pragmaPerfo} apresenta a sintaxe da cláusula, tanto o tipo da p
 
 O modificador \texttt{init} descarta a quantidade especificada de iterações no início do laço.
 Esse comportamento é implementado por meio de uma alteração na variável de indução, que ajusta o limite inferior do laço para cada \textit{thread}.
-Dessa forma, quando a \textit{thread} assume sua fatia do laço, as primeiras iterações dessa fatia são descartadas. O comportamento dessa cláusula é apresentado na \autoref{fig:perfo_init}.
+Dessa forma, quando a \textit{thread} assume sua fatia do laço, as primeiras iterações dessa fatia são descartadas. O comportamento dessa cláusula é apresentado na Figura~\ref{subfig:perfo_init}.
 
-O modificador \texttt{fini} descarta as iterações finais do laço, de modo análogo ao \texttt{init}, afetando também os limites do laço por \textit{thread}. Seu comportamento é apresentado na \autoref{fig:perfo_fini}.
+O modificador \texttt{fini} descarta as iterações finais do laço, de modo análogo ao \texttt{init}, afetando também os limites do laço por \textit{thread}. Seu comportamento é apresentado na Figura~\ref{subfig:perfo_fini}.
 
 O modificador \texttt{small} aplica uma estratégia probabilística, na qual um valor aleatório é usado para decidir o descarte de iterações, com base em uma condição de módulo envolvendo a taxa de descarte.
-Se a condição do valor aleatório ser igual à taxa for satisfeita, a variável de indução é incrementada pela taxa de descarte, efetivamente pulando algumas iterações, como mostra a \autoref{fig:perfo_small}.
+Se a condição do valor aleatório ser igual à taxa for satisfeita, a variável de indução é incrementada pela taxa de descarte, efetivamente pulando algumas iterações, como mostra a Figura~\ref{subfig:perfo_small}.
 
 A \autoref{eq:perfo}, apresenta a fórmula usada para verificar a condição. As variáveis envolvidas nessa fórmula são:
 
@@ -53,7 +55,7 @@ A \autoref{eq:perfo}, apresenta a fórmula usada para verificar a condição. As
 \end{equation}
 
 O modificador \texttt{large} aplica uma perforação mais agressiva, incrementando diretamente a variável de indução pela taxa de descarte.
-Essa substituição é feita em tempo de execução, interceptando a lógica padrão de incremento ou decremento e substituindo-a por uma chamada de função que ajusta a variável de indução conforme a taxa. A \autoref{fig:perfo_large} apresenta o seu comportamento no laço, os quadrados em azul são iterações executadas, enquanto os quadrados brancos são iterações que não foram executadas.
+Essa substituição é feita em tempo de execução, interceptando a lógica padrão de incremento ou decremento e substituindo-a por uma chamada de função que ajusta a variável de indução conforme a taxa. A Figura~\ref{subfig:perfo_large} apresenta o seu comportamento no laço, os quadrados em azul são iterações executadas, enquanto os quadrados brancos são iterações que não foram executadas.
 
 O modificador \texttt{default} apresenta comportamento semelhante ao \texttt{large}, porém a taxa de descarte é aplicada em tempo de compilação, eliminando a sobrecarga associada a chamadas adicionais durante a execução.
 

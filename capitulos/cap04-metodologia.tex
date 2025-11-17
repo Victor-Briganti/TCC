@@ -678,6 +678,8 @@ Diante dessa análise, optou-se por utilizar o tempo de execução como métrica
 
 As aplicações selecionadas foram escolhidas por apresentarem diferentes padrões computacionais, possuírem suporte consistente à paralelização e incluírem etapas cujo resultado pode tolerar algum nível de aproximação. A \autoref{tab:benchmarks} resume as aplicações utilizadas nos experimentos, indicando suas fontes, domínios e métricas de qualidade. Cada uma das aplicações selecionadas, serviram para avaliar como as técnicas de aproximação implementadas afetam o desempenho e a acurácia, considerando diferentes ambientes computacionais e padrões de paralelismo.
 
+As métricas de qualidade foram definidas conforme a natureza da saída produzida por cada aplicação. Para aplicações com resultados numéricos contínuos, como 2MM, Correlação, Jacobi 2D e PI de Monte Carlo, adotou-se o \gls{smape}, pois essa métrica permite comparar valores aproximados e exatos mesmo quando variam de escala. No caso do K-Means, utilizou-se o \gls{mcr} por ser uma métrica específica para avaliar a precisão da atribuição dos pontos aos \textit{clusters}. Já na aplicação Deriche, cujo resultado é uma imagem filtrada, optou-se pelo \textit{ssim}, que mede a similaridade estrutural entre as imagens.
+
 \section{Cronograma}\label{sec:cronograma}
 
 A realização deste trabalho é organizada em partes, as quais são descritas a seguir:
