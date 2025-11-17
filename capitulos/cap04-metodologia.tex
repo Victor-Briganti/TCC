@@ -576,9 +576,9 @@ Na implementação apresentada no \autoref{alg:pi}, o laço principal foi parale
 
 \section{Análise de Desempenho}\label{sec:desempenho}
 
-Para avaliar o impacto das otimizações propostas, foram conduzidos experimentos com as aplicações 2MM (sem a otimização de \textit{tiling}) e K-Means. Os testes foram executados variando o número de \textit{threads}, testado com 1, 2, 4 e 8, para analisar os diferentes níveis de variação nos métodos de medição.
+Visando identificar a forma mais adequada de medir o desempenho das aplicações, foram realizados experimentos com 2MM (sem \textit{tiling}) e K-Means, utilizando 1, 2, 4 e 8 \textit{threads}. Essas duas aplicações foram selecionadas porque apresentam tempos de execução mais elevados que as demais, evidenciando de maneira mais clara o impacto de cada modelo de medição.
 
-As medições foram realizadas utilizando a ferramenta \texttt{perf}, que permite coletar métricas de baixo nível do \textit{hardware} e do sistema operacional. Entre os principais eventos monitorados, destaca-se o número total de ciclos de CPU e o tempo total de execução das aplicações. Na \autoref{subfig:2mm_cycles_avg} e na \autoref{subfig:2mm_cycles_std} apresentam, respectivamente, a média de ciclos e o coeficiente de variação da aplicação 2MM. Já a \autoref{subfig:2mm_time_avg} e a \autoref{subfig:2mm_time_std} mostram a média do tempo de execução e o respectivo coeficiente de variação. O mesmo pode ser observado em relação ao K-Means, na \autoref{subfig:kmeans_cycles_avg} e na \autoref{subfig:kmeans_cycles_std}, que ilustram os resultados para os ciclos da aplicação, enquanto a \autoref{subfig:kmeans_time_avg} e a \autoref{subfig:kmeans_time_std} apresentam as medições referentes ao tempo de execução.
+As medições foram realizadas utilizando a ferramenta \texttt{perf}, que permite coletar métricas de baixo nível do \textit{hardware} e do sistema operacional. Entre os principais eventos monitorados, destaca-se o número total de ciclos de CPU e o tempo total de execução das aplicações. As Figuras~\ref{subfig:2mm_cycles_avg} e~\ref{subfig:2mm_cycles_std} apresentam, respectivamente, a média de ciclos e o coeficiente de variação da aplicação 2MM. Já as Figuras~\ref{subfig:2mm_time_avg} e~\ref{subfig:2mm_time_std} mostram a média do tempo de execução e o respectivo coeficiente de variação. O mesmo pode ser observado em relação ao K-Means, nas Figuras~\ref{subfig:kmeans_cycles_avg} e~\ref{subfig:kmeans_cycles_std}, que ilustram os resultados para os ciclos da aplicação, enquanto as Figuras~\ref{subfig:kmeans_time_avg} e~\ref{subfig:kmeans_time_std} apresentam as medições referentes ao tempo de execução.
 
 \begin{figure}[htbp]
 	\caption{Medição de ciclos na aplicação 2MM.}
@@ -644,9 +644,11 @@ As medições foram realizadas utilizando a ferramenta \texttt{perf}, que permit
 	\label{fig:kmeans_time}
 \end{figure}
 
-Com base nessa análise, optou-se por utilizar o tempo de execução como métrica principal para as medições de desempenho, uma vez que apresentou maior estabilidade entre as execuções e refletiu de forma mais consistente o comportamento das aplicações.
+Ao analisarmos as medições realizadas, observamos que a média tanto do tempo de execução quanto do número de ciclos apresentou padrões bastante similares em ambas as aplicações. No entanto, ao examinarmos o coeficiente de variação desses mesmos resultados, torna-se evidente que o tempo de execução sofreu um desvio significativamente menor entre as execuções quando comparado aos ciclos. Esse comportamento é especialmente claro no caso da aplicação 2MM, onde, com 4 e 8 threads, o coeficiente de variação do tempo de execução foi virtualmente nulo. Já no K-Means, o mesmo padrão se repete, por exemplo, com 1 \textit{thread}, o coeficiente de variação dos ciclos atingiu cerca de 20\%, enquanto no tempo de execução permaneceu próximo de 11\%, uma diferença de quase 2$\times$.
 
-\section{Resumo dos \textit{Benchmarks}}\label{sec:resumo_exp}
+Diante dessa análise, optou-se por utilizar o tempo de execução como métrica principal para avaliar o desempenho, uma vez que apresentou maior estabilidade entre as execuções e refletiu de maneira mais consistente o comportamento das aplicações.
+
+\section{Resumo do conjunto de aplicações}\label{sec:resumo_exp}
 
 \begin{table}[H]
 	\centering
@@ -674,7 +676,7 @@ Com base nessa análise, optou-se por utilizar o tempo de execução como métri
 	\label{tab:benchmarks}
 \end{table}
 
-Os \textit{benchmarks} definidos neste trabalho foram sumarizados na \autoref{tab:benchmarks}. Cada conjunto de testes teve como objetivo avaliar o desempenho e a acurácia das técnicas de aproximação implementadas.
+As aplicações selecionadas foram escolhidas por apresentarem diferentes padrões computacionais, possuírem suporte consistente à paralelização e incluírem etapas cujo resultado pode tolerar algum nível de aproximação. A \autoref{tab:benchmarks} resume as aplicações utilizadas nos experimentos, indicando suas fontes, domínios e métricas de qualidade. Cada uma das aplicações selecionadas, serviram para avaliar como as técnicas de aproximação implementadas afetam o desempenho e a acurácia, considerando diferentes ambientes computacionais e padrões de paralelismo.
 
 \section{Cronograma}\label{sec:cronograma}
 
@@ -715,6 +717,9 @@ A \autoref{tab:cronograma} detalha o planejamento temporal para a execução de 
 		8                   &              &              &              &              &              & X            & X            &              \\ \hline
 		9                   &              &              &              &              &              &              & X            & X            \\ \hline
 		10                  & X            & X            & X            & X            & X            & X            & X            & X            \\ \hline
+		11                  & X            & X            & X            & X            & X            & X            & X            & X            \\ \hline
+		12                  &              &              &              & X            &              &              &              &              \\ \hline
+		13                  &              &              &              &              &              &              &              & X            \\ \hline
 	\end{tabular}
 	\fonte{}
 	\label{tab:cronograma}
