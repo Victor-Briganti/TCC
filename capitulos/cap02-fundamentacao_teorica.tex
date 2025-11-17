@@ -147,7 +147,9 @@ O OpenMP é estruturado em uma arquitetura em camadas, composta por anotações 
 
 A \autoref{code:produtoVet} apresenta a implementação sequencial de um produto escalar entre vetores. A paralelização utilizando a biblioteca \texttt{pthreads}, apresentada na \autoref{code:produtoThread}, exige a criação explícita de \textit{threads}, gerenciamento de regiões de memória e sincronização dos resultados parciais. Em contraste, a \autoref{code:produtoOmp} implementado com o OpenMP, evidencia a simplicidade proporcionada pelas diretivas: uma única anotação é suficiente para paralelizar o laço de cálculo, delegando à \textit{runtime} a criação e sincronização das \textit{threads}.
 
-\begin{sourcecode}[htb]\caption{\label{code:produtoVet}Estrutura de um laço canônico.}
+\begin{sourcecode}[htb]
+    \caption{Estrutura de um laço canônico.}
+    \label{code:produtoVet}
     \begin{lstlisting}[frame=single, language=C++]
         for (int i = 0; i < N; i++) {
             result += a[i] * b[i];
@@ -156,7 +158,9 @@ A \autoref{code:produtoVet} apresenta a implementação sequencial de um produto
     \fonte{}
 \end{sourcecode}
 
-\begin{sourcecode}[htb]\caption{\label{code:produtoThread}Estrutura de um laço canônico.}
+\begin{sourcecode}[htb]
+    \caption{Estrutura de um laço canônico.}
+    \label{code:produtoThread}
     \begin{lstlisting}[frame=single, language=C++]
         void *compute_partial_dot(void *arg) {
             ThreadArgs *args = (ThreadArgs *)arg;
@@ -192,7 +196,9 @@ A \autoref{code:produtoVet} apresenta a implementação sequencial de um produto
     \fonte{}
 \end{sourcecode}
 
-\begin{sourcecode}[htb]\caption{\label{code:produtoOmp}Estrutura de um laço canônico.}
+\begin{sourcecode}[htb]
+    \caption{Estrutura de um laço canônico.}
+    \label{code:produtoOmp}
     \begin{lstlisting}[frame=single, language=C++]
         #pragma omp parallel for reduction(+ : result)
         for (int i = 0; i < N; i++) {

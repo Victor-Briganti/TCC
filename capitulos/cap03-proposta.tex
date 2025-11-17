@@ -20,7 +20,8 @@ Os modificadores disponíveis são: \texttt{init}, \texttt{fini}, \texttt{small}
 A \autoref{code:pragmaPerfo} apresenta a sintaxe da cláusula, tanto o tipo da perforação quanto a taxa de descarte são parâmetros obrigatórios nessa cláusula.
 
 \begin{sourcecode}[htb]
-    \caption{\label{code:pragmaPerfo}Sintaxe da cláusula \texttt{perfo}}
+    \caption{Sintaxe da cláusula \texttt{perfo}}
+    \label{code:pragmaPerfo}
     \begin{lstlisting}[frame=single, language=C++]
         #pragma omp approx perfo({init, fini, small, large, default}, \
                                  drop-rate)
@@ -100,7 +101,9 @@ Uma característica fundamental dessa cláusula está nas otimizações relacion
 
 A \autoref{code:exFastmath} apresenta um exemplo prático do uso da cláusula. A função \textit{sqrt}, por exemplo, normalmente requer verificações adicionais para lidar com entradas inválidas, como valores negativos ou \textit{Not a Number} (\textit{NaN}). Ao aplicar \texttt{fastmath}, o compilador assume que essas entradas não ocorrerão, emitindo diretamente a instrução de hardware \textit{sqrt}, sem checagens extras, o que reduz a sobrecarga e melhora o desempenho.
 
-\begin{sourcecode}[htb]\caption{\label{code:exFastmath}Sintaxe da cláusula \texttt{fastmath}.}
+\begin{sourcecode}[htb]
+    \caption{Sintaxe da cláusula \texttt{fastmath}.}
+    \label{code:exFastmath}
     \begin{lstlisting}[frame=single, language=C++]
         float sqrt_approx(float x)
         {
@@ -142,7 +145,8 @@ A \autoref{fig:task_drop} ilustra esse processo, e a \autoref{code:pragmaDrop} a
 O \autoref{code:exDrop} mostra um exemplo de uso da cláusula \texttt{drop} em conjunto com \texttt{taskloop} para aproximar o resultado de uma soma. o descarte de tarefas pode aumentar o desempenho da aplicação, pois ao ignorar determinadas execuções, a \textit{thread} fica com sua execução livre para avançar mais rapidamente para outras regiões de código.
 
 \begin{sourcecode}[htb]
-    \caption{\label{code:exDrop}Exemplo de uso da cláusula \texttt{drop}.}
+    \caption{Exemplo de uso da cláusula \texttt{drop}.}
+    \label{code:exDrop}
     \begin{lstlisting}[frame=single, language=C++]
     #pragma omp parallel
     {

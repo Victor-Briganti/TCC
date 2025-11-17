@@ -69,7 +69,7 @@ O algoritmo de multiplicação de matrizes empregado segue o padrão clássico~\
 		\ENDFOR
 	\end{algorithmic}
 	\hrule
-	\fonte{\citet{polybench}}
+	\fonte{Adaptado do \citet{polybench}}
 \end{algorithm}
 
 Nesta aplicação, ambas as multiplicações são executadas em sequência, conforme as Equações~\ref{eq:dot_matrix_a} e~\ref{eq:dot_matrix_b}. Para reduzir o \textit{overhead}, optou-se por utilizar uma única região paralela que abrange ambas multiplicações. Além da paralelização foi empregado a técnica de \textit{loop tiling}~\cite{bakos2016}. Essa técnica consiste em dividir o espaço de iteração em blocos menores, \textit{tiles}, de modo que cada bloco seja completamente processado antes de avançar para o próximo. Diferentemente da iteração convencional, que percorre toda uma dimensão por vez, no \textit{tiling} os acessos a memória são reorganizados para melhorar a localidade espacial e temporal.
@@ -143,7 +143,7 @@ A fórmula comumente utilizada para calcular a correlação é chamada de \texti
 		\ENDFOR
 	\end{algorithmic}
 	\hrule
-	\fonte{}
+	\fonte{Adaptado do \citet{polybench}}
 \end{algorithm}
 
 \begin{algorithm}[htb]
@@ -166,7 +166,7 @@ A fórmula comumente utilizada para calcular a correlação é chamada de \texti
 		\ENDFOR
 	\end{algorithmic}
 	\hrule
-	\fonte{}
+	\fonte{Adaptado do \citet{polybench}}
 \end{algorithm}
 
 O cálculo da correlação entre as diferentes variáveis é apresentado na \autoref{tab:correlation}, como uma matriz simétrica, na qual os valores localizados na parte inferior da matriz são iguais aos da parte superior em relação à diagonal principal. Essa diagonal principal contém valores iguais a $1.0$, correspondentes a autocorrelação perfeita de cada variável. Essa simetria permite otimizar o cálculo, reduzindo o número de iterações, uma vez que é suficiente computar os coeficientes para somente uma das metades da matriz.
@@ -241,6 +241,7 @@ No \autoref{alg:correlation_matrix} essa propriedade de simétrica é explorada,
 		\RETURN $I_{final}$
 	\end{algorithmic}
 	\hrule
+	\fonte{Adaptado do \citet{polybench}}
 \end{algorithm}
 
 Em processamento de imagens, o filtro de Deriche é um algoritmo de filtragem recursiva utilizado tanto para suavização de imagens quanto para detecção de bordas~\cite{deriche1987}. Este algoritmo foi desenvolvido como uma otimização do detector de bordas de Canny, buscando aproximar as propriedades de um filtro Gaussiano, por meio de um filtro \gls{iir}.
@@ -259,7 +260,7 @@ O nível dessa suavização é controlado pelo parâmetro $\alpha$, que ajusta a
 	y^2_{ij} = a_3x_{ij + 1} + a_4x_{ij + 2} + b_1y^2_{ij + 1} + b_2y^2_{ij + 2}
 \end{equation}
 
-O filtro implementado segue o padrão do Olivença~\cite{polybench}, somente a suavização foi implementada, não há uma geração das bordas da imagem. O \autoref{alg:deriche} apresenta a implementação da suavização, na alteração desse \textit{benchmark} foi adicionado uma região paralela que engloba todos os laços do algoritmo.
+O filtro implementado segue o padrão do Polybench~\cite{polybench}, somente a suavização foi implementada, não há uma geração das bordas da imagem. O \autoref{alg:deriche} apresenta a implementação da suavização, na alteração desse \textit{benchmark} foi adicionado uma região paralela que engloba todos os laços do algoritmo.
 
 \begin{figure}[b]
 	\caption{Aplicação do filtro de Deriche.}
@@ -323,7 +324,7 @@ O Jacobi 2D é uma aplicação do método de Jacobi adaptado para problemas disc
 		\ENDFOR
 	\end{algorithmic}
 	\hrule
-	\fonte{}
+	\fonte{Adaptado do \citet{polybench}}
 \end{algorithm}
 
 O \autoref{alg:jacobi2d} apresenta dependência sequencial entre as etapas de atualização, dificultando a paralelização total. Para contornar isso, a paralelização foi aplicada no laço mais externo, permitindo que cada etapa de varredura seja executada em paralelo. Já os laços internos foram anotados com diretivas de sincronização, assegurando que os dados produzidos em uma etapa estejam disponíveis antes da próxima atualização.
@@ -391,7 +392,7 @@ O algoritmo K-means~\cite{macqueen1967} é uma técnica de agrupamento, cujo obj
 		\RETURN  $centroids$
 	\end{algorithmic}
 	\hrule
-	\fonte{}
+	\fonte{Adaptado do \citet{polybench}}
 \end{algorithm}
 
 A ideia central do algoritmo consiste em definir inicialmente $k$ centróides, que são pontos de referência no espaço de amostragem. Em seguida, cada ponto de dado é associado ao centróide mais próximo, com base em uma medida de distância, usualmente a distância euclidiana. Após essa etapa de atribuição, o algoritmo calcula a média dos pontos atribuídos a cada grupo e atualiza a posição dos centróides com base nesses valores. A \autoref{fig:kmeans} ilustra o agrupamento dos dados ao longo das iterações do algoritmo K-means. Na figura, os triângulos representam os centróides, os pontos correspondem aos dados e as regiões coloridas indicam as áreas que delimitam os agrupamentos formados.
@@ -465,7 +466,7 @@ Inserimos os valores $c_x$ e $c_y$, nas iterações do Mandelbrot. Cada ponto da
 		\RETURN Verdadeiro
 	\end{algorithmic}
 	\hrule
-	\fonte{}
+	\fonte{Adaptado do \citet{debianBenchmarksGame}}
 \end{algorithm}
 
 \begin{algorithm}[htb]
@@ -498,7 +499,7 @@ Inserimos os valores $c_x$ e $c_y$, nas iterações do Mandelbrot. Cada ponto da
 		\ENDFOR
 	\end{algorithmic}
 	\hrule
-	\fonte{}
+	\fonte{Adaptado do \citet{debianBenchmarksGame}}
 \end{algorithm}
 
 Na implementação apresentada, duas otimizações foram aplicadas, no \autoref{alg:mandelbrot_image}, para melhorar o desempenho do algoritmo. A primeira delas foi a adição de diretivas de paralelização, inseridas em seu laço mais externo, permitindo que diferentes regiões da imagem fossem processadas concorrentemente.
@@ -561,7 +562,6 @@ No caso específico da estimativa de $\pi$, o método pode ser aplicado de manei
 	\hrule
 	\fonte{}
 \end{algorithm}
-
 
 A partir disso, é possível aplicar o método de Monte Carlo para estimar o valor de $\pi$. Como o círculo está inscrito no quadrado, o domínio de amostragem é o próprio quadrado. Gera-se então, um grande número de pontos aleatórios dentro do quadrado. Para cada ponto $(x, y)$, calcula-se sua distância até a origem. Se a distância for menor ou igual a 1, o ponto está dentro do círculo.
 
