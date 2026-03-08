@@ -48,7 +48,8 @@
 	pdfa
 }{hyperref}
 
-
+% Deixando o texto das referências justificado
+\PassOptionsToPackage{alf,bibjustif}{abntex2cite}
 
 %% Classe e opções de documento
 \documentclass[%% Opções
@@ -105,6 +106,9 @@
 %% Início do documento
 \begin{document}%% Não comente esta linha
 
+% Renomeia Listagem para Código
+\renewcommand{\sourcecodename}{Código}
+
 %% Formatação de páginas de elementos pré-textuais
 \pretextual%% Não comente esta linha
 
@@ -148,7 +152,7 @@
 \include{./PreTexto/abstract}%% Comente para remover este item
 
 %% Lista de algoritmos
-%\incluirlistadealgoritmos%% Comente para remover este item
+\incluirlistadealgoritmos%% Comente para remover este item
 
 
 %% Lista de Ilustrações
@@ -181,7 +185,7 @@
 %\incluirlistadequadros
 
 %% Listagem de códigos fonte
-%\incluirlistadecodigosfonte
+\incluirlistadecodigosfonte
 
 %% Lista de abreviaturas, siglas e acrônimos
 \incluirlistadeacronimos{glossaries}%% Opções: "glossaries" (pacote) ou "file" (arquivo) ou "none" (desabilita)

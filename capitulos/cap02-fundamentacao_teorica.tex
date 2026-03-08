@@ -27,12 +27,12 @@ Em ambos os casos é comum implementar essa otimização em laços que estão em
 \end{itemize}
 
 \begin{sourcecode}[htb]\caption{\label{code:loopCanon}Estrutura de um laço canônico.}
-    \begin{lstlisting}[frame=single, language=C++]
-        for (int i = 0; i < N; i += a) {
-            ...
-        }
-    \end{lstlisting}
-    \fonte{}
+\begin{lstlisting}[frame=single, language=C++]
+for (int i = 0; i < N; i += a) {
+    ...
+}
+\end{lstlisting}
+\fonte{}
 \end{sourcecode}
 
 Uma técnica comumente encontrada na implementação desse algoritmo é a de incrementar a expressão de incremento, se considerarmos isso no \autoref{code:loopCanon} teríamos que as iterações deixariam de ser \texttt{a} em \texttt{a} vezes, teríamos um incremento de \texttt{a + 1} vezes. Se considerarmos que inicialmente tem o valor \texttt{a = 1} ele passaria a ser \texttt{a = 2} e o comportamento do laço seguiria estando na \autoref{fig:perfoMod}, nela temos que os blocos em branco seriam iterações não executadas enquanto os blocos em azul seriam iterações executadas.
@@ -55,7 +55,7 @@ A memoização aproximada, também chamada de memoização temporal, estende ess
 
 Na prática, as saídas são armazenadas em uma estrutura de dados e reutilizadas seletivamente em chamadas subsequentes. As estratégias de \textit{cache} podem variar, incluindo modelos globais, específicos por função ou mesmo dependentes de contexto. O reuso é normalmente controlado por um limiar de tolerância, que avalia a variação das saídas: se os resultados permanecerem estáveis dentro desse limite, a função é considerada estável e, portanto, pode ser memoizada~\cite{tziantzioulis2018}.
 
-\subsection{Aproximação de ponto flutuante}\label{subsec:pontoFlut}
+\subsection{Aproximação de Ponto Flutuante}\label{subsec:pontoFlut}
 
 A representação de números reais por meio de números de ponto flutuante envolvem aproximação por padrão devido à impossibilidade de representar valores contínuos com memória finita, se impossibilita representar um número infinito com um número finito de \textit{bits}~\cite{monniaux2008}. Por esse motivo aritmética com números de ponto flutuante usualmente introduzem erros de aproximação que variam conforme a ordem de execução dessas operações, resultando em um valor completamente diferente do esperado. Um exemplo disso pode ser observado na \autoref{fig:floatPoint}.
 
@@ -67,9 +67,9 @@ A representação de números reais por meio de números de ponto flutuante envo
     \addcontentsline{loge}{figure}{\protect\numberline{\thefigure}Erro introduzido na aritmética de ponto flutuante.}
 \end{figure}
 
-Para reduzir este tipo de problema, compiladores usualmente evitam aplicar certas otimizações que podem amplificar o erro nesse tipo de operação. Porém, alguns compiladores como é o caso do \texttt{Clang} e o \texttt{GCC}, suportam a opção \texttt{--fast-math} que permite a aplicação dessas otimizações em todo um módulo de compilação~\cite{gccffast, clangffast}. E de maneira similar o \texttt{MSVC} suporta o uso da diretiva de compilação \texttt{\#pragma float\_control} para definir regiões do código que permitem o uso dessas otimizações em certas regiões decódigo~\cite{msvcfast}.
+Para reduzir esse tipo de problema, compiladores geralmente evitam aplicar otimizações que possam amplificar erros em operações de ponto flutuante. No entanto, alguns compiladores permitem habilitar explicitamente tais otimizações. Por exemplo, \texttt{Clang} e \texttt{GCC} oferecem a opção \texttt{ffast-math}, que permite aplicar essas otimizações durante a compilação de todo o módulo~\cite{gccffast, clangffast}. O Microsoft Visual C++ (\texttt{MSVC}) disponibiliza a diretiva \texttt{\#pragma float\_control}, que permite definir regiões específicas do código nas quais essas otimizações podem ser aplicadas~\cite{msvcfast}. Por fim, o compilador da Intel (\texttt{ICC}) também fornece suporte a aproximações em ponto flutuante por meio das \textit{flags} \texttt{fp-speculation}, \texttt{Qfp-speculation} e \texttt{-fp-model=fast[=1|2]}~\cite{intelfast}.
 
-\subsection{Descarte de tarefas}\label{subsec:descTar}
+\subsection{Descarte de Tarefas}\label{subsec:descTar}
 
 O descarte de tarefas é um conceito abrangente que engloba diferentes técnicas de aproximação, incluindo, em alguns casos, a própria perforação de laço. Sua ideia central baseia-se em computações que podem ser divididas em unidades menores, chamadas tarefas, das quais uma parte delas é descartada~\cite{mittal2016}.
 
@@ -118,7 +118,7 @@ Em que as variáveis são definidas como:
     \item $c_1$ e $c_2$: constantes pequenas utilizadas para evitar divisão por zero.
 \end{itemize}
 
-\section{Computação paralela}\label{sec:compParalela}
+\section{Computação Paralela}\label{sec:compParalela}
 
 A \gls{cp} é uma área da computação que busca explorar arquiteturas modernas, cada vez mais baseadas em processadores \textit{multicore}. Esse conceito pode ser melhor compreendido a partir da taxonomia de Flynn~\cite{flynn1972}, que classifica as arquiteturas de computadores de acordo com o fluxo de instruções e de dados:
 
@@ -129,11 +129,11 @@ A \gls{cp} é uma área da computação que busca explorar arquiteturas modernas
     \item \textbf{\textit{Multiple Instructions, Multiple Data stream} (MIMD):} Múltiplas instruções atuando em paralelo sobre múltiplas fontes de dados.
 \end{itemize}
 
-Dentro desse modelo, o paralelismo pode ser explorado de diferentes maneiras. No nível do processador, técnicas como \textit{pipeline}, predição de desvios (\textit{branch prediction}) e escalonamento dinâmico permitem dividir o código em pequenas unidades que podem ser executadas simultaneamente.
+Dentro desse modelo, o paralelismo pode ser explorado de diferentes maneiras. No nível do processador, técnicas como \textit{pipelining}, predição de desvios (\textit{branch prediction}) e escalonamento dinâmico permitem dividir o código em pequenas unidades que podem ser executadas simultaneamente.
 
 Algumas arquiteturas foram além e incorporaram extensões \gls{simd}, permitindo a utilização de processadores vetoriais capazes de realizar a mesma operação sobre múltiplos elementos de um vetor unidimensional em um único ciclo de instrução. Em cenários mais especializados, como nas \glspl{gpu}, esse modelo é expandido para múltiplas dimensões de dados, possibilitando que milhares de operações sejam executadas em paralelo e tornando-as altamente adequadas para cargas de trabalho massivamente paralelizáveis~\cite{hennessy2017}. Outro mecanismo fundamental é o uso de \textit{threads}, que representam abstrações de execução em nível de software, permitindo que diferentes unidades computacionais operem concorrentemente em múltiplos processadores. Cada \textit{thread} possui seu próprio contexto de execução, mas pode compartilhar recursos como memória e dispositivos de entrada/saída, viabilizando desde o paralelismo de tarefas independentes até a cooperação em algoritmos que exploram granularidades mais finas~\cite{tanenbaum2015,hennessy2017}.
 
-É nesse contexto que surge o OpenMP, uma \gls{api} projetada para estender C, C++ e Fortran com suporte à paralelização de aplicações por meio de anotações de código. Essas anotações especificam o como aquela região de código deve ser executada. Seu modelo de programação permite explorar automaticamente diferentes formas de paralelismo, seja pelo \textit{offloading} para \glspl{gpu}, pelo uso de múltiplas \textit{threads}, ou ainda pela vetorização via \gls{simd}, aproveitando as unidades vetoriais das arquiteturas modernas~\cite{mattson2019}.
+É nesse contexto que surge o OpenMP~\cite{openmpapi52}, uma \gls{api} projetada para estender C, C++ e Fortran com suporte à paralelização de aplicações por meio de anotações de código. Essas anotações especificam o como aquela região de código deve ser executada. Seu modelo de programação permite explorar automaticamente diferentes formas de paralelismo, seja pelo \textit{offloading} para \glspl{gpu}, pelo uso de múltiplas \textit{threads}, ou ainda pela vetorização via \gls{simd}, aproveitando as unidades vetoriais das arquiteturas modernas~\cite{mattson2019}.
 
 \begin{figure}[htb]
     \caption{Arquitetura do \texttt{OpenMP}.}
@@ -151,9 +151,9 @@ A \autoref{code:produtoVet} apresenta a implementação sequencial de um produto
     \caption{Estrutura de um laço canônico.}
     \label{code:produtoVet}
     \begin{lstlisting}[frame=single, language=C++]
-        for (int i = 0; i < N; i++) {
-            result += a[i] * b[i];
-        }
+for (int i = 0; i < N; i++) {
+    result += a[i] * b[i];
+}
     \end{lstlisting}
     \fonte{}
 \end{sourcecode}
@@ -162,36 +162,36 @@ A \autoref{code:produtoVet} apresenta a implementação sequencial de um produto
     \caption{Estrutura de um laço canônico.}
     \label{code:produtoThread}
     \begin{lstlisting}[frame=single, language=C++]
-        void *compute_partial_dot(void *arg) {
-            ThreadArgs *args = (ThreadArgs *)arg;
-            args->partial_sum = 0.0;
-            
-            for (int i = args->start; i < args->end; i++) {
-                args->partial_sum = 0.0; += args->a[i] * args->b[i];
-            }
-
-            return NULL;
-        }
-
-    ...
-
-    pthread_t threads[NUM_THREADS];
-    ThreadArgs args[NUM_THREADS];
-    result = 0.0;
-    chunk_size = N / NUM_THREADS;
-
-    for (int i = 0; i < NUM_THREADS; i++) {
-        args[i].start = i * chunk_size;
-        args[i].end = (i == NUM_THREADS - 1) ? N : (i + 1) * chunk_size;
-        args[i].a = a;
-        args[i].b = b;
-        pthread_create(&threads[i], NULL, compute_partial_dot, &args[i]);
+void *compute_partial_dot(void *arg) {
+    ThreadArgs *args = (ThreadArgs *)arg;
+    args->partial_sum = 0.0;
+    
+    for (int i = args->start; i < args->end; i++) {
+        args->partial_sum += args->a[i] * args->b[i];
     }
 
-    for (int i = 0; i < NUM_THREADS; i++) {
-        pthread_join(threads[i], NULL);
-        result += args[i].partial_sum;    
-    }
+    return NULL;
+}
+
+...
+
+pthread_t threads[NUM_THREADS];
+ThreadArgs args[NUM_THREADS];
+result = 0.0;
+chunk_size = N / NUM_THREADS;
+
+for (int i = 0; i < NUM_THREADS; i++) {
+    args[i].start = i * chunk_size;
+    args[i].end = (i == NUM_THREADS - 1) ? N : (i + 1) * chunk_size;
+    args[i].a = a;
+    args[i].b = b;
+    pthread_create(&threads[i], NULL, compute_partial_dot, &args[i]);
+}
+
+for (int i = 0; i < NUM_THREADS; i++) {
+    pthread_join(threads[i], NULL);
+    result += args[i].partial_sum;    
+}
     \end{lstlisting}
     \fonte{}
 \end{sourcecode}
@@ -200,15 +200,15 @@ A \autoref{code:produtoVet} apresenta a implementação sequencial de um produto
     \caption{Estrutura de um laço canônico.}
     \label{code:produtoOmp}
     \begin{lstlisting}[frame=single, language=C++]
-        #pragma omp parallel for reduction(+ : result)
-        for (int i = 0; i < N; i++) {
-            result += a[i] * b[i];
-        }
+#pragma omp parallel for reduction(+ : result)
+for (int i = 0; i < N; i++) {
+    result += a[i] * b[i];
+}
     \end{lstlisting}
     \fonte{}
 \end{sourcecode}
 
-Tipicamente, uma diretiva OpenMP é aplicada a um laço para indicar que ele pode ser executado em paralelo. Durante a compilação, esse bloco de código é isolado e transformado em tarefas, enquanto a \textit{runtime} prepara as estruturas necessárias para o modelo \textit{fork-join}. Por exemplo, a diretiva \texttt{\#pragma omp parallel} cria um time de \textit{threads}, cada uma executando uma cópia do código anotado. O compilador gerencia variáveis privadas, memória de pilha e pontos de sincronização automaticamente. Ao final, as \textit{threads} são reunificadas (\textit{joined}), e a execução retorna ao fluxo sequencial. Essa abordagem permite paralelizar regiões de código com esforço reduzido de gerenciamento, mantendo controle sobre sincronização e compartilhamento de dados~\cite{mattson2019}.
+Tipicamente, uma diretiva OpenMP é aplicada a uma região de código, como um laço, para indicar que ela pode ser executada em paralelo. Durante a compilação, o compilador isola o bloco de código anotado e o transforma em uma função separada, conhecida como \textit{outlined function}. Em tempo de execução, a \textit{runtime} do OpenMP é responsável por gerenciar essas funções extraídas, criando e coordenando múltiplas \textit{threads} que executam cópias dessa função de acordo com o modelo \textit{fork-join}. Por exemplo, a diretiva \texttt{\#pragma omp parallel} cria um time de \textit{threads}, cada uma executando a função correspondente à região paralela. O compilador gerencia automaticamente variáveis privadas, memória de pilha e pontos de sincronização. Ao final da região paralela, as \textit{threads} são sincronizadas (\textit{join}) e a execução retorna ao fluxo sequencial. Essa abordagem permite paralelizar regiões de código com esforço reduzido de gerenciamento, mantendo controle sobre sincronização e compartilhamento de dados~\cite{mattson2019}.
 
 \begin{figure}[htb]
     \caption{Modelo \textit{fork-join} de execução do \texttt{OpenMP}.}
@@ -224,7 +224,7 @@ O modelo \textit{fork-join} pode ser observado de forma esquemática na \autoref
 
 Esta seção apresenta arcabouços baseados no paradigma de \gls{ca} que implementam suporte ao nível de linguagem de programação, especialmente aqueles que utilizam anotações de código e mecanismos de execução em \textit{runtime}. Os arcabouços e aplicações selecionados buscam oferecer ao desenvolvedor maior controle sobre as técnicas utilizadas e sobre as regiões de código que podem ser aproximadas.
 
-O ACCEPT~\cite{sampson2015} (Approximate C Compiler for Energy and Performance Trade-Off) é um arcabouço implementado sobre a infraestrutura do LLVM, que introduz a palavra-chave \texttt{ACCEPT} na sintaxe das linguagens C/C++. Essa palavra-chave permite diferenciar regiões de código aproximadas daquelas que devem ser executadas de forma precisa. O arcabouço também implementa etapas de análise para verificar a possibilidade de aproximação dessas regiões, avaliando não apenas a validade das transformações, mas também viabilizando a aplicação de diferentes técnicas de otimização aproximada, de maneira análoga ao funcionamento de um compilador paralelizador.
+O ACCEPT (Approximate C Compiler for Energy and Performance Trade-Off)~\cite{sampson2015} é um arcabouço implementado sobre a infraestrutura do LLVM, que introduz a palavra-chave \texttt{ACCEPT} na sintaxe das linguagens C/C++. Essa palavra-chave permite diferenciar regiões de código aproximadas daquelas que devem ser executadas de forma precisa. O arcabouço também implementa etapas de análise para verificar a possibilidade de aproximação dessas regiões, avaliando não apenas a validade das transformações, mas também viabilizando a aplicação de diferentes técnicas de otimização aproximada, de maneira análoga ao funcionamento de um compilador paralelizador.
 
 A infraestrutura do ACCEPT permite, por meio de anotações de código e análises estáticas e dinâmicas, identificar regiões de código potencialmente aproximáveis. Essas regiões podem ser exploradas para aplicar técnicas como perforação de laço, elisão de sincronização e até mesmo o uso de redes neurais em \textit{hardware} para estimar saídas. Além disso, o arcabouço incorpora um \textit{autotuner} que utiliza métricas fornecidas pelo usuário para avaliar se as aproximações aplicadas mantêm a qualidade de saída nos limites esperados, garantindo que o programa não apresente falhas durante a execução.
 
@@ -232,13 +232,13 @@ A infraestrutura do ACCEPT permite, por meio de anotações de código e anális
 
 O arcabouço também introduz um mecanismo de barreira para garantir que uma fração mínima das execuções alcance o grau de acurácia desejado. Para gerenciar essa execução, são propostas duas políticas no runtime: \textit{Global Task Buffering} (GTB), que toma decisões informadas a partir da análise conjunta de todas tarefas pendentes, e a \textit{Local Queue History} (LQH), baseada no histórico local de filas, em que cada \textit{worker} decide de maneira autônoma o nível de aproximação com base nas execuções anteriores.
 
-\citet{lashgar2018} propõem a integração da técnica de perforação de laço ao \texttt{OpenACC} para melhorar o desempenho, executando somente um subconjunto das iterações do laço. Dessa forma, parte das saídas é calculada de maneira exata, enquanto o restante é aproximado. Para mitigar os impactos dessa abordagem na precisão e no tempo de execução dentro do \texttt{OpenACC}, os autores introduzem um mecanismo de correção implementado diretamente no kernel. Esse mecanismo identifica as saídas ausentes e aplica estratégias como a cópia ou a média dos valores vizinhos já computados, a fim de estimar as entradas faltantes.
+\citet{lashgar2018} propõem a integração da técnica de perforação de laço ao \texttt{OpenACC}~\cite{openacc33}, um padrão de diretivas para paralelização e aceleração de aplicações em dispositivos como GPUs. Assim como no \texttt{OpenMP}, o \texttt{OpenACC} utiliza anotações \texttt{pragma} para indicar regiões do código que podem ser executadas em paralelo ou transferidas para aceleradores. Nesse contexto, os autores aplicam perforação de laço para melhorar o desempenho, executando apenas um subconjunto das iterações do laço. Os autores introduzem um mecanismo de correção implementado diretamente no kernel que identifica as saídas ausentes e aplica estratégias como a cópia ou a média dos valores vizinhos já computados, a fim de estimar as entradas faltantes.
 
 O HPAC~\cite{parasyris2021} é um arcabouço de técnicas de computação aproximada voltadas para aplicações \gls{hpc}, implementado sobre a infraestrutura do LLVM. Ele utiliza anotações de código \texttt{pragma} para C/C++, permitindo a definição de regiões de código aproximadas, e se destaca por sua interoperabilidade com o \texttt{OpenMP}. As técnicas principais incluem perforação de laço e memoização aproximada, e o arcabouço fornece ainda uma ferramenta de análise que permite ao usuário anotar múltiplas regiões de código e avaliar a qualidade dos resultados obtidos para cada configuração.
 
 O HPAC-Offload~\cite{fink2023} é uma extensão do HPAC~\cite{parasyris2021} voltada para aplicações em GPU, que adapta sua arquitetura para lidar com as limitações do modelo de memória e paralelismo dessas plataformas. Assim como no HPAC, as técnicas implementadas incluem perforação de laço e memoização aproximada, mas com um gerenciamento de memória consciente da GPU: os dados internos são armazenados na memória compartilhada do bloco, permitindo reutilização entre threads ativas sem sobrecarregar a memória global. O arcabouço também define níveis hierárquicos de aproximação (\textit{thread}, \textit{warp} e bloco) para evitar divergência e \textit{deadlocks}.
 
-Em contraste com outros trabalhos, nossa abordagem baseia-se na extensão do próprio framework \texttt{OpenMP}, modificando sua \textit{runtime} e alterando suas diretivas de compilação para oferecer suporte nativo a técnicas de \gls{ca}. Ao incorporar o controle de aproximação diretamente no \texttt{OpenMP}, habilitamos o escalonamento e a execução de tarefas sem comprometer sua API. Essa integração simplifica a adoção de \gls{ca} em \gls{cp}, como também abre caminho para uma exploração mais ampla e eficaz da aproximação em aplicações que já utilizam o OpenMP. A \autoref{tab:trabComp} apresenta um breve resumo e comparação entre todos os trabalhos citados.
+Em contraste com outros trabalhos, nossa abordagem baseia-se na extensão da implementação do \texttt{OpenMP} utilizada pelo LLVM, cuja \textit{runtime} deriva da implementação originalmente desenvolvida pela Intel~\cite{openmpllvm}. Para isso, modificamos a \textit{runtime} e estendemos suas diretivas de compilação para oferecer suporte nativo a técnicas de \gls{ca}. Ao incorporar o controle de aproximação diretamente no \texttt{OpenMP}, habilitamos o escalonamento e a execução de tarefas sem comprometer sua API. Essa integração simplifica a adoção de \gls{ca} em \gls{cp}, como também abre caminho para uma exploração mais ampla e eficaz da aproximação em aplicações que já utilizam o OpenMP. A \autoref{tab:trabComp} apresenta um breve resumo e comparação entre todos os trabalhos citados.
 
 \begin{table}[htb]
     \centering

@@ -1,32 +1,31 @@
 \chapter{Proposta}\label{cap:proposta}
 
-Este trabalho apresenta um construtor para o \texttt{OpenMP} que facilita a implementação de algoritmos de aproximação. Assim como outros construtores da API, a proposta utiliza anotações de código, para identificar regiões que podem ser executadas de forma aproximada. A integração dessas anotações ao arcabouço do \texttt{OpenMP} assegura que as técnicas sejam portáteis e facilmente adaptáveis a diferentes trechos de código.
+A proposta deste trabalho é o desenvolvimento de um construto para \texttt{OpenMP} que facilita a implementação de algoritmos de aproximação. Assim como outros construtos da API, a proposta utiliza anotações de código, para diretivas de compilação que podem ser executadas de forma aproximada. A integração dessas anotações ao arcabouço do \texttt{OpenMP} assegura que as técnicas sejam portáveis e adaptáveis a diferentes trechos de código.
 
-A \autoref{code:pragmaApprox} apresenta a anotação \texttt{pragma approx}, que delimita uma região de código a ser aproximada e específica a técnica a ser aplicada. Múltiplas cláusulas podem ser combinadas em um único construtor para indicar diferentes parâmetros de aproximação. Entretanto, a implementação atual suporta somente uma técnica de aproximação por vez.
+A \autoref{code:pragmaApprox} apresenta a diretiva \texttt{\#pragma approx}, que delimita uma região de código a ser aproximada e especifica a técnica a ser aplicada. Múltiplas cláusulas podem ser combinadas em um único construto para definir diferentes parâmetros de aproximação. Entretanto, a implementação atual suporta apenas uma técnica de aproximação por vez.
 
 \begin{sourcecode}[htb]
-    \caption{Sintaxe do construtor \texttt{approx}.}
+    \caption{Sintaxe do construto \texttt{approx}.}
     \label{code:pragmaApprox}
     \begin{lstlisting}[frame=single, language=C++]
-        #pragma omp approx [clause, [[,]clause]]
+#pragma omp approx [clause, [[,]clause]]
     \end{lstlisting}
     \fonte{}
 \end{sourcecode}
 
 As próximas seções apresentam as técnicas implementadas e suas respectivas cláusulas e parâmetros.
 
-\section{Perforação de laço}\label{subsec:pragmaPerfo}
+\section{Perforação de Laço}\label{subsec:pragmaPerfo}
 
-A cláusula \texttt{perfo} habilita o uso de perforação de laços (\textit{loop perforation}), permitindo reduzir o número de iterações executadas. Essa cláusula deve ser utilizada em conjunto com a cláusula \texttt{for}, e suporta modificadores que definem tanto o algoritmo de perforação quanto a taxa de descarte.
-Os modificadores disponíveis são: \texttt{init}, \texttt{fini}, \texttt{small}, \texttt{large} e \texttt{default}.
+A cláusula \texttt{perfo} habilita o uso de perforação de laços (\textit{loop perforation}), permitindo reduzir o número de iterações executadas. Essa cláusula deve ser utilizada em conjunto com a cláusula \texttt{for}, e suporta modificadores que definem tanto o algoritmo de perforação quanto a taxa de descarte de iterações. Os modificadores disponíveis são: \texttt{init}, \texttt{fini}, \texttt{small}, \texttt{large} e \texttt{default}.
 A \autoref{code:pragmaPerfo} apresenta a sintaxe da cláusula, tanto o tipo da perforação quanto a taxa de descarte são parâmetros obrigatórios nessa cláusula.
 
 \begin{sourcecode}[htb]
     \caption{Sintaxe da cláusula \texttt{perfo}}
     \label{code:pragmaPerfo}
     \begin{lstlisting}[frame=single, language=C++]
-        #pragma omp approx perfo({init, fini, small, large, default}, \
-                                 drop-rate)
+#pragma omp approx perfo({init, fini, small, large, default}, \
+                         drop-rate)
     \end{lstlisting}
     \fonte{}
 \end{sourcecode}
@@ -87,7 +86,7 @@ O modificador \texttt{default} apresenta comportamento semelhante ao \texttt{lar
     \label{fig:modificadores_perfo}
 \end{figure}
 
-\section{Aproximação de ponto flutuante}\label{subsec:pragmaFastmath}
+\section{Aproximação de Ponto Flutuante}\label{subsec:pragmaFastmath}
 
 A cláusula \texttt{fastmath} habilita otimizações de ponto flutuante, seguindo a semântica do parâmetro de compilação \texttt{--fast-math} do compilador \texttt{Clang}~\cite{clangffast}. Quando aplicada, o compilador extrai a região de código anotada e adiciona metadados indicando que essa região permite otimizações agressivas de ponto flutuante.
 
@@ -95,7 +94,7 @@ A principal diferença entre os dois métodos é que a cláusula \texttt{fastmat
 
 \begin{sourcecode}[htb]\caption{\label{code:pragmaFastmath}Sintaxe da cláusula \texttt{fastmath}}
     \begin{lstlisting}[frame=single, language=C++]
-        #pragma omp approx fastmath
+#pragma omp approx fastmath
     \end{lstlisting}
     \fonte{}
 \end{sourcecode}
@@ -107,13 +106,13 @@ A \autoref{code:exFastmath} apresenta um exemplo prático do uso da cláusula. A
     \caption{Sintaxe da cláusula \texttt{fastmath}.}
     \label{code:exFastmath}
     \begin{lstlisting}[frame=single, language=C++]
-        float sqrt_approx(float x)
-        {
-            #pragma omp approx fastmath
-            {
-                return sqrt(x);
-            }
-        }
+float sqrt_approx(float x)
+{
+    #pragma omp approx fastmath
+    {
+        return sqrt(x);
+    }
+}
     \end{lstlisting}
     \fonte{}
 \end{sourcecode}
@@ -139,7 +138,7 @@ A \autoref{fig:task_drop} ilustra esse processo, e a \autoref{code:pragmaDrop} a
 \begin{sourcecode}[htb]
     \caption{\label{code:pragmaDrop}Sintaxe da cláusula \texttt{drop}}
     \begin{lstlisting}[frame=single, language=C++]
-        #pragma omp approx taskloop drop(drop-rate)
+#pragma omp approx taskloop drop(drop-rate)
     \end{lstlisting}
     \fonte{}
 \end{sourcecode}
@@ -150,18 +149,18 @@ O \autoref{code:exDrop} mostra um exemplo de uso da cláusula \texttt{drop} em c
     \caption{Exemplo de uso da cláusula \texttt{drop}.}
     \label{code:exDrop}
     \begin{lstlisting}[frame=single, language=C++]
-    #pragma omp parallel
+#pragma omp parallel
+{
+    #pragma omp single
     {
-        #pragma omp single
+        #pragma omp approx taskloop drop(3) reduction(+ : sum)
         {
-            #pragma omp approx taskloop drop(3) reduction(+ : sum)
-            {
-                for (int i = 0; i < N; i++) {
-                    sum += values[i];
-                }
+            for (int i = 0; i < N; i++) {
+                sum += values[i];
             }
         }
     }
+}
     \end{lstlisting}
     \fonte{}
 \end{sourcecode}
@@ -175,7 +174,7 @@ A \autoref{code:pragmaMemo} apresenta a sintaxe da cláusula \texttt{memo}. Essa
 \begin{sourcecode}[htb]
     \caption{\label{code:pragmaMemo}Sintaxe da cláusula \texttt{memo}.}
     \begin{lstlisting}[frame=single, language=C++]
-        #pragma omp approx memo shared([variables]) [threshold(error-limit)]
+#pragma omp approx memo shared([variables]) [threshold(error-limit)]
     \end{lstlisting}
     \fonte{}
 \end{sourcecode}
@@ -195,12 +194,12 @@ Quando o usuário especifica um limiar por meio do modificador \texttt{threshold
 \begin{sourcecode}[htb]
     \caption{\label{code:exMemo}Exemplo de uso da cláusula \texttt{memo}.}
     \begin{lstlisting}[frame=single, language=C++]
-        #pragma omp approx memo shared(sum) threshold(0.1)
-        {
-            for (int i = 0; i < N; i++) {
-                sum += values[i];
-            }
-        }
+#pragma omp approx memo shared(sum) threshold(0.1)
+{
+    for (int i = 0; i < N; i++) {
+        sum += values[i];
+    }
+}
     \end{lstlisting}
     \fonte{}
 \end{sourcecode}
