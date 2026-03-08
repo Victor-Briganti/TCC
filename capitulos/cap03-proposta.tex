@@ -117,54 +117,6 @@ float sqrt_approx(float x)
     \fonte{}
 \end{sourcecode}
 
-\section{Descarte de Tarefas}\label{subsec:pragmaTaskdrop}
-
-O conceito de tarefas no \texttt{OpenMP} permite a execução assíncrona de regiões de código. Quando uma \textit{thread} encontra uma região anotada com a cláusula \texttt{task}, um objeto de tarefa é criado para ser executado posteriormente. Essa tarefa é então escalonada dinamicamente, podendo ser executada por qualquer outra \textit{thread}. Esse modelo de execução é particularmente útil em computações heterogêneas e irregulares, pois permite uma distribuição dinâmica da carga de trabalho entre as \textit{threads}~\cite{ayguade2007,openmpapi52}.
-
-O construtor \texttt{taskloop} estende esse conceito para laços. Cada laço é particionado em pedaços, definidos pelo parâmetro \texttt{grainsize}, e uma tarefa é criada para cada pedaço. Essas tarefas podem então ser executadas de forma independente por diferentes \textit{threads}.
-
-\begin{figure}[htb]
-    \caption{Modelo de execução da cláusula \texttt{drop}.}
-    \centering
-    \includegraphics[width=\textwidth]{figuras/task.pdf}
-    \label{fig:task_drop}
-    \fonte{}
-\end{figure}
-
-Neste trabalho, propomos a cláusula \texttt{drop}, que pode ser usada em conjunto com \texttt{taskloop} para implementar uma estratégia de aproximação baseada no descarte de tarefas. De forma similar à técnica de perforação de laço, essa cláusula permite que o usuário especifique uma taxa de descarte, que define quantas tarefas serão eliminadas. A \autoref{eq:perfo} é utilizada para determinar quais tarefas devem ser descartadas.
-
-A \autoref{fig:task_drop} ilustra esse processo, e a \autoref{code:pragmaDrop} apresenta a sintaxe da cláusula.
-
-\begin{sourcecode}[htb]
-    \caption{\label{code:pragmaDrop}Sintaxe da cláusula \texttt{drop}}
-    \begin{lstlisting}[frame=single, language=C++]
-#pragma omp approx taskloop drop(drop-rate)
-    \end{lstlisting}
-    \fonte{}
-\end{sourcecode}
-
-O \autoref{code:exDrop} mostra um exemplo de uso da cláusula \texttt{drop} em conjunto com \texttt{taskloop} para aproximar o resultado de uma soma. o descarte de tarefas pode aumentar o desempenho da aplicação, pois ao ignorar determinadas execuções, a \textit{thread} fica com sua execução livre para avançar mais rapidamente para outras regiões de código.
-
-\begin{sourcecode}[htb]
-    \caption{Exemplo de uso da cláusula \texttt{drop}.}
-    \label{code:exDrop}
-    \begin{lstlisting}[frame=single, language=C++]
-#pragma omp parallel
-{
-    #pragma omp single
-    {
-        #pragma omp approx taskloop drop(3) reduction(+ : sum)
-        {
-            for (int i = 0; i < N; i++) {
-                sum += values[i];
-            }
-        }
-    }
-}
-    \end{lstlisting}
-    \fonte{}
-\end{sourcecode}
-
 \section{Memoização}\label{subsec:pragmaMemo}
 
 A cláusula \texttt{memo} habilita otimizações de memoização aproximada, permitindo o reuso de resultados previamente calculados. Essa estratégia é particularmente útil para funções onde a relação entre entrada e saída se mantém estável ao longo do tempo, desde que a execução da mesma região de código produza resultados consistentes, independentemente das entradas específicas.

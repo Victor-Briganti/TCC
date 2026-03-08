@@ -1,6 +1,6 @@
 \chapter{Fundamentaç\~ao Te\'orica}\label{cap:fundamentacaoTeorica}
 
-Este capítulo apresenta os conceitos relacionados a \gls{ca} e \gls{cp}. Primeiramente aborda-se a definição de \gls{ca}, seu uso em aplicações, os desafios enfrentados por essa estratégia e o detalhamento dos algoritmos de perforação de laço, memoização, aproximação de ponto flutuante e o descarte de tarefas. Por fim apresenta também conceitos de \gls{cp} com um foco no uso da ferramenta OpenMP.
+Este capítulo apresenta os conceitos relacionados a \gls{ca} e \gls{cp}. Primeiramente aborda-se a definição de \gls{ca}, seu uso em aplicações, os desafios enfrentados por essa estratégia e o detalhamento dos algoritmos de perforação de laço, memoização e aproximação de ponto flutuante. Por fim apresenta também conceitos de \gls{cp} com um foco no uso da ferramenta OpenMP.
 
 \section{Computação aproximada}\label{sec:compAprox}
 
@@ -68,12 +68,6 @@ A representação de números reais por meio de números de ponto flutuante envo
 \end{figure}
 
 Para reduzir esse tipo de problema, compiladores geralmente evitam aplicar otimizações que possam amplificar erros em operações de ponto flutuante. No entanto, alguns compiladores permitem habilitar explicitamente tais otimizações. Por exemplo, \texttt{Clang} e \texttt{GCC} oferecem a opção \texttt{ffast-math}, que permite aplicar essas otimizações durante a compilação de todo o módulo~\cite{gccffast, clangffast}. O Microsoft Visual C++ (\texttt{MSVC}) disponibiliza a diretiva \texttt{\#pragma float\_control}, que permite definir regiões específicas do código nas quais essas otimizações podem ser aplicadas~\cite{msvcfast}. Por fim, o compilador da Intel (\texttt{ICC}) também fornece suporte a aproximações em ponto flutuante por meio das \textit{flags} \texttt{fp-speculation}, \texttt{Qfp-speculation} e \texttt{-fp-model=fast[=1|2]}~\cite{intelfast}.
-
-\subsection{Descarte de Tarefas}\label{subsec:descTar}
-
-O descarte de tarefas é um conceito abrangente que engloba diferentes técnicas de aproximação, incluindo, em alguns casos, a própria perforação de laço. Sua ideia central baseia-se em computações que podem ser divididas em unidades menores, chamadas tarefas, das quais uma parte delas é descartada~\cite{mittal2016}.
-
-As implementações dessa técnica costumam adotar uma taxa de descarte, que define a fração de tarefas a serem eliminadas durante a execução do programa. A \autoref{fig:perfoMod} também pode ser utilizada para ilustrar esse mecanismo: os blocos brancos representam tarefas descartadas, enquanto os blocos azuis indicam as tarefas efetivamente executadas.
 
 \section{Impacto da Aproximação no Resultado de Computações}\label{sec:impacto}
 
@@ -257,7 +251,7 @@ Em contraste com outros trabalhos, nossa abordagem baseia-se na extensão da imp
         \hline
         HPAC-Offload~\cite{fink2023}              & C/C++, LLVM, OpenMP                 & Paralelismo via GPU            & Perforação de laço, memoização aproximada                                                               & Interoperabilidade com OpenMP; Hierarquia de aproximação em GPU                                                                                                            \\
         \hline
-        \textbf{Este Trabalho}                    & \textbf{C/C++, LLVM, OpenMP}        & \textbf{Regiões paralelas}     & \textbf{Perforação de laço, memoização aproximada, aproximação em ponto flutuante, descarte de tarefas} & \textbf{Integração direta com OpenMP; Combina análise em tempo de compilação e decisões em tempo de execução; Aplica múltiplas técnicas de aproximação visando desempenho} \\
+        \textbf{Este Trabalho}                    & \textbf{C/C++, LLVM, OpenMP}        & \textbf{Regiões paralelas}     & \textbf{Perforação de laço, memoização aproximada, aproximação em ponto flutuante} & \textbf{Integração direta com OpenMP; Combina análise em tempo de compilação e decisões em tempo de execução; Aplica múltiplas técnicas de aproximação visando desempenho} \\
         \hline
     \end{tabular}
     \fonte{}
