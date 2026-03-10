@@ -1,11 +1,11 @@
 \chapter{Proposta}\label{cap:proposta}
 
-A proposta deste trabalho é o desenvolvimento de um construto para \texttt{OpenMP} que facilita a implementação de algoritmos de aproximação. Assim como outros construtos da API, a proposta utiliza anotações de código, para diretivas de compilação que podem ser executadas de forma aproximada. A integração dessas anotações ao arcabouço do \texttt{OpenMP} assegura que as técnicas sejam portáveis e adaptáveis a diferentes trechos de código.
+A proposta deste trabalho é o desenvolvimento de um construtor para \texttt{OpenMP} que facilita a implementação de algoritmos de aproximação. Assim como outros construtores da API, a proposta utiliza anotações de código, para diretivas de compilação que podem ser executadas de forma aproximada. A integração dessas anotações ao arcabouço do \texttt{OpenMP} assegura que as técnicas sejam portáveis e adaptáveis a diferentes trechos de código.
 
-A \autoref{code:pragmaApprox} apresenta a diretiva \texttt{\#pragma approx}, que delimita uma região de código a ser aproximada e especifica a técnica a ser aplicada. Múltiplas cláusulas podem ser combinadas em um único construto para definir diferentes parâmetros de aproximação. Entretanto, a implementação atual suporta apenas uma técnica de aproximação por vez.
+A \autoref{code:pragmaApprox} apresenta a diretiva \texttt{\#pragma approx}, que delimita uma região de código a ser aproximada e especifica a técnica a ser aplicada. Múltiplas cláusulas podem ser combinadas em um único construtor para definir diferentes parâmetros de aproximação. Entretanto, a implementação atual suporta apenas uma técnica de aproximação por vez.
 
 \begin{sourcecode}[htb]
-    \caption{Sintaxe do construto \texttt{approx}.}
+    \caption{Sintaxe do construtor \texttt{approx}.}
     \label{code:pragmaApprox}
     \begin{lstlisting}[frame=single, language=C++]
 #pragma omp approx [clause, [[,]clause]]
