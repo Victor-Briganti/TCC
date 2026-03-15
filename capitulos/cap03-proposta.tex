@@ -1,11 +1,11 @@
 \chapter{Proposta}\label{cap:proposta}
 
-A proposta deste trabalho é o desenvolvimento de um construtor para \texttt{OpenMP} que facilita a implementação de algoritmos de aproximação. Assim como outros construtores da API, a proposta utiliza anotações de código, para diretivas de compilação que podem ser executadas de forma aproximada. A integração dessas anotações ao arcabouço do \texttt{OpenMP} assegura que as técnicas sejam portáveis e adaptáveis a diferentes trechos de código.
+Este trabalho propõe o desenvolvimento de um novo construto para a API \texttt{OpenMP}, visando facilitar a implementação de algoritmos de \gls{ca}. Alinhada ao modelo de execução baseado em diretivas de \texttt{OpenMP}, a proposta utiliza diretivas de compilação para identificar regiões passíveis de execução aproximada. A integração ao ecossistema \texttt{OpenMP} assegura que tais técnicas sejam portáveis e adaptáveis a diferentes trechos de código.
 
-A \autoref{code:pragmaApprox} apresenta a diretiva \texttt{\#pragma approx}, que delimita uma região de código a ser aproximada e especifica a técnica a ser aplicada. Múltiplas cláusulas podem ser combinadas em um único construtor para definir diferentes parâmetros de aproximação. Entretanto, a implementação atual suporta apenas uma técnica de aproximação por vez.
+A \autoref{code:pragmaApprox} apresenta a sintaxe da diretiva \texttt{\#pragma omp approx}, que delimita uma região de código no qual a técnica de aproximação será aplicada. Embora o construtor permita a combinação de múltiplas cláusulas para a definição de parâmetros, a implementação atual suporta o uso de apenas uma técnica por região de aproximada.
 
 \begin{sourcecode}[htb]
-    \caption{Sintaxe do construtor \texttt{approx}.}
+    \caption{Sintaxe do construto \texttt{approx}.}
     \label{code:pragmaApprox}
     \begin{lstlisting}[frame=single, language=C++]
 #pragma omp approx [clause, [[,]clause]]
@@ -13,50 +13,30 @@ A \autoref{code:pragmaApprox} apresenta a diretiva \texttt{\#pragma approx}, que
     \fonte{}
 \end{sourcecode}
 
-As próximas seções apresentam as técnicas implementadas e suas respectivas cláusulas e parâmetros.
+Além da diretiva, a proposta introduz a variável de ambiente \texttt{OMP\_APPROX}, que permite habilitar (\texttt{TRUE}) ou desabilitar (\texttt{FALSE}) as técnicas de aproximação sem a necessidade de modificar o código fonte ou realizar novas compilações. A implementação desse sistema assemelha-se ao funcionamento da cláusula \texttt{if}. Na prática, o compilador gera tanto a versão aproximada quanto a versão original do código. Durante a execução, o valor da variável de ambiente é verificado para decidir qual caminho de execução deve ser seguido.
+
+As seções subsequentes detalham as técnicas implementadas, suas respectivas cláusulas e parâmetros de configuração.
 
 \section{Perforação de Laço}\label{subsec:pragmaPerfo}
 
-A cláusula \texttt{perfo} habilita o uso de perforação de laços (\textit{loop perforation}), permitindo reduzir o número de iterações executadas. Essa cláusula deve ser utilizada em conjunto com a cláusula \texttt{for}, e suporta modificadores que definem tanto o algoritmo de perforação quanto a taxa de descarte de iterações. Os modificadores disponíveis são: \texttt{init}, \texttt{fini}, \texttt{small}, \texttt{large} e \texttt{default}.
-A \autoref{code:pragmaPerfo} apresenta a sintaxe da cláusula, tanto o tipo da perforação quanto a taxa de descarte são parâmetros obrigatórios nessa cláusula.
+A cláusula \texttt{perfo} habilita o uso de perforação de laços (\textit{loop perforation}), permitindo reduzir o número de iterações executadas. Essa cláusula deve ser utilizada em conjunto com a cláusula \texttt{for}, e suporta modificadores que definem tanto o algoritmo de perforação quanto a quantidade de iterações a serem descartadas. Os modificadores disponíveis são: \texttt{init}, \texttt{fini} e \texttt{large}. O \autoref{code:pragmaPerfo} apresenta a sintaxe da cláusula, tanto o tipo da perforação quanto a taxa de descarte são parâmetros obrigatórios nessa cláusula.
 
 \begin{sourcecode}[htb]
     \caption{Sintaxe da cláusula \texttt{perfo}}
     \label{code:pragmaPerfo}
     \begin{lstlisting}[frame=single, language=C++]
-#pragma omp approx perfo({init, fini, small, large, default}, \
-                         drop-rate)
+#pragma omp approx perfo({init, fini, large}, drop-rate)
     \end{lstlisting}
     \fonte{}
 \end{sourcecode}
 
-O modificador \texttt{init} descarta a quantidade especificada de iterações no início do laço.
-Esse comportamento é implementado por meio de uma alteração na variável de indução, que ajusta o limite inferior do laço para cada \textit{thread}.
-Dessa forma, quando a \textit{thread} assume sua fatia do laço, as primeiras iterações dessa fatia são descartadas. O comportamento dessa cláusula é apresentado na Figura~\ref{subfig:perfo_init}.
+O modificador \texttt{init} descarta iterações no início do laço. A implementação desta técnica depende do escalonador da \textit{runtime}. No \texttt{OpenMP}, o escalonador distribui o espaço de iterações entre as \textit{threads} por meio da cláusula \texttt{schedule(type [, chunk])}. Durante a execução paralela, parâmetros como o limite inferior, limite superior e o tamanho do passo são fornecidos a cada \textit{thread} para o processamento de sua carga de trabalho. A técnica proposta atua sobre o limite inferior, incrementando seu valor original para que a execução inicie em um ponto avançado do laço.
 
-O modificador \texttt{fini} descarta as iterações finais do laço, de modo análogo ao \texttt{init}, afetando também os limites do laço por \textit{thread}. Seu comportamento é apresentado na Figura~\ref{subfig:perfo_fini}.
+Esta abordagem apresenta variações de comportamento conforme o modificador da cláusula \texttt{schedule}. No escalonamento \texttt{static}, as iterações são divididas em blocos de tamanho fixo (\textit{chunks}) e a distribuição segue um modelo estático, isso garante que cada tarefa processe um volume reduzido de iterações de forma previsível. Em contrapartida, nos escalonamentos \texttt{dynamic} e \texttt{guided}, as \textit{threads} solicitam novos blocos de iterações sob demanda ao finalizarem suas tarefas anteriores. Nestes casos, a perfuração torna-se imprevisível, pois a carga de trabalho total processada individualmente depende da velocidade de execução e da latência de sincronização, isso pode pode resultar em descartes inferiores aos observados no modelo estático. O comportamento desse modificador é apresentado na Figura~\ref{subfig:perfo_init}, na qual os quadros azuis representam as iterações executadas e os quadros brancos indicam as iterações não executadas.
 
-O modificador \texttt{small} aplica uma estratégia probabilística, na qual um valor aleatório é usado para decidir o descarte de iterações, com base em uma condição de módulo envolvendo a taxa de descarte.
-Se a condição do valor aleatório ser igual à taxa for satisfeita, a variável de indução é incrementada pela taxa de descarte, efetivamente pulando algumas iterações, como mostra a Figura~\ref{subfig:perfo_small}.
+O modificador \texttt{fini} também interage com o escalonador para realizar o descarte de iterações. Sua diferença para o \texttt{init} está no fato de que este modificador altera o limite superior recebido pelas \textit{threads}. O limite é reduzido com base no valor especificado para o descarte, impedindo que as iterações alcancem o final original da execução. O \texttt{fini} apresenta as mesmas limitações do \texttt{init} em relação aos tipos de escalonadores. A Figura~\ref{subfig:perfo_fini} apresenta o modelo de execução deste modificador.
 
-A \autoref{eq:perfo}, apresenta a fórmula usada para verificar a condição. As variáveis envolvidas nessa fórmula são:
-
-\begin{itemize}
-    \item $\xi$: Número aleatório.
-    \item $ub$: Limite superior do laço.
-    \item $lb$: Limite inferior do laço.
-    \item $d$: Taxa de descarte.
-\end{itemize}
-
-\begin{equation}
-    \label{eq:perfo}
-    \xi \mod ((ub - lb) + ub) \mod d
-\end{equation}
-
-O modificador \texttt{large} aplica uma perforação mais agressiva, incrementando diretamente a variável de indução pela taxa de descarte.
-Essa substituição é feita em tempo de execução, interceptando a lógica padrão de incremento ou decremento e substituindo-a por uma chamada de função que ajusta a variável de indução conforme a taxa. A Figura~\ref{subfig:perfo_large} apresenta o seu comportamento no laço, os quadrados em azul são iterações executadas, enquanto os quadrados brancos são iterações que não foram executadas.
-
-O modificador \texttt{default} apresenta comportamento semelhante ao \texttt{large}, porém a taxa de descarte é aplicada em tempo de compilação, eliminando a sobrecarga associada a chamadas adicionais durante a execução.
+Por fim, o modificador \texttt{large} difere das técnicas anteriores por ser implementado diretamente no processo de geração de código. Com base na taxa de descarte especificada, o compilador gera um incremento adicional no laço para que as iterações realizem saltos maiores. Por ser um modificador que altera diretamente o código, essa técnica não sofre variações conforme os diferentes tipos de escalonador. A Figura~\ref{subfig:perfo_large} ilustra esse comportamento.
 
 \begin{figure}[htbp]
     \caption{Características de cada modificador.}
@@ -72,11 +52,6 @@ O modificador \texttt{default} apresenta comportamento semelhante ao \texttt{lar
         \label{subfig:perfo_fini}
     }
 
-    \subfloat[Comportamento do modificador \texttt{small}.]{
-        \includegraphics[width=0.45\textwidth]{figuras/perfo_small.pdf}
-        \label{subfig:perfo_small}
-    }
-    \hfill
     \subfloat[Comportamento do modificador \texttt{large}.]{
         \includegraphics[width=0.45\textwidth]{figuras/perfo_large.pdf}
         \label{subfig:perfo_large}
@@ -88,33 +63,53 @@ O modificador \texttt{default} apresenta comportamento semelhante ao \texttt{lar
 
 \section{Aproximação de Ponto Flutuante}\label{subsec:pragmaFastmath}
 
-A cláusula \texttt{fastmath} habilita otimizações de ponto flutuante, seguindo a semântica do parâmetro de compilação \texttt{--fast-math} do compilador \texttt{Clang}~\cite{clangffast}. Quando aplicada, o compilador extrai a região de código anotada e adiciona metadados indicando que essa região permite otimizações agressivas de ponto flutuante.
+A cláusula \texttt{fastmath} introduz otimizações agressivas de ponto flutuante em regiões específicas do código. Diferentemente da \textit{flag} de compilação \texttt{-ffast-math} do compilador \textit{Clang}~\cite{clangffast}, que aplica essas otimizações globalmente a todo o módulo compilado, a cláusula permite um controle mais granular, sendo aplicada apenas a blocos de código delimitados pela diretiva \texttt{\#pragma omp approx fastmath}. Dessa forma, regiões críticas de desempenho podem se beneficiar de otimizações agressivas enquanto o restante do programa mantém o comportamento numérico padrão.
 
-A principal diferença entre os dois métodos é que a cláusula \texttt{fastmath} oferece controle mais granular, permitindo que as otimizações sejam aplicadas apenas na região especificada. Em contraste, o parâmetro global \texttt{--fast-math} força a aplicação dessas otimizações em todo o módulo de compilação. A \autoref{code:pragmaFastmath} apresenta a sintaxe da cláusula.
+Quando a cláusula é utilizada, o compilador passa a habilitar as mesmas otimizações associadas à \texttt{-ffast-math}, flexibilizando operações de ponto flutuante, permitindo reordenação de operações aritméticas e eliminando verificações de segurança que impactam o desempenho. Além disso, a cláusula integra uma biblioteca matemática aproximada desenvolvida para substituir determinadas funções da biblioteca padrão \texttt{math.h}\footnote{Disponível em: https://github.com/Victor-Briganti/fastmath/tree/main}. Essa biblioteca utiliza aproximações polinomiais baseadas em polinômios de Chebyshev~\cite{lloyd2019}, que permitem calcular funções matemáticas com menor custo computacional, explorando o fato de que esses polinômios apresentam boas propriedades de aproximação numérica em intervalos bem definidos.
+
+A arquitetura da cláusula opera, portanto, em dois níveis. No primeiro nível, as otimizações de ponto flutuante equivalentes à \texttt{-ffast-math} são ativadas apenas para o bloco de código anotado. No segundo nível, durante a compilação, chamadas para determinadas funções matemáticas dentro dessa região são substituídas por suas versões aproximadas presentes na biblioteca. A sintaxe da diretiva é apresentada no \autoref{code:pragmaFastmath}.
 
 \begin{sourcecode}[htb]\caption{\label{code:pragmaFastmath}Sintaxe da cláusula \texttt{fastmath}}
-    \begin{lstlisting}[frame=single, language=C++]
+\begin{lstlisting}[frame=single, language=C++]
 #pragma omp approx fastmath
-    \end{lstlisting}
-    \fonte{}
+\end{lstlisting}
+\fonte{}
 \end{sourcecode}
-Uma característica fundamental dessa cláusula está nas otimizações relacionadas à associatividade das operações de ponto flutuante. Isso permite que o compilador reordene operações de modo a melhorar o desempenho. Embora a reordenação seja válida para números reais, na aritmética de ponto flutuante ela pode produzir resultados numericamente distintos devido aos erros de arredondamento acumulados em cada operação.
 
-A \autoref{code:exFastmath} apresenta um exemplo prático do uso da cláusula. A função \textit{sqrt}, por exemplo, normalmente requer verificações adicionais para lidar com entradas inválidas, como valores negativos ou \textit{Not a Number} (\textit{NaN}). Ao aplicar \texttt{fastmath}, o compilador assume que essas entradas não ocorrerão, emitindo diretamente a instrução de hardware \textit{sqrt}, sem checagens extras, o que reduz a sobrecarga e melhora o desempenho.
+Para determinar quais funções poderiam ser incluídas na biblioteca aproximada, foi realizada uma análise experimental avaliando o desempenho das implementações aproximadas em comparação com as funções originais da \texttt{math.h}. Essa análise considerou três métricas principais: \textit{speedup}, erro absoluto e erro relativo. A Figura~\ref{fig:fastmath_common} apresenta os resultados obtidos ao comparar as funções aproximadas com a implementação padrão da \texttt{math.h} em uma execução sem o uso da \textit{flag} \texttt{-ffast-math}. Nesse cenário, as funções \texttt{acos} e \texttt{asin} apresentam um \textit{speedup} aproximado de 2,09$\times$, com erro relativo médio na ordem de 10$^{-15}$. Por outro lado, funções como \texttt{sqrt} atingem ganhos de até 4,04$\times$. A Figura~\ref{fig:fastmath_flag} apresenta os resultados quando a \textit{flag} \texttt{-ffast-math} está ativa durante a compilação, cenário no qual o \textit{speedup} da função \texttt{sqrt} chega a 7,77$\times$.
+
+Dentre todas as implementações avaliadas, apenas a função \texttt{atan} não apresentou ganho de desempenho, registrando um \textit{speedup} de 0,61$\times$. Em contrapartida, funções como \texttt{exp}, \texttt{exp2}, \texttt{log}, \texttt{log2}, \texttt{log10} e \texttt{pow} apresentaram os maiores desvios numéricos, em razão do amplo intervalo de valores que processam. Considerando os resultados obtidos, todas as funções avaliadas, com exceção da \texttt{atan}, apresentaram ganhos de desempenho em relação às implementações da \texttt{math.h}, e são utilizadas pela cláusula durante a substituição.
+
+\begin{figure}[htbp]
+\caption{Relação \textit{speedup} e erro sem o uso da \textit{flag} \texttt{-ffast-math}.}
+\centering
+\includegraphics[width=0.7\textwidth]{figuras/fastmath_common.pdf}
+\fonte{}
+\label{fig:fastmath_common}
+\end{figure}
+
+\begin{figure}[htbp]
+\caption{Relação \textit{speedup} e erro com o uso da \textit{flag} \texttt{-ffast-math}.}
+\centering
+\includegraphics[width=0.7\textwidth]{figuras/fastmath_flag.pdf}
+\fonte{}
+\label{fig:fastmath_flag}
+\end{figure}
+
+O \autoref{code:exFastmath} apresenta um exemplo de uso da cláusula. Ao aplicá-la, o compilador habilita otimizações agressivas de ponto flutuante para a região marcada e substitui chamadas às funções matemáticas suportadas por suas versões aproximadas, reduzindo o custo computacional das operações e favorecendo o uso de vetorização.
 
 \begin{sourcecode}[htb]
-    \caption{Sintaxe da cláusula \texttt{fastmath}.}
-    \label{code:exFastmath}
-    \begin{lstlisting}[frame=single, language=C++]
-float sqrt_approx(float x)
-{
-    #pragma omp approx fastmath
-    {
-        return sqrt(x);
-    }
+\caption{Exemplo de aplicação da cláusula \texttt{fastmath}.}
+\label{code:exFastmath}
+\begin{lstlisting}[frame=single, language=C++]
+void kernel(float *a, float *b, int n) {
+	#pragma omp approx fastmath
+	for (int i = 0; i < n; i++) {
+		a[i] = exp(a[i]) + log(b[i]) * 0.5f;
+	}
 }
-    \end{lstlisting}
-    \fonte{}
+\end{lstlisting}
+\fonte{}
 \end{sourcecode}
 
 \section{Memoização}\label{subsec:pragmaMemo}
