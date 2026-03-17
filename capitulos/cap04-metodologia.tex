@@ -4,17 +4,19 @@ Este capítulo apresenta a metodologia e os recursos utilizados no desenvolvimen
 
 \section{Ambiente e Configuração Experimental}\label{sec:config}
 
-Todos os experimentos deste trabalho foram realizados em um computador equipado com um processador Intel Core i7-4690, com frequência base de 3.6 GHz, quatro núcleos físicos e suporte a oito \textit{threads}. A hierarquia de memória \textit{cache} apresenta 32 KB, 256 KB e 8 MB nos níveis L1, L2 e L3, respectivamente. O sistema possui 32 GB de memória RAM DDR3, distribuídos em quatro módulos de 8 GB configurados em \textit{dual-channel}, cada um operando a 1600 MT/s. O sistema operacional utilizado foi o Ubuntu 22.04 LTS. A \autoref{fig:compArchitecture} apresenta a hierarquia de memória e a disposição dos núcleos do processador utilizados nos testes.
+Os experimentos deste trabalho foram realizados em um computador equipado com um processador Intel Core i7-4790, com frequência base de 3.6 GHz, quatro núcleos físicos e suporte a oito \textit{threads}. A hierarquia de memória \textit{cache} apresenta 32 KB, 256 KB e 8 MB nos níveis L1, L2 e L3, respectivamente. O sistema possui 32 GB de memória RAM DDR3, distribuídos em quatro módulos de 8 GB configurados em \textit{dual-channel}, operando a 1600 MT/s. O sistema operacional utilizado foi o Ubuntu 22.04.4 LTS. A \autoref{fig:compArchitecture} apresenta a hierarquia de memória e a disposição dos núcleos do processador utilizados nos testes.
 
 \begin{figure}[htb]
-	\caption{Especificação do computador utilizado em testes.}
-	\label{fig:compArchitecture}
-	\includegraphics[scale=0.7]{figuras/architecture.pdf}
-	\fonte{}
-	\addcontentsline{loge}{figure}{\protect\numberline{\thefigure}Especificação do computador utilizado na avaliação experimental.}
+\caption{Especificação do computador utilizado em testes.}
+\label{fig:compArchitecture}
+\includegraphics[scale=0.7]{figuras/architecture.pdf}
+\fonte{}
+\addcontentsline{loge}{figure}{\protect\numberline{\thefigure}Especificação do computador utilizado na avaliação experimental.}
 \end{figure}
 
-Cada aplicação foi executada com 1, 2, 4 e 8 \textit{threads} em 10 execuções por configuração para incluir variações no ambiente, todas compiladas com \textit{flag} de compilação \texttt{-O3} (nível de maior otimização do código gerado pelo compilador). Nos algoritmos que envolvem aleatoriedade, como \texttt{perfo} e \texttt{drop}, foi utilizada uma semente fixa para garantir a reprodutibilidade dos resultados. As técnicas \texttt{perfo}, \texttt{drop} e \texttt{memo} foram testadas com cinco níveis de taxa de exclusão: 0.1, 0.2, 0.3, 0.4 e 0.5. Esses valores foram escolhidos por representarem níveis progressivos de descarte, variando de 10\% a 50\% da computação, permitindo observar de maneira controlada como cada aplicação reage a aumentos graduais de aproximação e identificar o ponto onde o impacto no desempenho ou na qualidade se torna mais significativo.
+Todas as aplicações avaliadas foram executadas com 1, 2, 4 e 8 \textit{threads}. Cada configuração foi executada 10 vezes para garantir o cálculo de uma média confiável e minimizar o impacto de anomalias de execução. O ambiente de testes utilizou a variável \texttt{OMP\_PROC\_BIND="TRUE"} para fixar as \textit{threads} aos núcleos físicos da máquina e \texttt{OMP\_APPROX="TRUE"} para habilitar a execução das rotinas de computação aproximada. Nos algoritmos que dependem da geração de números aleatórios, adotamos o uso de sementes fixas para assegurar a reprodutibilidade dos dados.
+
+Todas as aplicações foram avaliadas com as cinco técnicas de aproximação: \texttt{fastmath}, \texttt{perfo\_init}, \texttt{perfo\_fini}, \texttt{perfo\_large} e \texttt{memo}. As três abordagens baseadas em \texttt{perfo} foram avaliadas com taxas de descarte de 10, 20, 30, 40 e 50. A técnica \texttt{memo} foi utilizada com os limiares 10\%, 25\%, 50\% e 100\%. A técnica \texttt{fastmath} atua de forma binária e não possui parametrização de taxa. Todos os códigos foram compilados com a \textit{flag} \texttt{-O3} para buscar ganhos adicionais de desempenho sobre os algoritmos já otimizados. Como grande parte das modificações ligadas à aproximação ocorre apenas durante a fase de geração de código ou em tempo de execução, o compilador padrão não quebrou a semântica do programa nem desfez as otimizações implementadas, preservando o comportamento esperado.
 
 \section{Conjunto de \textit{Benchmarks}}\label{sec:benchmark}
 
@@ -657,19 +659,19 @@ Diante dessa análise, optou-se por utilizar o tempo de execução como métrica
 		\hline
 		\textbf{Aplicação} & \textbf{Fonte}                                     & \textbf{Domínio}            & \textbf{Métrica de Qualidade} \\
 		\hline
-		2MM                & PolyBench~\cite{polybench}                         & Álgebra Linear              & \gls{smape}                   \\
+		2MM                & PolyBench~\cite{polybench}                         & Álgebra Linear              & \gls{mape}                   \\
 		\hline
-		Correlação         & PolyBench~\cite{polybench}                         & Probabilidade e Estatística & \gls{smape}                   \\
+		Correlação         & PolyBench~\cite{polybench}                         & Probabilidade e Estatística & \gls{mape}                   \\
 		\hline
 		Deriche            & PolyBench~\cite{polybench}                         & Processamento de Imagem     & \gls{ssim}                    \\
 		\hline
-		Jacobi 2D          & PolyBench~\cite{polybench}                         & Solução Numérica            & \gls{smape}                   \\
+		Jacobi 2D          & PolyBench~\cite{polybench}                         & Solução Numérica            & \gls{mape}                   \\
 		\hline
 		K-Means            & Rodinia~\cite{rodinia}                             & Aprendizado de Máquina      & \gls{mcr}                     \\
 		\hline
-		Mandelbrot         & Debian Benchmarks Game~\cite{debianBenchmarksGame} & Visualização Computacional  & \gls{smape}                   \\
+		Mandelbrot         & Debian Benchmarks Game~\cite{debianBenchmarksGame} & Visualização Computacional  & \gls{mape}                   \\
 		\hline
-		PI de Monte Carlo  & Debian Benchmarks Game~\cite{debianBenchmarksGame} & Probabilidade e Estatística & \gls{smape}                   \\
+		PI de Monte Carlo  & Debian Benchmarks Game~\cite{debianBenchmarksGame} & Probabilidade e Estatística & \gls{mape}                   \\
 		\hline
 	\end{tabular}
 	\fonte{}
@@ -678,51 +680,4 @@ Diante dessa análise, optou-se por utilizar o tempo de execução como métrica
 
 As aplicações selecionadas foram escolhidas por apresentarem diferentes padrões computacionais, possuírem suporte consistente à paralelização e incluírem etapas cujo resultado pode tolerar algum nível de aproximação. A \autoref{tab:benchmarks} resume as aplicações utilizadas nos experimentos, indicando suas fontes, domínios e métricas de qualidade. Cada uma das aplicações selecionadas, serviram para avaliar como as técnicas de aproximação implementadas afetam o desempenho e a acurácia, considerando diferentes ambientes computacionais e padrões de paralelismo.
 
-As métricas de qualidade foram definidas conforme a natureza da saída produzida por cada aplicação. Para aplicações com resultados numéricos contínuos, como 2MM, Correlação, Jacobi 2D e PI de Monte Carlo, adotou-se o \gls{smape}, pois essa métrica permite comparar valores aproximados e exatos mesmo quando variam de escala. No caso do K-Means, utilizou-se o \gls{mcr} por ser uma métrica específica para avaliar a precisão da atribuição dos pontos aos \textit{clusters}. Já na aplicação Deriche, cujo resultado é uma imagem filtrada, optou-se pelo \textit{ssim}, que mede a similaridade estrutural entre as imagens.
-
-\section{Cronograma}\label{sec:cronograma}
-
-A realização deste trabalho é organizada em partes, as quais são descritas a seguir:
-
-\begin{enumerate}
-	\item Realizar uma revisão da literatura relacionada à \gls{ca}, técnicas de aproximação e \gls{cp}.
-	\item Revisar a infraestrutura do \texttt{OpenMP}.
-	\item Investigar a infraestrutura do LLVM.
-	\item Revisar aplicações de \textit{benchmark} que podem ser aplicadas em sistemas aproximados.
-	\item Adaptar um \textit{benchmark suite} para que ele se encaixe nas otimizações paralelas e aproximadas.
-	\item Testar e documentar as execuções dessas aplicações.
-	\item Implementar técnicas de aproximação paralela na infraestrutura do \texttt{OpenMP} integrada ao LLVM.
-	\item Testar e documentar as execuções do \textit{benchmark} em conjunto com as novas técnicas apresentadas.
-	\item Investigar e avaliar o desempenho e a acurácia de cada uma das aplicações.
-	\item Documentar todos os procedimentos e resultados.
-	\item Escrita do trabalho de conclusão.
-	\item Defesa do projeto de Trabalho de Conclusão de Curso (TCC1).
-	\item Defesa do projeto de Trabalho de Conclusão de Curso (TCC2).
-\end{enumerate}
-
-A \autoref{tab:cronograma} detalha o planejamento temporal para a execução de cada uma das atividades descritas.
-
-\begin{table}[htb]
-	\centering
-	\caption{Cronograma de execução das atividades}
-	\begin{tabular}{|c|c|c|c|c|c|c|c|c|}
-		\hline
-		\textbf{Atividades} & \textbf{Ago} & \textbf{Set} & \textbf{Out} & \textbf{Nov} & \textbf{Dez} & \textbf{Jan} & \textbf{Fev} & \textbf{Mar} \\
-		\hline
-		1                   & X            & X            &              &              &              &              &              &              \\ \hline
-		2                   &              & X            & X            &              &              &              &              &              \\ \hline
-		3                   &              & X            & X            &              &              &              &              &              \\ \hline
-		4                   &              &              & X            & X            &              &              &              &              \\ \hline
-		5                   &              &              & X            & X            &              &              &              &              \\ \hline
-		6                   &              &              & X            & X            &              &              &              &              \\ \hline
-		7                   &              &              &              &              & X            & X            & X            &              \\ \hline
-		8                   &              &              &              &              &              & X            & X            &              \\ \hline
-		9                   &              &              &              &              &              &              & X            & X            \\ \hline
-		10                  & X            & X            & X            & X            & X            & X            & X            & X            \\ \hline
-		11                  & X            & X            & X            & X            & X            & X            & X            & X            \\ \hline
-		12                  &              &              &              & X            &              &              &              &              \\ \hline
-		13                  &              &              &              &              &              &              &              & X            \\ \hline
-	\end{tabular}
-	\fonte{}
-	\label{tab:cronograma}
-\end{table}
+As métricas de qualidade foram definidas conforme a natureza da saída produzida por cada aplicação. Para aplicações com resultados numéricos contínuos, como 2MM, Correlação, Jacobi 2D e PI de Monte Carlo, adotou-se o \gls{mape}, pois essa métrica permite comparar valores aproximados e exatos mesmo quando variam de escala. No caso do K-Means, utilizou-se o \gls{mcr} por ser uma métrica específica para avaliar a precisão da atribuição dos pontos aos \textit{clusters}. Já na aplicação Deriche, cujo resultado é uma imagem filtrada, optou-se pelo \textit{ssim}, que mede a similaridade estrutural entre as imagens.

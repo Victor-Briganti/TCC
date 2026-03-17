@@ -114,44 +114,55 @@ void kernel(float *a, float *b, int n) {
 
 \section{Memoização}\label{subsec:pragmaMemo}
 
-A cláusula \texttt{memo} habilita a memoização aproximada de blocos de código arbitrários, esta estratégia explora regiões de código com relações de entrada e saída estáveis, onde execuções sucessivas produzem resultados consistentes. A \autoref{code:pragmaMemo} apresenta a sintaxe da cláusula \texttt{memo}. Ela é utilizada obrigatoriamente em conjunto com as cláusulas \texttt{output}, que especifica a variável única de saída a ser memoizada, e \texttt{num\_entries}, que define a quantidade de entradas que irão compor o conjunto de amostragem. O parâmetro \texttt{max\_refs} delimita a quantidade de referências que o sistema suporta antes de descartar os dados armazenados. O objetivo é evitar o reaproveitamento indefinido de resultados, permitindo que a aplicação atualize o conjunto de amostras.
+A cláusula \textit{memo} habilita a memoização aproximada em blocos de código arbitrários. Esta estratégia explora regiões que apresentam relações de entrada e saída estáveis, onde execuções sucessivas produzem resultados consistentes. O \autoref{code:pragmaMemo} apresenta a sintaxe da cláusula. A cláusula \texttt{memo}, necessita do parâmetro \textit{threshold}, definido entre 0 e 100, que serve para estabelecer o limite de erro percentual tolerável para a interpolação em relação ao resultado real, além disso a o seu uso exige a cláusula \textit{output}, que especifica uma única variável de saída a ser aproximada. 
 
 \begin{sourcecode}[htb]
-\caption{\label{code:pragmaMemo}Sintaxe da cláusula \texttt{memo}.}
+\caption{\label{code:pragmaMemo}Sintaxe da cláusula \textit{memo}.}
 \begin{lstlisting}[frame=single, language=C++]
-#pragma omp approx memo([max_refs]) output(variable) num_entries([entries])
+#pragma omp approx memo(threshold) output(variable)
 \end{lstlisting}
 \fonte{Autor}
 \end{sourcecode}
 
-Internamente, a técnica utiliza uma estrutura de tabela \textit{hash} única para cada \textit{thread}, o que permite que a \textit{runtime} intercepte a região anotada e gerencie o ciclo de vida dos dados sem contenção entre as \textit{threads}. Cada região é uma entrada dentro dessa \textit{hash}, em um primeiro momento o código original executa normalmente e os seus valores são armazenados para preencher o conjunto de amostras, o valor definido em \texttt{num\_entries} determina a quantidade de amostras que serão coletadas antes da memoização. Após o preenchimento da estrutura, o sistema entra na fase de interpolação, onde o conjunto acumulado é utilizado para aproximar os resultados pelas próximas execuções, a quantidade de vezes que isso ocorre é delimitado pelo parâmetro \textit{max\_refs} da cláusula \texttt{memo}.Durante este estágio, o bloco de código original não é executado. Uma vez atingido o limite de referências, o conjunto de dados perde a validade e o ciclo é reiniciado com uma nova coleta de amostras, garantindo que a aproximação acompanhe possíveis variações no comportamento da aplicação. O fluxo de sua execução está ilustrado na \autoref{fig:memo}.
+Internamente, a técnica utiliza uma estrutura de tabela \textit{hash} local para cada \textit{thread}. Essa organização permite que a \textit{runtime} intercepte a região anotada e gerencie o ciclo de vida dos dados sem contenção. Cada região corresponde a uma entrada na tabela. O funcionamento baseia-se em um sistema de aprendizado dinâmico composto por quatro estados principais: \textit{computing}, \textit{predicting}, \textit{validating} e \textit{empty}.
+
+Inicialmente, no estado \textit{computing}, o código original é executado e o resultado é armazenado em um \textit{bucket} de histórico. Após essa coleta inicial, o sistema transita para o estado \textit{predicting}. Nesta fase, a \textit{runtime} ignora a execução do bloco de código e fornece um valor aproximado via interpolação. A quantidade de predições consecutivas é controlada por uma janela dinâmica, que define o intervalo antes da próxima validação.
+
+Ao atingir o limite da janela, o sistema entra em \textit{validating}. O código original é executado novamente para que o resultado real seja comparado ao valor interpolado. O erro é calculado conforme a \autoref{eq:error_calc}. Se o erro estiver dentro do \textit{threshold} estipulado, a confiança no modelo aumenta e o tamanho da janela de predição dobra, até o limite de $2^{20}$. Caso contrário, a janela é reduzida para uma unidade, e o novo valor real é inserido no histórico para atualizar a base de amostras. Esse mecanismo garante que a aproximação acompanhe variações temporais no comportamento da aplicação. O fluxo de execução está ilustrado na \autoref{fig:memo}.
 
 \begin{figure}[htb]
-\caption{Modelo de execução da cláusula \texttt{memo}.}
+\caption{Modelo de execução da cláusula \textit{memo} com aprendizado dinâmico.}
 \centering
 \includegraphics[scale=0.5]{figuras/memo.pdf}
 \label{fig:memo}
 \fonte{Autor}
 \end{figure}
 
-A interpolação acontece por meio da média aritmética dos valores amostrados. A \autoref{eq:media_aritmetica} apresenta a fórmula utilizada, onde $A$ simboliza o conjunto de valores amostrados. Todos os tipos escalares básicos seguem essa mesma fórmula, com exceção dos booleanos, onde a função aplica um limiar onde o resultado é verdadeiro se a média for maior que 0,5 e falso caso contrário.
+A interpolação é realizada por meio da média aritmética dos valores presentes no histórico de cada \textit{bucket}. A \autoref{eq:media_aritmetica} apresenta a fórmula aplicada para tipos escalares, onde $A$ representa o \textit{bucket} com os valores armazenados durante as execuções. Para variáveis booleanas, o sistema aplica um limiar onde o resultado é verdadeiro se a média for maior ou igual a 0,5.
 
 \begin{equation}
-	\label{eq:media_aritmetica}
-	media = \frac{1}{n} \sum^{n - 1}_{i = 0} A_i
+\label{eq:media_aritmetica}
+media = \frac{1}{n} \sum^{n - 1}_{i = 0} A_i
 \end{equation}
 
-O \autoref{code:exMemo} demonstra a aplicação da cláusula em um laço de repetição. Neste exemplo, a variável \texttt{sum} será memoizada. O sistema coletará 4096 entradas, interpolará os resultados por 100 execuções e, após isso, irá repetir o ciclo de coleta e memoização.
+A precisão da predição é avaliada pela diferença relativa entre o valor previsto ($p$) e o valor real ($r$), conforme descrito na \autoref{eq:error_calc}:
+
+\begin{equation}
+\label{eq:error_calc}
+erro = \frac{|p - r|}{|r|} \times 100
+\end{equation}
+
+O \autoref{code:exMemo} demonstra a aplicação da cláusula em um laço de repetição. Neste exemplo, a variável \textit{sum} é memoizada com um \textit{threshold} de erro de 10\%. O sistema ajustará o intervalo de predições automaticamente com base na estabilidade dos resultados de \textit{sum} durante a execução.
 
 \begin{sourcecode}[htb]
-\caption{\label{code:exMemo}Exemplo de uso da cláusula \texttt{memo}.}
+\caption{\label{code:exMemo}Exemplo de uso da cláusula \textit{memo}.}
 \begin{lstlisting}[frame=single, language=C++]
-#pragma omp approx memo(100) output(sum) num_entries(4096)
-{
-	for (int i = 0; i < N; i++) {
+for (int i = 0; i < N; i++) {
+	#pragma omp approx memo(10) output(sum)
+	{
 		sum += values[i];
 	}
 }
 \end{lstlisting}
-\fonte{}
+\fonte{Autor}
 \end{sourcecode}

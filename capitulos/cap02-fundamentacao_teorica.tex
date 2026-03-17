@@ -65,11 +65,11 @@ A \gls{ca} busca estabelecer um equilíbrio entre o nível de aproximação apli
 
 Nesta pesquisa, utilizam-se métricas de qualidade para quantificar a divergência entre as saídas aproximadas e as saídas exatas, com uma seleção fundamentada na literatura e nas especificidades de cada aplicação. Embora esses indicadores forneçam uma base objetiva para a comparação sistemática de diferentes níveis de aproximação, os valores numéricos nem sempre refletem a utilidade prática do resultado. Conforme observado por \citeonline{felzmann2021}, uma saída com métricas favoráveis pode ser irrelevante para o propósito final do sistema, enquanto resultados com menor precisão , como uma imagem ruidosa que ainda permite o reconhecimento de objetos, podem permanecer aceitáveis. Assim, embora a análise exclusiva por métricas quantitativas possa induzir a interpretações imprecisas sobre a utilidade real dos dados, elas permanecem fundamentais como critério de controle e comparação sistemática.
 
-Para avaliar a perda de acurácia das aplicações, foram adotadas três métricas distintas: o \gls{smape}, o \gls{mcr} e o \gls{ssim}, definidos, respectivamente, nas Equações~\autoref{eq:smape}, \autoref{eq:mcr} e \autoref{eq:ssim}.
+Para avaliar a perda de acurácia das aplicações, foram adotadas três métricas distintas: o \gls{mape}, o \gls{mcr} e o \gls{ssim}, definidos, respectivamente, nas Equações~\autoref{eq:smape}, \autoref{eq:mcr} e \autoref{eq:ssim}.
 
 \begin{equation}
-    SMAPE(A, F) = \frac{100}{n} \sum^{n}_{t=1}\frac{|F_t - A_t|}{|A_t| + |F_t|}
-    \label{eq:smape}
+    MAPE(A, F) = \frac{100}{n} \sum^{n}_{t=1}|\frac{A_t - F_t}{A_t}|
+    \label{eq:mape}
 \end{equation}
 
 \begin{equation}
