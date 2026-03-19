@@ -20,11 +20,11 @@ Todas as aplicações foram avaliadas com as cinco técnicas de aproximação: \
 
 \section{Conjunto de \textit{Benchmarks}}\label{sec:benchmark}
 
-A seleção das aplicações que compõem o conjunto de benchmarks teve como principais critérios a tolerância a erros e a estrutura do algoritmo. Buscou-se contemplar uma gama ampla de domínios, incluindo \textit{machine learning}, álgebra linear, modelos estatísticos e multimídia. Outro objetivo foi preservar ao máximo o código original durante a inserção das regiões paralelizadas, evitando modificações significativas na implementação. As aplicações 2MM, Correlação, Deriche e Jacobi 2D foram obtidas a partir do conjunto PolyBench~\cite{polybench}, K-Means foi obtida a partir do Rodinia~\cite{rodinia} e o Mandelbrot e PI de Monte Carlo foram adaptações do Debian Benchmarks Game~\cite{debianBenchmarksGame}.
+A seleção das aplicações que compõem o conjunto de benchmarks~\footnote{Disponível em: https://github.com/Victor-Briganti/approx-benchmark} teve como principais critérios a tolerância a erros e a estrutura do algoritmo. Buscou-se contemplar uma gama ampla de domínios, incluindo \textit{machine learning}, álgebra linear, modelos estatísticos e multimídia. Outro objetivo foi preservar ao máximo o código original durante a inserção das regiões paralelizadas, evitando modificações significativas na implementação. As aplicações 2MM, Correlação, Deriche e Jacobi 2D foram obtidas a partir do conjunto PolyBench~\cite{polybench}, K-Means foi obtida a partir do Rodinia~\cite{rodinia} e o Mandelbrot e PI de Monte Carlo foram adaptações do Debian Benchmarks Game~\cite{debianBenchmarksGame}.
 
 \subsection{2MM}\label{subsec:2mm}
 
-2mm~\cite{polybench} é uma aplicação que realiza a multiplicação sequencial de duas matrizes, utilizando três matrizes distintas: $A$, $B$ e $C$. O processo de execução é ilustrado pelas Equações~\ref{eq:dot_matrix_a} e~\ref{eq:dot_matrix_b}.
+O \textit{benchmark} 2mm~\cite{polybench} realiza a multiplicação sequencial de matrizes utilizando três matrizes distintas: A, B e C. O processo de execução é ilustrado pelas Equações~\ref{eq:dot_matrix_a} e~\ref{eq:dot_matrix_b}.
 
 \begin{equation}
 	\label{eq:dot_matrix_a}
@@ -36,7 +36,7 @@ A seleção das aplicações que compõem o conjunto de benchmarks teve como pri
 	E = C \cdot D
 \end{equation}
 
-O algoritmo de multiplicação de matrizes empregado segue o padrão clássico~\cite{axler2015} descrito na \autoref{eq:multi_matrix}, que mostra a multiplicação de duas matrizes 2x2, representando o processo de somas e multiplicações sequenciais. A implementação utilizada pelo \textit{benchmark} é apresentada no \autoref{alg:mul_matrix}.
+O algoritmo empregado segue o padrão clássico~\cite{axler2015} descrito na \autoref{eq:multi_matrix}. A fórmula demonstra a multiplicação de duas matrizes $2\times2$, ilustrando o processo de somas e multiplicações. A implementação utilizada pelo \textit{benchmark} está detalhada no \autoref{alg:mul_matrix}.
 
 \begin{equation}
 	\label{eq:multi_matrix}
@@ -74,213 +74,208 @@ O algoritmo de multiplicação de matrizes empregado segue o padrão clássico~\
 	\fonte{Adaptado do \citet{polybench}}
 \end{algorithm}
 
-Nesta aplicação, ambas as multiplicações são executadas em sequência, conforme as Equações~\ref{eq:dot_matrix_a} e~\ref{eq:dot_matrix_b}. Para reduzir o \textit{overhead}, optou-se por utilizar uma única região paralela que abrange ambas multiplicações. Além da paralelização foi empregado a técnica de \textit{loop tiling}~\cite{bakos2016}. Essa técnica consiste em dividir o espaço de iteração em blocos menores, \textit{tiles}, de modo que cada bloco seja completamente processado antes de avançar para o próximo. Diferentemente da iteração convencional, que percorre toda uma dimensão por vez, no \textit{tiling} os acessos a memória são reorganizados para melhorar a localidade espacial e temporal.
+O programa executa as duas multiplicações em sequência. Para reduzir o custo de criação de regiões paralelas, definiu-se uma única região que abrange ambas as operações. Esta mesma região serviu para a aplicação das técnicas de computação aproximada. Na abordagem \texttt{fastmath}, a região englobou toda a operação. A cláusula \texttt{perfo}, foi aplicada junto a diretiva \texttt{parallel for} englobando o laço mais externo. Por fim o \texttt{memo} foi aplicado no laço laço interno (\texttt{k}), memoizando toda a linha sendo calculada. 
 
-O principal benefício dessa otimização está no uso mais eficiente da \textit{cache}. Idealmente, cada bloco deve ser dimensionado de forma que seus dados caibam inteiramente na \textit{cache}, permitindo que todo o bloco seja carregado e processado de uma só vez. Dessa forma, reduz-se o número de acessos à memória principal e evita-se o recarregamento de dados já utilizados, aumentando o desempenho da aplicação~\cite{bakos2016}. O \autoref{alg:tiling} apresenta o pseudocódigo de implementação dessa técnica na multiplicação de matrizes.
-
-\begin{algorithm}[htb]
-	\caption{Multiplicação de matrizes com \textit{loop tiling}.}
-	\label{alg:tiling}
-	\hrule
-	\begin{algorithmic}[1]
-		\REQUIRE Matrizes $A$, $B$ e $C$ de tamanho $n \times n$
-		\REQUIRE Tamanho do bloco $bs$
-		\FOR{$ii = 0$ até $n$, com passo $bs$}
-		\FOR{$kk = 0$ até $n$, com passo $bs$}
-		\FOR{$i = ii$ até $\min(ii + bs, n)$}
-		\FOR{$k = kk$ até $\min(kk + bs, n)$}
-		\STATE $a\_val \gets A[i][k]$
-		\FOR{$j = 0$ até $n$, com passo $1$}
-		\STATE $C[i][j] \gets C[i][j] + a\_val \times B[k][j]$
-		\ENDFOR
-		\ENDFOR
-		\ENDFOR
-		\ENDFOR
-		\ENDFOR
-	\end{algorithmic}
-	\hrule
-	\fonte{}
-\end{algorithm}
-
-Outra técnica empregada, também utilizada nas demais aplicações, foi a alocação contínua de memória. Em vez de alocar um bloco de memória separado para cada linha da matriz, foi alocado um único bloco contíguo. Esta técnica foi adotada visando a redução de chamadas de alocação e melhor da localidade espacial, aumentando o desempenho.
+Além da paralelização, outra otimização aplicada foi a alocação contígua de memória. Esta técnica também aparece nas outras aplicações que realizam cálculos em matrizes. Em vez de criar um bloco de memória separado para cada linha, o programa aloca um único espaço contínuo. Esta estratégia reduz o número de chamadas de alocação e melhora a localidade espacial.
 
 \subsection{Correlação}\label{subsec:correlation}
 
-A correlação é uma medida estatística que expressa o grau de associação entre duas variáveis~\cite{morettin2010}. Quando há correlação entre duas variáveis, isso indica que mudanças em uma delas tendem estar relacionadas a mudanças na outra.
-
-A correlação é positiva quando, ambas as variáveis aumentam ou diminuem juntas, ou negativa, quando uma variável aumenta enquanto a outra diminui. O valor da correlação varia de -1 a 1. Valores próximos de 1 indicam uma forte correlação positiva, enquanto valores próximos de -1, indicam uma forte correlação negativa e valores próximos de 0 indicam uma fraca ou nenhuma correlação. A \autoref{fig:correlation}, ilustra esses três tipos de correlação, nos quais é possível observar visualmente o comportamento das variáveis em cada caso.
+A correlação é uma métrica estatística que quantifica o grau de associação entre duas variáveis~\cite{morettin2010}. A existência de correlação indica que alterações em uma variável tendem a acompanhar alterações na outra. Essa relação é positiva se ambas as variáveis crescem ou decrescem juntas, e negativa se movem em direções opostas. O coeficiente de correlação varia de -1 a 1, onde valores próximos a 1 ou -1 apontam para uma forte correlação positiva ou negativa, respectivamente, e valores próximos a 0 denotam associação fraca ou inexistente. A \autoref{fig:correlation} ilustra esses três cenários, permitindo a observação visual do comportamento das variáveis.
 
 \begin{figure}[htb]
-	\caption{Gráfico do cálculo de coeficiente de correlação de Pearson.}
-	\centering
-	\includegraphics[scale=0.7]{figuras/correlation.png}
-	\label{fig:correlation}
-	\fonte{\citet{wikimediaCorrelation}}
-	\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Gráfico do cálculo de coeficiente de correlação de Pearson}
+    \caption{Gráfico do cálculo de coeficiente de correlação de Pearson.}
+    \centering
+    \includegraphics[scale=0.7]{figuras/correlation.png}
+    \label{fig:correlation}
+    \fonte{\citet{wikimediaCorrelation}}
+    \addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Gráfico do cálculo de coeficiente de correlação de Pearson}
 \end{figure}
 
-A fórmula comumente utilizada para calcular a correlação é chamada de \textit{Pearson Correlation Formula}, apresentada na \autoref{eq:correlation}~\cite{morettin2010}. Nessa equação, $x$ e $y$ representam os valores das variáveis, enquanto $m_x$ e $m_y$ correspondem as suas respectivas médias. A implementação utilizada pelo Polybench~\cite{polybench} é apresentada nos Algoritmos~\ref{alg:correlation_matrix} e~\ref{alg:correlation}, os quais respectivamente fazem a construção da matriz de correlação e o cálculo do coeficiente.
+O cálculo da correlação é comumente realizado pela fórmula do Coeficiente de Correlação de Pearson, apresentado na \autoref{eq:correlation}~\cite{morettin2010}. Nesta equação, $x$ e $y$ representam os valores das variáveis, e $m_x$ e $m_y$ correspondem às suas respectivas médias. A implementação do \textit{benchmark} PolyBench~\cite{polybench} está descrita nos Algoritmos~\ref{alg:correlation_matrix} e~\ref{alg:correlation}.
 
 \begin{equation}
-	\label{eq:correlation}
-	r = \frac{\sum(x - m_x)(y - m_y)}{\sqrt{\sum(x-m_x)^2 \sum(y - m_y)^2}}
+    \label{eq:correlation}
+    r = \frac{\sum(x - m_x)(y - m_y)}{\sqrt{\sum(x-m_x)^2 \sum(y - m_y)^2}}
 \end{equation}
 
 \begin{algorithm}[htb]
-	\caption{Construção da matriz de correlação.}
-	\label{alg:correlation_matrix}
-	\hrule
-	\begin{algorithmic}[1]
-		\REQUIRE Matrizes $C$ e $D$ de tamanho $n \times m$
-		\FOR{$i = 0$ até $n$, com passo $1$}
-		\FOR{$j = 0$ até $n$, com passo $1$}
-		\IF{(j == i)}
-		\STATE $r \gets 1.0$
-		\ELSE
-		\STATE $r \gets \texttt{correlation}(\texttt{linha}(D, i),\ \texttt{linha}(D, j),\ m)$
-		\ENDIF
-		\STATE $C[i][j] \gets r$
-		\STATE $C[j][i] \gets r$
-		\ENDFOR
-		\ENDFOR
-	\end{algorithmic}
-	\hrule
-	\fonte{Adaptado do \citet{polybench}}
+    \caption{Construção da matriz de correlação.}
+    \label{alg:correlation_matrix}
+    \hrule
+    \begin{algorithmic}[1]
+        \REQUIRE Matrizes $C$ e $D$ de tamanho $n \times m$
+        \FOR{$i = 0$ até $n - 1$, com passo $1$}
+        \FOR{$j = 0$ até $n - 1$, com passo $1$}
+        \IF{($j == i$)}
+        \STATE $r \gets 1.0$
+        \ELSE
+        \STATE $r \gets \texttt{correlation}(\texttt{linha}(D, i),\ \texttt{linha}(D, j),\ m)$
+        \ENDIF
+        \STATE $C[i][j] \gets r$
+        \STATE $C[j][i] \gets r$
+        \ENDFOR
+        \ENDFOR
+    \end{algorithmic}
+    \hrule
+    \fonte{Adaptado de \citet{polybench}}
 \end{algorithm}
 
 \begin{algorithm}[htb]
-	\caption{Cálculo do coeficiente de correlação de Pearson.}
-	\label{alg:correlation}
-	\hrule
-	\begin{algorithmic}[1]
-		\REQUIRE \textit{Array} $X$ e $Y$ de tamanho $m$
-		\STATE $sumX \gets 0$
-		\STATE $sumY \gets 0$
-		\STATE $sumXY \gets 0$
-		\STATE $sumX2 \gets 0$
-		\STATE $sumY2 \gets 0$
-		\FOR{$i = 0$ até $n$, em passos de $1$}
-		\STATE $\texttt{sumX} \gets \texttt{sumX} + X[i]$
-		\STATE $\texttt{sumY} \gets \texttt{sumY} + Y[i]$
-		\STATE $\texttt{sumXY} \gets \texttt{sumXY} + X[i] * Y[i]$
-		\STATE $\texttt{sumX2} \gets \texttt{sumX2} + X[i] * X[i]$
-		\STATE $\texttt{sumY2} \gets \texttt{sumY2} + Y[i] * Y[i]$
-		\ENDFOR
-	\end{algorithmic}
-	\hrule
-	\fonte{Adaptado do \citet{polybench}}
+    \caption{Cálculo do coeficiente de correlação de Pearson.}
+    \label{alg:correlation}
+    \hrule
+    \begin{algorithmic}[1]
+        \REQUIRE \textit{Arrays} $X$ e $Y$ de tamanho $m$
+        \STATE $sumX \gets 0$
+        \STATE $sumY \gets 0$
+        \STATE $sumXY \gets 0$
+        \STATE $sumX2 \gets 0$
+        \STATE $sumY2 \gets 0$
+        \FOR{$i = 0$ até $m - 1$, com passo $1$}
+        \STATE $sumX \gets sumX + X[i]$
+        \STATE $sumY \gets sumY + Y[i]$
+        \STATE $sumXY \gets sumXY + X[i] \cdot Y[i]$
+        \STATE $sumX2 \gets sumX2 + X[i] \cdot X[i]$
+        \STATE $sumY2 \gets sumY2 + Y[i] \cdot Y[i]$
+        \ENDFOR
+        \STATE $numerador \gets m \cdot sumXY - sumX \cdot sumY$
+        \STATE $denominador \gets \sqrt{(m \cdot sumX2 - (sumX \cdot sumX)) \cdot (m \cdot sumY2 - (sumY \cdot sumY))}$
+        \RETURN $numerador / denominador$
+    \end{algorithmic}
+    \hrule
+    \fonte{Adaptado de \citet{polybench}}
 \end{algorithm}
 
-O cálculo da correlação entre as diferentes variáveis é apresentado na \autoref{tab:correlation}, como uma matriz simétrica, na qual os valores localizados na parte inferior da matriz são iguais aos da parte superior em relação à diagonal principal. Essa diagonal principal contém valores iguais a $1.0$, correspondentes a autocorrelação perfeita de cada variável. Essa simetria permite otimizar o cálculo, reduzindo o número de iterações, uma vez que é suficiente computar os coeficientes para somente uma das metades da matriz.
+O resultado do cálculo de correlação compõe uma matriz simétrica, ilustrada na \autoref{tab:correlation}. Os valores na parte inferior da matriz espelham os da parte superior em relação à diagonal principal. Esta diagonal é preenchida com valores $1.0$, que representam a autocorrelação perfeita de cada variável. A propriedade de simetria permite otimizações no código, pois passa a ser necessário calcular somente parte das iterações, podendo reutilizar os valores para a outra metade da matriz.
 
 \begin{table}[htb]
-	\caption{Representação da correlação entre as diferentes variáveis.}
-	\centering
-	\begin{tabular}{|c|c|c|c|c|}
-		\hline
-		           & \textbf{a} & \textbf{b} & \textbf{c} & \textbf{d} \\
-		\hline
-		\textbf{a} & 1.0        & ab         & ac         & ad         \\
-		\hline
-		\textbf{b} & ab         & 1.0        & bc         & bd         \\
-		\hline
-		\textbf{c} & ac         & bc         & 1.0        & cd         \\
-		\hline
-		\textbf{d} & ad         & bd         & cd         & 1.0        \\
-		\hline
-	\end{tabular}
-	\fonte{}
-	\label{tab:correlation}
+    \caption{Representação da correlação entre as diferentes variáveis.}
+    \centering
+    \begin{tabular}{|c|c|c|c|c|}
+        \hline
+                   & \textbf{a} & \textbf{b} & \textbf{c} & \textbf{d} \\
+        \hline
+        \textbf{a} & 1.0        & ab         & ac         & ad         \\
+        \hline
+        \textbf{b} & ab         & 1.0        & bc         & bd         \\
+        \hline
+        \textbf{c} & ac         & bc         & 1.0        & cd         \\
+        \hline
+        \textbf{d} & ad         & bd         & cd         & 1.0        \\
+        \hline
+    \end{tabular}
+    \fonte{O Autor}
+    \label{tab:correlation}
 \end{table}
 
-No \autoref{alg:correlation_matrix} essa propriedade de simetria é explorada, e é também nessa região de código, mais especificamente em seu laço mais externo, que foram adicionados as anotações de paralelização, permitindo que o cálculo dos coeficientes fossem executados concorrentemente.
+O \autoref{alg:correlation_matrix} explora essa propriedade de simetria. As anotações de paralelização foram inseridas nesta mesma região do código, especificamente no laço de repetição mais externo. A cláusula \texttt{perfo} foi adicionada a este laço. Já as diretivas \texttt{fastmath} e \texttt{memo} foram aplicadas no cálculo detalhado no \autoref{alg:correlation}, ambas aplicadas externamente ao laço.
 
 \subsection{Deriche}\label{subsec:deriche}
 
-\begin{algorithm}[htb]
-	\caption{Algoritmo Deriche de suavização.}
-	\label{alg:deriche}
-	\hrule
-	\begin{algorithmic}[1]
-		\REQUIRE Imagem $I_{in}$ de tamanho $h \times w$
-		\REQUIRE Coeficiente de suavização $\alpha$
-		\STATE $I_{out1} \gets$ nova Matriz $h \times w$
-		\STATE $I_{out2} \gets$ nova Matriz $h \times w$
-		\STATE $I_{final} \gets$ nova Matriz $h \times w$
+No processamento de imagens, o algoritmo de Deriche aplica uma filtragem recursiva para suavização e detecção de bordas~\cite{deriche1987}. O método surgiu como uma otimização do detector de Canny. O objetivo principal é aproximar as propriedades de um filtro Gaussiano por meio de um filtro \gls{iir}.
 
-		\COMMENT{Cálculo dos coeficientes de suavização}
-		\STATE $k \gets \frac{(1 - e^{-\alpha})^2}{1 + 2\alpha e^{-\alpha} - e^{-2\alpha}}$
-		\STATE $a_1 \gets k$
-		\STATE $a_2 \gets k \cdot e^{-\alpha} \cdot (\alpha - 1)$
-		\STATE $a_3 \gets k \cdot e^{-\alpha} \cdot (\alpha + 1)$
-		\STATE $a_4 \gets -k \cdot e^{-2\alpha}$
-		\STATE $b_1 \gets 2 \cdot e^{-\alpha}$
-		\STATE $b_2 \gets -e^{-2\alpha}$
+\begin{algorithm}[H]
+    \caption{Algoritmo Deriche de suavização 2D.}
+    \label{alg:deriche}
+    \hrule
+    \begin{algorithmic}[1]
+        \REQUIRE Imagem $I_{in}$ de tamanho $h \times w$
+        \REQUIRE Coeficiente de suavização $\alpha$
+        \STATE $I_{out} \gets$ nova Matriz $h \times w$ preenchida com zeros
 
-		\COMMENT{Varredura horizontal (esquerda para direita)}
-		\FOR{$i = 0$ até $h - 1$, com passo $1$}
-		\STATE $y_{m1} \gets 0$, $y_{m2} \gets 0$
-		\FOR{$j = 0$ até $w - 1$, com passo $1$}
-		\STATE $I_{out1}[i, j] \gets a_1 \cdot I_{in}[i, j] + a_2 \cdot I_{in}[i, j-1] + b_1 \cdot y_{m1} + b_2 \cdot y_{m2}$
-		\STATE $y_{m2} \gets y_{m1}$
-		\STATE $y_{m1} \gets I_{out1}[i, j]$
-		\ENDFOR
-		\ENDFOR
+        \COMMENT{Cálculo dos coeficientes de suavização}
+        \STATE $k \gets \frac{(1 - e^{-\alpha})^2}{1 + 2\alpha e^{-\alpha} - e^{-2\alpha}}$
+        \STATE $a_1 \gets k$
+        \STATE $a_2 \gets k \cdot e^{-\alpha} \cdot (\alpha - 1)$
+        \STATE $a_3 \gets k \cdot e^{-\alpha} \cdot (\alpha + 1)$
+        \STATE $a_4 \gets -k \cdot e^{-2\alpha}$
+        \STATE $a_5 \gets a_1$, $a_6 \gets a_2$, $a_7 \gets a_3$, $a_8 \gets a_4$
+        \STATE $b_1 \gets 2^{- \alpha}$
+        \STATE $b_2 \gets -e^{-2\alpha}$
 
-		\COMMENT{Varredura horizontal (direita para esquerda)}
-		\FOR{$i = 0$ até $h - 1$, com passo $1$}
-		\STATE $y_{p1} \gets 0$, $y_{p2} \gets 0$
-		\FOR{$j = w - 1$ até $0$, com passo $-1$}
-		\STATE $I_{out2}[i, j] \gets a_3 \cdot I_{in}[i, j+1] + a_4 \cdot I_{in}[i, j+2] + b_1 \cdot y_{p1} + b_2 \cdot y_{p2}$
-		\STATE $y_{p2} \gets y_{p1}$
-		\STATE $y_{p1} \gets I_{out2}[i, j]$
-		\ENDFOR
-		\ENDFOR
+        \COMMENT{Varredura Vertical (Cima para Baixo)}
+        \FOR{$i = 0$ até $w - 1$, com passo $1$}
+        \STATE $xm_1 \gets 0$, $ym_1 \gets 0$, $ym_2 \gets 0$
+        \FOR{$j = 0$ até $h - 1$, com passo $1$}
+        \STATE $in \gets I_{in}[j, i]$
+        \STATE $res \gets a_1 \cdot in + a_2 \cdot xm_1 + b_1 \cdot ym_1 + b_2 \cdot ym_2$
+        \STATE $I_{out}[j, i] \gets res$
+        \STATE $xm_1 \gets in$, $ym_2 \gets ym_1$, $ym_1 \gets res$
+        \ENDFOR
+        \ENDFOR
 
-		\COMMENT{Combinação final}
-		\STATE $I_{final} \gets I_{out1} + I_{out2}$
+        \COMMENT{Varredura Vertical (Baixo para Cima)}
+        \FOR{$i = 0$ até $w - 1$, com passo $1$}
+        \STATE $xp_1 \gets 0$, $xp_2 \gets 0$, $yp_1 \gets 0$, $yp_2 \gets 0$
+        \FOR{$j = h - 1$ até $0$, com passo $-1$}
+        \STATE $prev \gets I_{out}[j, i]$
+        \STATE $res \gets a_3 \cdot xp_1 + a_4 \cdot xp_2 + b_1 \cdot yp_1 + b_2 \cdot yp_2$
+        \STATE $I_{out}[j, i] \gets I_{out}[j, i] + res$
+        \STATE $xp_2 \gets xp_1$, $xp_1 \gets res$, $yp_2 \gets yp_1$, $yp_1 \gets prev$
+        \ENDFOR
+        \ENDFOR
 
-		\RETURN $I_{final}$
-	\end{algorithmic}
-	\hrule
-	\fonte{Adaptado do \citet{polybench}}
+        \COMMENT{Varredura Horizontal (Esquerda para Direita)}
+        \FOR{$j = 0$ até $h - 1$, com passo $1$}
+        \STATE $tm_1 \gets 0$, $ym_1 \gets 0$, $ym_2 \gets 0$
+        \FOR{$i = 0$ até $w - 1$, com passo $1$}
+        \STATE $prev \gets I_{out}[j, i]$
+        \STATE $res \gets a_5 \cdot prev + a_6 \cdot tm_1 + b_1 \cdot ym_1 + b_2 \cdot ym_2$
+        \STATE $I_{out}[j, i] \gets I_{out}[j, i] + res$
+        \STATE $tm_1 \gets prev$, $ym_2 \gets ym_1$, $ym_1 \gets res$
+        \ENDFOR
+        \ENDFOR
+
+        \COMMENT{Varredura Horizontal (Direita para Esquerda)}
+        \FOR{$j = 0$ até $h - 1$, com passo $1$}
+        \STATE $tp_1 \gets 0$, $tp_2 \gets 0$, $yp_1 \gets 0$, $yp_2 \gets 0$
+        \FOR{$i = w - 1$ até $0$, com passo $-1$}
+        \STATE $prev \gets I_{out}[j, i]$
+        \STATE $res \gets a_7 \cdot tp_1 + a_8 \cdot tp_2 + b_1 \cdot yp_1 + b_2 \cdot yp_2$
+        \STATE $I_{out}[j, i] \gets I_{out}[j, i] + res$
+        \STATE $tp_2 \gets tp_1$, $tp_1 \gets prev$, $yp_2 \gets yp_1$, $yp_1 \gets res$
+        \ENDFOR
+        \ENDFOR
+
+        \RETURN $I_{out}$
+    \end{algorithmic}
+    \hrule
+    \fonte{Adaptado de \citet{polybench}}
 \end{algorithm}
 
-Em processamento de imagens, o filtro de Deriche é um algoritmo de filtragem recursiva utilizado tanto para suavização de imagens quanto para detecção de bordas~\cite{deriche1987}. Este algoritmo foi desenvolvido como uma otimização do detector de bordas de Canny, buscando aproximar as propriedades de um filtro Gaussiano, por meio de um filtro \gls{iir}.
+Diferente de abordagens baseadas em janelas de convolução fixas, o filtro de Deriche armazena e reaproveita os cálculos intermediários de \textit{pixels} vizinhos. Por ser um filtro separável, a operação bidimensional ocorre em etapas unidimensionais independentes. A implementação processa a imagem primeiramente na vertical em ambos os sentidos, e em seguida, processa a matriz na horizontal, também em ambos os sentidos. Essa abordagem proporciona uma suavização eficiente do ruído enquanto preserva as bordas estruturais.
 
-Intuitivamente, o filtro de Deriche funciona de maneira diferente de um filtro baseado em uma janela fixa de \textit{pixels}. Nesse algoritmo, os resultados intermediários de \textit{pixels} anteriores são armazenados e utilizados no cálculo dos \textit{pixels} seguintes. O filtro percorre a imagem duas vezes, primeiramente na horizontal, da esquerda para a direita, e depois da direita para a esquerda, aplicando recursivamente os valores anteriores. Esse processo resulta em uma suavização eficiente, mantendo contornos suaves nas bordas da figura.
-
-O nível dessa suavização é controlado pelo parâmetro $\alpha$, que ajusta a supressão de ruído e a precisão na localização da borda. Esse parâmetro define os coeficientes $a$ e $b$, sendo utilizados tanto nas Equações~\ref{eq:deriche_esq} e~\ref{eq:deriche_dir}, sendo aplicados respectivamente da esquerda para a direita e da direita para a esquerda.
+O parâmetro $\alpha$ controla a intensidade da suavização. Ele ajusta o equilíbrio entre a atenuação de ruído e a precisão na localização das bordas. Este parâmetro define os coeficientes $a$ e $b$, utilizados nas equações de recorrência. As Equações~\ref{eq:deriche_esq} e~\ref{eq:deriche_dir} exemplificam o cálculo unidimensional da varredura horizontal, aplicadas nas direções causal e anticausal, respectivamente. A varredura vertical segue a mesma formulação matemática, alterando apenas os eixos de iteração.
 
 \begin{equation}
-	\label{eq:deriche_esq}
-	y^1_{ij} = a_1x_{ij} + a_2x_{ij - 1} + b_1y^1_{ij - 1} + b_2y^1_{ij - 2}
+    \label{eq:deriche_esq}
+    y^1_{ij} = a_1x_{ij} + a_2x_{ij - 1} + b_1y^1_{ij - 1} + b_2y^1_{ij - 2}
 \end{equation}
 
 \begin{equation}
-	\label{eq:deriche_dir}
-	y^2_{ij} = a_3x_{ij + 1} + a_4x_{ij + 2} + b_1y^2_{ij + 1} + b_2y^2_{ij + 2}
+    \label{eq:deriche_dir}
+    y^2_{ij} = a_3x_{ij + 1} + a_4x_{ij + 2} + b_1y^2_{ij + 1} + b_2y^2_{ij + 2}
 \end{equation}
 
-O filtro implementado segue o padrão do Polybench~\cite{polybench}, somente a suavização foi implementada, não há uma geração das bordas da imagem. O \autoref{alg:deriche} apresenta a implementação da suavização, na alteração desse \textit{benchmark} foi adicionado uma região paralela que engloba todos os laços do algoritmo.
+A \autoref{fig:deriche} demonstra o efeito prático do filtro utilizando o coeficiente $\alpha = 1.5$. A \autoref{subfig:sunflower_orig} apresenta a entrada original em escala de cinza, enquanto a \autoref{subfig:sunflower_deri} exibe a saída do processamento. O filtro atenua as texturas da imagem, o que facilita o processo computacional de identificar os contornos primários na etapa posterior.
 
-\begin{figure}[b]
-	\caption{Aplicação do filtro de Deriche.}
-	\centering
-	\subfloat[Imagem original]{
-		\includegraphics[width=0.45\textwidth]{sunflower_orig.jpg}
-		\label{subfig:sunflower_orig}
-	}
-	\hfill
-	\subfloat[Imagem com Deriche aplicado]{
-		\includegraphics[width=0.45\textwidth]{sunflower_deri.jpg}
-		\label{subfig:sunflower_deri}
-	}
-	\fonte{}
-	\label{fig:deriche}
+\begin{figure}[htb]
+    \caption{Aplicação do filtro de Deriche.}
+    \centering
+    \subfloat[Imagem original]{
+        \includegraphics[width=0.45\textwidth]{sunflower_orig.jpg}
+        \label{subfig:sunflower_orig}
+    }
+    \hfill
+    \subfloat[Imagem com Deriche aplicado]{
+        \includegraphics[width=0.45\textwidth]{sunflower_deri.jpg}
+        \label{subfig:sunflower_deri}
+    }
+    \fonte{}
+    \label{fig:deriche}
 \end{figure}
 
-A aplicação desse filtro com um $\alpha = 1.5$ em uma imagem pode ser observado na Figura~\ref{fig:deriche}, na qual a Figura~\ref{subfig:sunflower_orig} é a imagem original em preto e branco e Figura~\ref{subfig:sunflower_deri} a imagem com o filtro aplicado. Na imagem, o filtro suaviza as bordas, tornando mais simples o processo detectá-las.
+A implementação avaliada segue o padrão do conjunto PolyBench~\cite{polybench}. É importante ressaltar que este \textit{benchmark} foca estritamente no \textit{kernel} de suavização \gls{iir}, omitindo os passos de detecção de borda. O \autoref{alg:deriche} detalha a lógica exata utilizada nos testes. Para paralelizar a aplicação, definiu-se uma única região \texttt{OpenMP} que engloba as quatro fases de varredura. A cláusula \texttt{perfo} foi aplicada nos laços externos de cada uma das fases. A cláusula \texttt{fastmath} foi aplicada externamente englobando todas as demais regiões de código. Por fim a \texttt{memo} foi aplicada ao laço mais interno de cada uma das varreduras.
 
 \subsection{Jacobi 2D}\label{subsec:jacobi2d}
 
@@ -303,7 +298,7 @@ Esse algoritmo foi selecionado do conjunto de Polybench~\cite{polybench} e adota
 	\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Execução do algoritmo de estêncil}
 \end{figure}
 
-O Jacobi 2D é uma aplicação do método de Jacobi adaptado para problemas discretizados em duas dimensões. Sua implementação se baseia em um algoritmo de estêncil, no qual cada ponto de uma malha bidimensional é atualizado com base na média artimética dos seus quatro vizinhos imediatos (acima, abaixo, esquerda e a direita), como mostra a \autoref{fig:jacobi2d}. Após um número suficiente de iterações, a malha converge para uma configuração estável que representa uma aproximação da solução contínua do problema. O \autoref{alg:jacobi2d} apresenta a implementação utilizada pelo \textit{benchmark}.
+O Jacobi 2D é uma aplicação do método de Jacobi adaptado para problemas em duas dimensões. Sua implementação se baseia em um algoritmo de estêncil, no qual cada ponto de uma malha bidimensional é atualizado com base na média artimética dos seus quatro vizinhos imediatos (acima, abaixo, esquerda e a direita), como mostra a \autoref{fig:jacobi2d}. Após um número suficiente de iterações, a malha converge para uma configuração estável que representa uma aproximação da solução contínua do problema. O \autoref{alg:jacobi2d} apresenta a implementação utilizada pelo \textit{benchmark}.
 
 \begin{algorithm}[htb]
 	\caption{Método de Jacobi em duas dimensões}
@@ -329,252 +324,276 @@ O Jacobi 2D é uma aplicação do método de Jacobi adaptado para problemas disc
 	\fonte{Adaptado do \citet{polybench}}
 \end{algorithm}
 
-O \autoref{alg:jacobi2d} apresenta dependência sequencial entre as etapas de atualização, dificultando a paralelização total. Para contornar isso, a paralelização foi aplicada no laço mais externo, permitindo que cada etapa de varredura seja executada em paralelo. Já os laços internos foram anotados com diretivas de sincronização, assegurando que os dados produzidos em uma etapa estejam disponíveis antes da próxima atualização.
+O \autoref{alg:jacobi2d} apresenta dependência sequencial entre as etapas de atualização, dificultando a paralelização total. Para contornar isso, a paralelização foi aplicada no laço mais externo, permitindo que cada etapa de varredura seja executada em paralelo. Já os laços internos foram anotados com diretivas \texttt{for} de modo a dividir o trabalho entre as \textit{threads} e sincronizá-las, assegurando que os dados produzidos em uma etapa estejam disponíveis antes da próxima atualização.
+
+A cláusula \texttt{perfo} foi aplicada diretamente nas diretivas \texttt{for} dos dois laços intermediários. A \texttt{fastmath} foi aplicada em todo o bloco de código. E por fim a cláusula \texttt{memo} foi aplicado de modo a memoizar ambos os laços intermediários.
 
 \subsection{K-means}\label{subsec:kmeans}
 
-O algoritmo K-means~\cite{macqueen1967} é uma técnica de agrupamento, cujo objetivo é particionar um conjunto de dados em $k$ grupos, de forma que os dados num mesmo grupo de modo que eles sejam semelhantes entre si.
+O algoritmo K-means~\cite{macqueen1967} é uma técnica de aprendizado não supervisionado. Seu objetivo principal é particionar um conjunto de dados em $k$ grupos, garantindo que os elementos de cada grupo sejam similares entre si.
 
 \begin{algorithm}[htb!]
-	\caption{Algoritmo K-means}
-	\label{alg:kmeans}
-	\hrule
-	\begin{algorithmic}[1]
-		\REQUIRE Matriz $features$ de dimensão $numPoints$ $\times$ $numFeatures$ \\
-		\REQUIRE $numClusters$, número de $clusters$ que serão formados
-		\REQUIRE $iterations$, quantidade de iterações realizada pelo algoritmo
-		\REQUIRE $threshold$, limiar de parada do algoritmo
+    \caption{Algoritmo K-means}
+    \label{alg:kmeans}
+    \hrule
+    \begin{algorithmic}[1]
+        \REQUIRE Matriz $features$ de dimensão $numPoints \times numFeatures$
+        \REQUIRE $numClusters$, número de \textit{clusters} que serão formados
+        \REQUIRE $iterations$, limite de iterações do algoritmo
+        \REQUIRE $threshold$, limiar de convergência predefinido
 
-		\STATE Matriz $centroids$ de tamanho $numClusters \times numFeatures$, iniciado com $0$
-		\STATE Matriz $newCentroids$ de tamanho $numClusters \times numFeatures$, iniciado com $0$
-		\STATE \textit{Array} $membership$ de tamanho $numPoints$, iniciado com $-1$
-		\STATE \textit{Array} $newCentroidsLen$ de tamanho $numClusters$, iniciado com $0$
+        \STATE Matriz $centroids$ de tamanho $numClusters \times numFeatures$, iniciada com $0$
+        \STATE Matriz $newCentroids$ de tamanho $numClusters \times numFeatures$, iniciada com $0$
+        \STATE \textit{Array} $membership$ de tamanho $numPoints$, iniciado com $-1$
+        \STATE \textit{Array} $newCentroidsLen$ de tamanho $numClusters$, iniciado com $0$
 
-		\FOR{$i = 0$ até $numClusters$, com passo $1$}
-		\STATE $n \gets$ índice aleatório entre $0$ e $numPoints - 1$
-		\FOR{$j = 0$ até $numFeatures$, com passo $1$}
-		\STATE $\textit{centroids}[i][j] \gets \textit{features}[n][j]$
-		\ENDFOR
-		\ENDFOR
+        \FOR{$i = 0$ até $numClusters - 1$}
+            \STATE $n \gets$ índice aleatório entre $0$ e $numPoints - 1$
+            \FOR{$j = 0$ até $numFeatures - 1$}
+                \STATE $centroids[i][j] \gets features[n][j]$
+            \ENDFOR
+        \ENDFOR
 
-		\FOR{$iter = 0$ até $iterations$}
-		\STATE $\textit{delta} \gets 0$
+        \FOR{$iter = 0$ até $iterations - 1$}
+            \STATE $delta \gets 0$
 
-		\FOR{$j = 0$ até $numPoints$}
-		\STATE $index \gets \texttt{find\_nearest\_point}(centroids, features[j], numFeatures)$
+            \FOR{$j = 0$ até $numPoints - 1$}
+                \STATE $index \gets \texttt{find\_nearest\_point}(centroids, numClusters, features, j, numFeatures)$
 
-		\IF{$membership[j] \neq index$}
-		\STATE $delta \gets delta + 1$
-		\ENDIF
+                \IF{$membership[j] \neq index$}
+                    \STATE $delta \gets delta + 1$
+                \ENDIF
 
-		\STATE $membership[j] \gets index$
-		\STATE $newCentroidsLen[index] \gets newCentroidsLen[index] + 1$
+                \STATE $membership[j] \gets index$
+                \STATE $newCentroidsLen[index] \gets newCentroidsLen[index] + 1$
 
-		\FOR{$k = 0$ até $numFeatures$}
-		\STATE $newCentroids[index][k] \gets newCentroids[index][k] + features[j][k]$
-		\ENDFOR
-		\ENDFOR
+                \FOR{$k = 0$ até $numFeatures - 1$}
+                    \STATE $newCentroids[index][k] \gets newCentroids[index][k] + features[j][k]$
+                \ENDFOR
+            \ENDFOR
 
-		\FOR{$j = 0$ até $numClusters$}
-		\IF{$newCentroidsLen[j] > 0$}
-		\FOR{$k = 0$ até $numFeatures$}
-		\STATE $centroids[j][k] \gets newCentroids[j][k] / newCentroidsLen[j]$
-		\ENDFOR
-		\ENDIF
-		\ENDFOR
+            \FOR{$j = 0$ até $numClusters - 1$}
+                \IF{$newCentroidsLen[j] > 0$}
+                    \FOR{$k = 0$ até $numFeatures - 1$}
+                        \STATE $centroids[j][k] \gets newCentroids[j][k] / newCentroidsLen[j]$
+                    \ENDFOR
+                \ENDIF
+            \ENDFOR
 
-		\STATE Zerar $newCentroids$
-		\STATE Zerar $newCentroidsLen$
+            \STATE Zerar(matriz $newCentroids$)
+            \STATE Zerar(\textit{array} $newCentroidsLen$)
 
-		\IF{$delta \leq threshold$}
-		\STATE $break$
-		\ENDIF
-		\ENDFOR
+            \IF{$delta \leq threshold$}
+                \STATE \textbf{break}
+            \ENDIF
+        \ENDFOR
 
-		\RETURN  $centroids$
-	\end{algorithmic}
-	\hrule
-	\fonte{Adaptado do \citet{polybench}}
+        \RETURN $centroids$
+    \end{algorithmic}
+    \hrule
+    \fonte{Adaptado de \citet{polybench}}
 \end{algorithm}
 
-A ideia central do algoritmo consiste em definir inicialmente $k$ centróides, que são pontos de referência no espaço de amostragem. Em seguida, cada ponto de dado é associado ao centróide mais próximo, com base em uma medida de distância, usualmente a distância euclidiana. Após essa etapa de atribuição, o algoritmo calcula a média dos pontos atribuídos a cada grupo e atualiza a posição dos centróides com base nesses valores. A \autoref{fig:kmeans} ilustra o agrupamento dos dados ao longo das iterações do algoritmo K-means. Na figura, os triângulos representam os centróides, os pontos correspondem aos dados e as regiões coloridas indicam as áreas que delimitam os agrupamentos formados.
+O método define inicialmente $k$ centroides, que atuam como pontos de referência no espaço de características (\texttt{features}). Cada ponto do conjunto de dados é associado ao centroide mais próximo utilizando uma métrica de distância. Após a etapa de atribuição, o algoritmo atualiza a posição de cada centroide calculando a média das coordenadas dos pontos pertencentes ao seu respectivo grupo. A \autoref{fig:kmeans} demonstra a evolução espacial desse processo. Os triângulos representam os centroides, os círculos indicam os dados e as áreas coloridas demarcam as fronteiras dos agrupamentos formados.
 
 \begin{figure}[htb]
-	\caption{Agrupamentos ao longo das iterações do algoritmo K-means}
-	\centering
-	\includegraphics[scale=0.7]{figuras/kmeans.png}
-	\label{fig:kmeans}
-	\fonte{\citet{wikimediaKmeans}}
-	\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Agrupamentos ao longo das iterações do algoritmo K-means}
+    \caption{Agrupamentos ao longo das iterações do algoritmo K-means}
+    \centering
+    \includegraphics[scale=0.7]{figuras/kmeans.png}
+    \label{fig:kmeans}
+    \fonte{\citet{wikimediaKmeans}}
+    \addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Agrupamentos ao longo das iterações do algoritmo K-means}
 \end{figure}
 
-O processo de agrupamento é repetido iterativamente, os dados são reagrupados com base nos novos centróides e os centróides são novamente recalculados. O algoritmo continua até atingir um critério de parada, que pode ser um número fixo de iterações ou a estabilização dos centróides.
+O processo de agrupamento ocorre de forma iterativa. Os dados são reagrupados a cada atualização dos centroides. A execução termina quando o sistema atinge o critério de convergência. Esse critério pode ser um limite máximo de iterações (\texttt{iterations}) ou uma variação na posição dos centroides inferior a um limiar específico (\texttt{threshold}). O \autoref{alg:kmeans}~\cite{rodinia} detalha a lógica geral da aplicação, abrangendo a inicialização dos centroides, a atribuição dos pontos, a atualização das coordenadas médias e a verificação de parada.
 
-O \autoref{alg:kmeans}~\cite{rodinia} apresenta a implementação desse algoritmo, que reflete essa lógica detalhadamente, incluindo a etapa de inicialização dos centróides, a atribuição de pontos, o recálculo dos centróides e a verificação do critério de parada.
+Para determinar a qual agrupamento um ponto pertence, o algoritmo invoca a função de cálculo de distância \texttt{find\_nearest\_point}, detalhada no \autoref{alg:find_nearest_point}. A função compara iterativamente as características de um ponto com as de todos os centroides disponíveis. Visando otimizar o desempenho computacional, a implementação utiliza a distância euclidiana ao quadrado, omitindo a operação de raiz quadrada, uma vez que a relação de grandeza entre as distâncias permanece inalterada. O laço interno acumula a diferença quadrática de cada característica. Sempre que o algoritmo encontra uma distância menor que o menor valor registrado até o momento (\texttt{minDist}), ele atualiza o índice do centroide correspondente.
 
-Durante a execução, o algoritmo também avalia a variância, uma medida que indica o quão disperso os pontos estão em relação ao seu centróide. Quanto menor a variância, mais compactos são os grupos formados. Embora o objetivo não seja minimizar a variância até zero, uma variância excessivamente alta pode indicar que os dados não estão sendo agrupados de maneira eficiente.
+\begin{algorithm}[htb!]
+    \caption{Função \texttt{find\_nearest\_point}}
+    \label{alg:find_nearest_point}
+    \hrule
+    \begin{algorithmic}[1]
+        \REQUIRE Matriz $centroids$ de tamanho $numClusters \times numFeatures$
+        \REQUIRE $numClusters$, número de \textit{clusters}
+        \REQUIRE Matriz $features$ com os dados do problema
+        \REQUIRE $point$, índice do ponto atual a ser avaliado
+        \REQUIRE $numFeatures$, número de características
 
-Na implementação apresentada no \autoref{alg:kmeans}, a paralelização foi introduzida por meio de anotações dos laços internos, responsáveis pelas maiores cargas computacionais. Em particular, foram paralelizados os laços que percorrem os pontos de dados (\textit{numPoints}) e o laço que percorre os agrupamentos (\textit{numclusters}).
+        \STATE $index \gets -1$
+        \STATE $minDist \gets \infty$
+
+        \FOR{$i = 0$ até $numClusters - 1$}
+            \STATE $dist \gets 0.0$
+            \FOR{$j = 0$ até $numFeatures - 1$}
+                \STATE $diff \gets centroids[i][j] - features[point][j]$
+                \STATE $dist \gets dist + (diff \times diff)$
+            \ENDFOR
+
+            \IF{$dist < minDist$}
+                \STATE $index \gets i$
+                \STATE $minDist \gets dist$
+            \ENDIF
+        \ENDFOR
+
+        \RETURN $index$
+    \end{algorithmic}
+    \hrule
+\end{algorithm}
+
+As anotações do \texttt{OpenMP} foram aplicadas nos laços intermedários ao laço que itera sobre os dados, focando no laço principal que mapeia os pontos de dados (\texttt{numPoints}) e no laço que consolida as coordenadas dos agrupamentos (\texttt{numClusters}), apresentado no \autoref{alg:kmeans}. A cláusula \texttt{perfo} foi aplicada nesses laços. A cláusula \texttt{fastmath} foi aplicada sobre o \autoref{alg:find_nearest_point}. E o \texttt{memo} foi aplicado internamente ao laço que mapeias os pontos de dados, memoizando os resultados retornados pela função \texttt{find\_nearest\_point}.
 
 \subsection{Mandelbrot}\label{subsec:mandelbrot}
 
 \begin{figure}[htb]
-	\caption{Representação do conjunto Mandelbrot.}
-	\centering
-	\includegraphics[scale=0.15]{figuras/mandelbrot.png}
-	\label{fig:mandelbrot}
-	\fonte{}
-	\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Representação do conjunto Mandelbrot}
+    \caption{Representação do conjunto de Mandelbrot.}
+    \centering
+    \includegraphics[scale=0.15]{figuras/mandelbrot.png}
+    \label{fig:mandelbrot}
+    \fonte{}
+    \addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Representação do conjunto de Mandelbrot}
 \end{figure}
 
-Mandelbrot é um conjunto de duas dimensões, definidas no conjunto dos números complexos. Ele é construído a partir da iteração da função apresentada na \autoref{eq:mandelbrot}, na qual $z$ e $c$ são números complexos, com $c$ constante para cada ponto avaliado e a condição inicial $z_0 = 0$~\cite{devaney1999}.
+O conjunto de Mandelbrot é bidimensional e definido no plano dos números complexos. Sua construção ocorre pela iteração da função apresentada na \autoref{eq:mandelbrot}, na qual $z$ e $c$ são números complexos. O valor $c$ permanece constante para cada ponto avaliado, partindo da condição inicial $z_0 = 0$~\cite{devaney1999}. Nem todos os valores de $c$ pertencem ao conjunto de Mandelbrot. Um número complexo $c$ faz parte do conjunto se, após aplicar a equação de forma iterativa, os valores de $z_n$ permanecerem limitados. Na prática, considera-se que a sequência diverge quando $|z_n| > 2$, pois a partir desse ponto ela cresce indefinidamente.
 
 \begin{equation}
-	\label{eq:mandelbrot}
-	z_{n + 1} = z_n^{2} + c
+    \label{eq:mandelbrot}
+    z_{n + 1} = z_n^{2} + c
 \end{equation}
 
-Nem todos os valores de $c$ pertencem ao conjunto de Mandelbrot. Um número complexo $c$ faz parte do conjunto se, ao aplicar a equação iterativamente, os valores de $z_n$ permanecem no limite determinado mesmo após várias iterações. Na prática, considere-se que a sequência diverge quando $z_n > 2$, pois se isso acontecer a sequência continuará crescendo indefinidamente.
-
-Para gerar a representação visual do conjunto Mandelbrot, mapeia-se cada \textit{pixel} de uma imagem para um número complexo $c$. As regiões do plano em que $c$ pertence ao conjunto são então representadas visualmente.
-
-Os valores de $c$ são escolhidos em um retângulo do plano complexo, com a parte real no intervalo $[-2, 1]$ e a parte imaginária em $[-1.5, 1.5]$. A conversão das coordenadas dos \textit{pixels} para coordenadas no plano complexo é feita pelas Equações~\ref{eq:mandelbrot_cx} e~\ref{eq:mandelbrot_cy}, nas quais $p_x$ e $p_y$ representam as coordenadas do \textit{pixel}, e $x_{text{min}}$ e $x_{text{max}}$ definem o domínio da parte real, enquanto $y_{text{min}}$ e $y_{text{max}}$ definem o domínio da parte imaginária.
+Para gerar a representação visual do conjunto, mapeia-se cada \textit{pixel} de uma imagem para um número complexo $c$. As regiões do plano onde $c$ pertence ao conjunto recebem então uma representação visual específica. Os valores de $c$ são selecionados dentro de um retângulo no plano complexo. A parte real fica no intervalo $[-2, 1]$ e a parte imaginária no intervalo $[-1.5, 1.5]$. A conversão das coordenadas dos \textit{pixels} para o plano complexo utiliza as Equações~\ref{eq:mandelbrot-cx} e~\ref{eq:mandelbrot-cy}. Nessas equações, $p_x$ e $p_y$ representam as coordenadas do \textit{pixel}. Os parâmetros $x_{\text{min}}$ e $x_{\text{max}}$ definem o domínio da parte real, enquanto $y_{\text{min}}$ e $y_{\text{max}}$ definem o domínio da parte imaginária.
 
 \begin{equation}
-	\label{eq:mandelbrot_cx}
-	c_x = x_{\text{min}} + \frac{p_x}{\text{largura da imagem}} \cdot (x_{\text{max}} - x_{\text{min}})
+    \label{eq:mandelbrot-cx}
+    c_x = x_{\text{min}} + \frac{p_x}{\text{largura da imagem}} \cdot (x_{\text{max}} - x_{\text{min}})
 \end{equation}
 
 \begin{equation}
-	\label{eq:mandelbrot_cy}
-	c_y = y_{\text{min}} + \frac{p_y}{\text{altura da imagem}} \cdot (y_{\text{max}} - y_{\text{min}})
+    \label{eq:mandelbrot-cy}
+    c_y = y_{\text{min}} + \frac{p_y}{\text{altura da imagem}} \cdot (y_{\text{max}} - y_{\text{min}})
 \end{equation}
 
-Inserimos os valores $c_x$ e $c_y$, nas iterações do Mandelbrot. Cada ponto da imagem é testado, e se a sequência $z_n$ não divergir após um número máximo de iterações, o \textit{pixel} correspondente é colorido. A \autoref{fig:mandelbrot} apresenta uma visualização típica do conjunto de Mandelbrot. O \autoref{alg:mandelbrot}~\cite{debianBenchmarksGame} apresenta o cálculo do conjunto, e \autoref{alg:mandelbrot_image} é utilizado para desenhar a imagem do conjunto.
+Os valores $c_x$ e $c_y$ alimentam as iterações de Mandelbrot. O algoritmo testa cada ponto da imagem. Se a sequência $z_n$ não divergir após um limite máximo de iterações, o \textit{pixel} correspondente recebe cor. A \autoref{fig:mandelbrot} mostra uma visualização clássica do conjunto. O \autoref{alg:mandelbrot}~\cite{debianBenchmarksGame} detalha o cálculo matemático, e o \autoref{alg:mandelbrot-image} descreve a rotina para desenhar a imagem.
 
 \begin{algorithm}[htb]
-	\caption{Cálculo do conjunto Mandelbrot}
-	\label{alg:mandelbrot}
-	\hrule
-	\begin{algorithmic}[1]
-		\REQUIRE Número complexo $c$
-		\STATE $z \gets 0 + 0i$
-		\FOR{$i = 0$ até $100$, com passo $1$}
-		\STATE $z \gets z^2 + c$
-		\IF{$|z| > 2.0$}
-		\RETURN Falso
-		\ENDIF
-		\ENDFOR
-		\RETURN Verdadeiro
-	\end{algorithmic}
-	\hrule
-	\fonte{Adaptado do \citet{debianBenchmarksGame}}
+    \caption{Cálculo do conjunto de Mandelbrot}
+    \label{alg:mandelbrot}
+    \hrule
+    \begin{algorithmic}[1]
+        \REQUIRE Número complexo $c$
+        \STATE $z \gets 0 + 0i$
+        \FOR{$i = 0$ até $100$, com passo $1$}
+        \STATE $z \gets z^2 + c$
+        \IF{$|z| > 2.0$}
+        \RETURN Falso
+        \ENDIF
+        \ENDFOR
+        \RETURN Verdadeiro
+    \end{algorithmic}
+    \hrule
+    \fonte{Adaptado de \citet{debianBenchmarksGame}}
 \end{algorithm}
 
 \begin{algorithm}[htb]
-	\caption{Geração da imagem do conjunto de Mandelbrot}
-	\label{alg:mandelbrot_image}
-	\hrule
-	\begin{algorithmic}[1]
-		\REQUIRE Tamanho da imagem base $n$
-		\STATE $imageSize \gets (n / 8) \times 8$
-		\STATE $pixels \gets$ vetor de tamanho $(imageSize \times imageSize) / 8$, inicializado com $0$
-		\STATE $scaleX \gets (1.0 - (-2.0)) / imageSize$
-		\STATE $scaleY \gets (1.5 - (-1.5)) / imageSize$
+    \caption{Geração da imagem do conjunto de Mandelbrot}
+    \label{alg:mandelbrot-image}
+    \hrule
+    \begin{algorithmic}[1]
+        \REQUIRE Tamanho da imagem base $n$
+        \STATE $imageSize \gets (n / 8) \times 8$
+        \STATE $pixels \gets$ vetor de tamanho $(imageSize \times imageSize) / 8$, inicializado com $0$
+        \STATE $scaleX \gets (1.0 - (-2.0)) / imageSize$
+        \STATE $scaleY \gets (1.5 - (-1.5)) / imageSize$
 
-		\FOR{$pixel = 0$ até \texttt{tamanho}($pixels) - 1$}
-		\STATE $byte \gets 0$
-		\STATE $byteRow \gets imageSize / 8$
-		\STATE $pixelColumn \gets pixel \bmod byteRow$
-		\STATE $y \gets pixel / byteRow$
+        \FOR{$pixel = 0$ até \texttt{tamanho}($pixels) - 1$}
+        \STATE $byte \gets 0$
+        \STATE $byteRow \gets imageSize / 8$
+        \STATE $pixelColumn \gets pixel \bmod byteRow$
+        \STATE $y \gets pixel / byteRow$
 
-		\FOR{$bit = 0$ até $7$}
-		\STATE $x \gets pixelColumn \times 8 + bit$
-		\STATE $cx \gets -2.0 + x \times scaleX$
-		\STATE $cy \gets -1.5 + y \times scaleY$
-		\IF{$\texttt{mandelbrot}(cx,\ cy) =\ $Verdadeiro}
-		\STATE $byte \gets byte\ |\ (1 \ll (7 - bit))$
-		\ENDIF
-		\ENDFOR
+        \FOR{$bit = 0$ até $7$}
+        \STATE $x \gets pixelColumn \times 8 + bit$
+        \STATE $cx \gets -2.0 + x \times scaleX$
+        \STATE $cy \gets -1.5 + y \times scaleY$
+        \IF{$\texttt{mandelbrot}(cx,\ cy) =\ $Verdadeiro}
+        \STATE $byte \gets byte\ |\ (1 \ll (7 - bit))$
+        \ENDIF
+        \ENDFOR
 
-		\STATE $pixels[pixel] \gets byte$
-		\ENDFOR
-	\end{algorithmic}
-	\hrule
-	\fonte{Adaptado do \citet{debianBenchmarksGame}}
+        \STATE $pixels[pixel] \gets byte$
+        \ENDFOR
+    \end{algorithmic}
+    \hrule
+    \fonte{Adaptado de \citet{debianBenchmarksGame}}
 \end{algorithm}
 
-Na implementação apresentada, duas otimizações foram aplicadas, no \autoref{alg:mandelbrot_image}, para melhorar o desempenho do algoritmo. A primeira delas foi a adição de diretivas de paralelização, inseridas em seu laço mais externo, permitindo que diferentes regiões da imagem fossem processadas concorrentemente.
-
-A segunda otimização foi a aplicação da técnica conhecida como \textit{loop unrolling}, que consiste em transformar parte das iterações de um laço em instruções sequenciais explícitas. Essa técnica visa reduzir o \textit{overhead} associado ao controle do laço, como verificações de condição e saltos, e pode beneficiar aspectos como \textit{branch prediction} e uso mais eficiente do \textit{pipeline} do processador.
+As diretivas de compilação foram inseridas no laço mais externo do algoritmo de geração de imagem (\autoref{alg:mandelbrot-image}). A cláusula \texttt{perfo} também foi adicionada a essa região. Em contraste, as cláusulas \texttt{fastmath} e \texttt{memo} foram aplicadas para cobrir todo o laço do \autoref{alg:mandelbrot}.
 
 \subsection{PI de Monte Carlo}\label{subsec:pi}
 
-O método de Monte Carlo consiste em um conjunto de algoritmos estatísticos que utilizam amostragem aleatória para resolver problemas determinísticos ou estimar valores numéricos~\cite{morettin2010}. Sua principal característica é a geração de entradas aleatórias num domínio previamente definido, seguido da aplicação de uma regra ou função para computar a saída, cujo resultado são então agregados para formar uma estimativa.
+O método de Monte Carlo engloba algoritmos estatísticos que aplicam amostragem aleatória para solucionar problemas determinísticos ou estimar valores numéricos~\cite{morettin2010}. Sua principal característica é a geração de entradas aleatórias num domínio previamente definido, seguido da aplicação de uma regra ou função para computar a saída, cujo resultado é então agregado para formar uma estimativa.
 
 \begin{equation}
-	\label{eq:area_circle}
-	A_{\text{círculo}} = \pi r^2 = \pi
+\label{eq:area_circle}
+A_{\text{círculo}} = \pi r^2 = \pi
 \end{equation}
 
 \begin{equation}
-	\label{eq:area_square}
-	A_{\text{quadrado}} = 2 \times 2 = 4
+\label{eq:area_square}
+A_{\text{quadrado}} = 2 \times 2 = 4
 \end{equation}
 
 \begin{equation}
-	\label{eq:rational_area}
-	\frac{A_{\text{círculo}}}{A_{\text{quadrado}}} = \frac{\pi}{4}
+\label{eq:rational_area}
+\frac{A_{\text{círculo}}}{A_{\text{quadrado}}} = \frac{\pi}{4}
 \end{equation}
 
 \begin{equation}
-	\label{eq:rational_pi}
-	\pi = 4 \times \frac{A_{\text{círculo}}}{A_{\text{quadrado}}}
+\label{eq:rational_pi}
+\pi = 4 \times \frac{A_{\text{círculo}}}{A_{\text{quadrado}}}
 \end{equation}
 
-No caso específico da estimativa de $\pi$, o método pode ser aplicado de maneira intuitiva. Considere um círculo de raio $r = 1$, inscrito em um quadrado de lado $2$, conforme ilustrado na \autoref{fig:pi}. As áreas do círculo e do quadrado são dadas, respectivamente, pelas Equações~\ref{eq:area_circle} e~\ref{eq:area_square}. A razão entre essas duas áreas é apresentado na \autoref{eq:rational_area}. Por fim ao isolarmos o $\pi$, obtemos a \autoref{eq:rational_pi}.
+A aplicação do método para estimar $\pi$ é intuitiva. Considere um círculo de raio $r=1$ inscrito em um quadrado de lado 2, como ilustra a \autoref{fig:pi}. As Equações~\ref{eq:area_circle} e \ref{eq:area_square} definem as áreas do círculo e do quadrado. A \autoref{eq:rational_area} apresenta a razão entre essas áreas. Isolando o $\pi$, obtém-se a \autoref{eq:rational_pi}.
 
 \begin{figure}[h]
-	\caption{Método de Monte Carlo}
-	\centering
-	\includegraphics[scale=0.4]{figuras/pi.png}
-	\label{fig:pi}
-	\fonte{\citet{wikimediaPi}}
-	\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Método de Monte Carlo.}
+\caption{Método de Monte Carlo}
+\centering
+\includegraphics[scale=0.4]{figuras/pi.png}
+\label{fig:pi}
+\fonte{\citet{wikimediaPi}}
+\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Método de Monte Carlo.}
 \end{figure}
 
-\begin{algorithm}[htb]
-	\caption{Cálculo de PI pelo método de Monte Carlo}
-	\label{alg:pi}
-	\hrule
-	\begin{algorithmic}[1]
-		\REQUIRE Quantidade de iterações $n$
-		\STATE $hit \gets 0$
-		\STATE $tid \gets \texttt{thread\_num}()$
-		\STATE $seedState \gets \{tid, tid + 1\}$
-		\FOR{$i = 0$ até $n$, com passo $1$}
-		\STATE $x \gets \texttt{random}(seedState)$
-		\STATE $y \gets \texttt{random}(seedState)$
-		\IF{$(x \times x + y \times y) \leq 1$}
-		\STATE $hit \gets hit + 1$
-		\ENDIF
-		\ENDFOR
-		\RETURN $(4.0 \times hit) / n$
-	\end{algorithmic}
-	\hrule
-	\fonte{}
-\end{algorithm}
+ \begin{algorithm}[htb]
+    \caption{Cálculo de PI pelo método de Monte Carlo}
+    \label{alg:pi}
+    \hrule
+    \begin{algorithmic}[1]
+        \REQUIRE Quantidade de iterações $n$
+        \STATE $hit \gets 0$
+        \STATE $tid \gets \texttt{thread\_num}()$
+        \STATE $seedState \gets \{tid, tid + 1\}$
+        \FOR{$i = 0$ até $n$, com passo $1$}
+        \STATE $x \gets \texttt{random}(seedState)$
+        \STATE $y \gets \texttt{random}(seedState)$
+        \IF{$(x \times x + y \times y) \leq 1$}
+        \STATE $hit \gets hit + 1$
+        \ENDIF
+        \ENDFOR
+        \RETURN $(4.0 \times hit) / n$
+    \end{algorithmic}
+    \hrule
+    \fonte{}
+\end{algorithm} 
 
-A partir disso, é possível aplicar o método de Monte Carlo para estimar o valor de $\pi$. Como o círculo está inscrito no quadrado, o domínio de amostragem é o próprio quadrado. Gera-se então, um grande número de pontos aleatórios dentro do quadrado. Para cada ponto $(x, y)$, calcula-se sua distância até a origem. Se a distância for menor ou igual a 1, o ponto está dentro do círculo.
-
-A estimativa de $\pi$ é obtida pela razão entre o número de pontos que caíram dentro do círculo e o número total de pontos gerados, multiplicada por 4, como mostra a \autoref{eq:pi_monte}, a \autoref{fig:pi} apresenta uma ilustração desse processo de amostragem e da aproximação de $\pi$. O \autoref{alg:pi} apresenta a implementação dessas equações utilizada no \textit{benchmark}.
+O domínio de amostragem corresponde à área do quadrado. O algoritmo gera múltiplos pontos aleatórios dentro desse limite. Para cada coordenada ($x$,$y$), calcula-se então a distância até a origem. O ponto pertence ao círculo se a distância for menor ou igual a 1. A \autoref{eq:pi_monte} demonstra que a estimativa de $\pi$ equivale a razão entre a quantidade de pontos contidos no círculo e o total de pontos gerados, mulltiplicados por 4. A \autoref{fig:pi} ilustra o processo de amostragem. O \autoref{alg:pi} detalha a implementação adotada no \textit{benchmark}.
 
 \begin{equation}
-	\label{eq:pi_monte}
-	\pi \approx 4 \times \frac{\text{pontos dentro do círculo}}{\text{total de pontos}}
+\label{eq:pi_monte}
+\pi \approx 4 \times \frac{\text{pontos dentro do círculo}}{\text{total de pontos}}
 \end{equation}
 
-Na implementação apresentada no \autoref{alg:pi}, o laço principal foi paralelizado de forma que cada \textit{thread} execute uma fração do espaço total de iterações. Outra otimização introduzida nessa implementação, foi na geração de números pseudoaleatórios com o algoritmo \texttt{xorshift128+}, escolhido por sua alta velocidade e boa qualidade estatística.
+O algoritmo utilizado para a geração de números pseudoaleatórios foi o \texttt{xorshift128+}~\cite{vigna2017}, escolhido principalmente pela sua velocidade, e por possuir uma qualidade estatística satisfatória. As anotações de paralelização foram realizadas no laço principal do \autoref{alg:pi}, e todas as diferentes cláusulas foram utilizadas para anotar essa região.
 
 \section{Análise de Desempenho}\label{sec:desempenho}
 
