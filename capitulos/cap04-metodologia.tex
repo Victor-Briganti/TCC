@@ -4,7 +4,7 @@ Este capítulo apresenta a metodologia e os recursos utilizados no desenvolvimen
 
 \section{Ambiente e Configuração Experimental}\label{sec:config}
 
-Os experimentos deste trabalho foram realizados em um computador equipado com um processador Intel Core i7-4790, com frequência base de 3.6 GHz, quatro núcleos físicos e suporte a oito \textit{threads}. A hierarquia de memória \textit{cache} apresenta 32 KB, 256 KB e 8 MB nos níveis L1, L2 e L3, respectivamente. O sistema possui 32 GB de memória RAM DDR3, distribuídos em quatro módulos de 8 GB configurados em \textit{dual-channel}, operando a 1600 MT/s. O sistema operacional utilizado foi o Ubuntu 22.04.4 LTS. A \autoref{fig:compArchitecture} apresenta a hierarquia de memória e a disposição dos núcleos do processador utilizados nos testes.
+Os experimentos foram conduzidos em um computador com processador Intel Core i7-4790, operando a uma frequência base de 3.6 GHz. O processador possui quatro núcleos físicos e suporte a oito \textit{threads}. A hierarquia de memória \textit{cache} é composta por 32 KB em L1, 256 KB em L2 e 8 MB em L3. O sistema conta com 32 GB de memória RAM DDR3, divididos em quatro módulos de 8 GB em \textit{dual-channel} a 1600 MT/s. O sistema operacional adotado foi o Ubuntu 22.04.4 LTS. A \autoref{fig:compArchitecture} detalha a arquitetura de memória e a organização dos núcleos utilizados nos testes.
 
 \begin{figure}[htb]
 \caption{Especificação do computador utilizado em testes.}
@@ -14,9 +14,11 @@ Os experimentos deste trabalho foram realizados em um computador equipado com um
 \addcontentsline{loge}{figure}{\protect\numberline{\thefigure}Especificação do computador utilizado na avaliação experimental.}
 \end{figure}
 
-Todas as aplicações avaliadas foram executadas com 1, 2, 4 e 8 \textit{threads}. Cada configuração foi executada 10 vezes para garantir o cálculo de uma média confiável e minimizar o impacto de anomalias de execução. O ambiente de testes utilizou a variável \texttt{OMP\_PROC\_BIND="TRUE"} para fixar as \textit{threads} aos núcleos físicos da máquina e \texttt{OMP\_APPROX="TRUE"} para habilitar a execução das rotinas de computação aproximada. Nos algoritmos que dependem da geração de números aleatórios, adotamos o uso de sementes fixas para assegurar a reprodutibilidade dos dados.
+As aplicações foram executadas com 1, 2, 4 e 8 \textit{threads}. Cada configuração executada 10 vezes para assegurar médias confiáveis e mitigar o impacto de anomalias de execução. O ambiente foi configurado com a variável \texttt{OMP\_PROC\_BIND="TRUE"} para fixar as \textit{threads} aos núcleos físicos e \texttt{OMP\_APPROX="TRUE"} para ativar as rotinas de computação aproximada. Algoritmos dependentes de números aleatórios utilizaram sementes fixas, o que garante a reprodutibilidade dos dados.
 
-Todas as aplicações foram avaliadas com as cinco técnicas de aproximação: \texttt{fastmath}, \texttt{perfo\_init}, \texttt{perfo\_fini}, \texttt{perfo\_large} e \texttt{memo}. As três abordagens baseadas em \texttt{perfo} foram avaliadas com taxas de descarte de 10, 20, 30, 40 e 50. A técnica \texttt{memo} foi utilizada com os limiares 10\%, 25\%, 50\% e 100\%. A técnica \texttt{fastmath} atua de forma binária e não possui parametrização de taxa. Todos os códigos foram compilados com a \textit{flag} \texttt{-O3} para buscar ganhos adicionais de desempenho sobre os algoritmos já otimizados. Como grande parte das modificações ligadas à aproximação ocorre apenas durante a fase de geração de código ou em tempo de execução, o compilador padrão não quebrou a semântica do programa nem desfez as otimizações implementadas, preservando o comportamento esperado.
+O conjunto de \textit{benchmarks} foi testado com cinco técnicas de aproximação: \texttt{fastmath}, \texttt{perfo\_init}, \texttt{perfo\_fini}, \texttt{perfo\_large} e \texttt{memo}. As abordagens baseadas em \texttt{perfo} utilizaram taxas de descarte de 10, 20, 30, 40 e 50. A técnica \texttt{memo} operou com limiares de 10\%, 25\%, 50\% e 100\%. A diretiva \texttt{fastmath} age de maneira binária e não possui parâmetros de configuração. Todos os códigos foram compilados com a \textit{flag} \texttt{-O3} para maximizar o desempenho base. Como as modificações de aproximação acontecem apenas na fase de geração de código ou em tempo de execução, as otimizações do compilador não interferem na semântica das técnicas avaliadas, o que preserva o comportamento esperado.
+
+A versão exata do algoritmo, executada com \texttt{OpenMP} e uma única \textit{thread}, serviu como \textit{baseline} para as métricas de desempenho. A coleta das informações ocorreu por meio da ferramenta \texttt{perf}. O cálculo das métricas de qualidade também adotou como referência a execução exata da aplicação, sem o uso de diretivas de aproximação.
 
 \section{Conjunto de \textit{Benchmarks}}\label{sec:benchmark}
 
@@ -593,110 +595,111 @@ O domínio de amostragem corresponde à área do quadrado. O algoritmo gera múl
 \pi \approx 4 \times \frac{\text{pontos dentro do círculo}}{\text{total de pontos}}
 \end{equation}
 
-O algoritmo utilizado para a geração de números pseudoaleatórios foi o \texttt{xorshift128+}~\cite{vigna2017}, escolhido principalmente pela sua velocidade, e por possuir uma qualidade estatística satisfatória. As anotações de paralelização foram realizadas no laço principal do \autoref{alg:pi}, e todas as diferentes cláusulas foram utilizadas para anotar essa região.
+O algoritmo utilizado para a geração de números pseudoaleatórios foi o \texttt{xorshift128+}~\cite{vigna2017}, escolhido principalmente pela sua simplicidade e velocidade. As anotações de paralelização foram realizadas no laço principal do \autoref{alg:pi}, e todas as diferentes cláusulas foram utilizadas para anotar essa região.
 
 \section{Análise de Desempenho}\label{sec:desempenho}
 
-Visando identificar a forma mais adequada de medir o desempenho das aplicações, foram realizados experimentos com 2MM (sem \textit{tiling}) e K-Means, utilizando 1, 2, 4 e 8 \textit{threads}. Essas duas aplicações foram selecionadas porque apresentam tempos de execução mais elevados que as demais, evidenciando de maneira mais clara o impacto de cada modelo de medição.
+Para identificar a métrica de desempenho mais adequada, avaliaram-se as aplicações 2MM e K-Means utilizando 1, 2, 4 e 8 \textit{threads}, cada uma delas sendo executada 10 vezes para melhor observar as variações do ambiente. A escolha dessas aplicações baseia-se em seus elevados tempos de execução, característica que evidencia de forma clara o impacto de cada método de medição.
 
-As medições foram realizadas utilizando a ferramenta \texttt{perf}, que permite coletar métricas de baixo nível do \textit{hardware} e do sistema operacional. Entre os principais eventos monitorados, destaca-se o número total de ciclos de CPU e o tempo total de execução das aplicações. As Figuras~\ref{subfig:2mm_cycles_avg} e~\ref{subfig:2mm_cycles_std} apresentam, respectivamente, a média de ciclos e o coeficiente de variação da aplicação 2MM. Já as Figuras~\ref{subfig:2mm_time_avg} e~\ref{subfig:2mm_time_std} mostram a média do tempo de execução e o respectivo coeficiente de variação. O mesmo pode ser observado em relação ao K-Means, nas Figuras~\ref{subfig:kmeans_cycles_avg} e~\ref{subfig:kmeans_cycles_std}, que ilustram os resultados para os ciclos da aplicação, enquanto as Figuras~\ref{subfig:kmeans_time_avg} e~\ref{subfig:kmeans_time_std} apresentam as medições referentes ao tempo de execução.
+Utilizou-se a ferramenta \texttt{perf} para coletar métricas de baixo nível do \textit{hardware} e do sistema operacional. Os principais eventos monitorados foram o total de ciclos de CPU e o tempo total de execução. A Figura~\ref{subfig:2mm_cycles_avg} e Figura~\ref{subfig:2mm_cycles_std} apresentam a média e o coeficiente de variação dos ciclos para a aplicação 2MM, enquanto a Figura~\ref{subfig:2mm_time_avg} e Figura~\ref{subfig:2mm_time_std} ilustram as mesmas métricas para o tempo de execução. O comportamento do K-Means é detalhado na Figura~\ref{subfig:kmeans_cycles_avg} e Figura~\ref{subfig:kmeans_cycles_std} para os ciclos, e na Figura~\ref{subfig:kmeans_time_avg} e Figura~\ref{subfig:kmeans_time_std} para o tempo de execução.
 
 \begin{figure}[htbp]
-	\caption{Medição de ciclos na aplicação 2MM.}
-	\centering
-	\subfloat[Média de ciclos]{
-		\includegraphics[width=0.45\textwidth]{2mm_cycles_avg.pdf}
-		\label{subfig:2mm_cycles_avg}
-	}
-	\hfill
-	\subfloat[Coeficiente de variação dos ciclos]{
-		\includegraphics[width=0.45\textwidth]{2mm_cycles_std.pdf}
-		\label{subfig:2mm_cycles_std}
-	}
-	\fonte{}
-	\label{fig:2mm_cycles}
+\caption{Medição de ciclos na aplicação 2MM.}
+\centering
+\subfloat[Média de ciclos]{
+\includegraphics[width=0.45\textwidth]{2mm_cycles_avg.pdf}
+\label{subfig:2mm_cycles_avg}
+}
+\hfill
+\subfloat[Coeficiente de variação dos ciclos]{
+\includegraphics[width=0.45\textwidth]{2mm_cycles_std.pdf}
+\label{subfig:2mm_cycles_std}
+}
+\fonte{}
+\label{fig:2mm_cycles}
 \end{figure}
 
 \begin{figure}[htbp]
-	\caption{Medição de ciclos na aplicação K-Means.}
-	\centering
-	\subfloat[Média de ciclos]{
-		\includegraphics[width=0.45\textwidth]{kmeans_cycles_avg.pdf}
-		\label{subfig:kmeans_cycles_avg}
-	}
-	\hfill
-	\subfloat[Coeficiente de variação dos ciclos]{
-		\includegraphics[width=0.45\textwidth]{kmeans_cycles_std.pdf}
-		\label{subfig:kmeans_cycles_std}
-	}
-	\fonte{}
-	\label{fig:kmeans_cycles}
+\caption{Medição de ciclos na aplicação K-Means.}
+\centering
+\subfloat[Média de ciclos]{
+\includegraphics[width=0.45\textwidth]{kmeans_cycles_avg.pdf}
+\label{subfig:kmeans_cycles_avg}
+}
+\hfill
+\subfloat[Coeficiente de variação dos ciclos]{
+\includegraphics[width=0.45\textwidth]{kmeans_cycles_std.pdf}
+\label{subfig:kmeans_cycles_std}
+}
+\fonte{}
+\label{fig:kmeans_cycles}
 \end{figure}
 
 \begin{figure}[htbp]
-	\caption{Medição de tempo na aplicação 2MM.}
-	\centering
-	\subfloat[Média de tempo]{
-		\includegraphics[width=0.45\textwidth]{2mm_time_avg.pdf}
-		\label{subfig:2mm_time_avg}
-	}
-	\hfill
-	\subfloat[Coeficiente de variação do tempo]{
-		\includegraphics[width=0.45\textwidth]{2mm_time_std.pdf}
-		\label{subfig:2mm_time_std}
-	}
-	\fonte{}
-	\label{fig:2mm_time}
+\caption{Medição de tempo na aplicação 2MM.}
+\centering
+\subfloat[Média de tempo]{
+\includegraphics[width=0.45\textwidth]{2mm_time_avg.pdf}
+\label{subfig:2mm_time_avg}
+}
+\hfill
+\subfloat[Coeficiente de variação do tempo]{
+\includegraphics[width=0.45\textwidth]{2mm_time_std.pdf}
+\label{subfig:2mm_time_std}
+}
+\fonte{}
+\label{fig:2mm_time}
 \end{figure}
 
 \begin{figure}[htbp]
-	\caption{Medição de tempo na aplicação K-Means.}
-	\centering
-	\subfloat[Média de tempo]{
-		\includegraphics[width=0.45\textwidth]{kmeans_time_avg.pdf}
-		\label{subfig:kmeans_time_avg}
-	}
-	\hfill
-	\subfloat[Coeficiente de variação do tempo]{
-		\includegraphics[width=0.45\textwidth]{kmeans_time_std.pdf}
-		\label{subfig:kmeans_time_std}
-	}
-	\fonte{}
-	\label{fig:kmeans_time}
+\caption{Medição de tempo na aplicação K-Means.}
+\centering
+\subfloat[Média de tempo]{
+\includegraphics[width=0.45\textwidth]{kmeans_time_avg.pdf}
+\label{subfig:kmeans_time_avg}
+}
+\hfill
+\subfloat[Coeficiente de variação do tempo]{
+\includegraphics[width=0.45\textwidth]{kmeans_time_std.pdf}
+\label{subfig:kmeans_time_std}
+}
+\fonte{}
+\label{fig:kmeans_time}
 \end{figure}
 
-Ao analisarmos as medições realizadas, observamos que a média tanto do tempo de execução quanto do número de ciclos apresentou padrões bastante similares em ambas as aplicações. No entanto, ao examinarmos o coeficiente de variação desses mesmos resultados, torna-se evidente que o tempo de execução sofreu um desvio significativamente menor entre as execuções quando comparado aos ciclos. Esse comportamento é especialmente claro no caso da aplicação 2MM, onde, com 4 e 8 threads, o coeficiente de variação do tempo de execução foi virtualmente nulo. Já no K-Means, o mesmo padrão se repete, por exemplo, com 1 \textit{thread}, o coeficiente de variação dos ciclos atingiu cerca de 20\%, enquanto no tempo de execução permaneceu próximo de 11\%, uma diferença de quase 2$\times$.
+A análise dos resultados indica que as médias do tempo de execução e do número de ciclos apresentam padrões similares em ambas as aplicações. Contudo, o tempo de execução possui um coeficiente de variação significativamente menor. Na aplicação 2MM com 4 e 8 \textit{threads}, a variação do tempo de execução foi praticamente nula. No K-Means com 1 \textit{thread}, o coeficiente de variação dos ciclos atingiu aproximadamente 20\%, enquanto o do tempo de execução manteve-se próximo a 11\%, configurando uma diferença de quase duas vezes.
 
-Diante dessa análise, optou-se por utilizar o tempo de execução como métrica principal para avaliar o desempenho, uma vez que apresentou maior estabilidade entre as execuções e refletiu de maneira mais consistente o comportamento das aplicações.
+A alta variabilidade dos ciclos ocorre porque o \texttt{perf} contabiliza o esforço computacional agregado de todos os núcleos. Essa métrica é sensível ao \textit{overhead} de paralelização, à espera ativa (\textit{busy-waiting}) em barreiras de sincronização e às variações de frequência do processador. Como o objetivo desta análise é demonstrar o ganho real de desempenho, adotou-se o tempo total de execução como métrica principal. O número de ciclos é útil para avaliar o custo energético ou a eficiência paralela, mas o tempo de execução reflete a redução do tempo de processamento proporcionada pelas múltiplas \textit{threads} de maneira direta, estável e consistente.
 
 \section{Resumo do conjunto de aplicações}\label{sec:resumo_exp}
+ \begin{table}[H]
+    \centering
+    \caption{Resumo das aplicações utilizadas nos experimentos}
+    \begin{tabular}{|l|p{3.5cm}|l|l|}
+        \hline
+        \textbf{Aplicação} & \textbf{Fonte}                                     & \textbf{Domínio}            & \textbf{Métrica de Qualidade} \\
+        \hline
+        2MM                & PolyBench~\cite{polybench}                         & Álgebra Linear              & \gls{mape}                   \\
+        \hline
+        Correlação         & PolyBench~\cite{polybench}                         & Probabilidade e Estatística & \gls{mape}                   \\
+        \hline
+        Deriche            & PolyBench~\cite{polybench}                         & Processamento de Imagem     & \gls{ssim}                    \\
+        \hline
+        Jacobi 2D          & PolyBench~\cite{polybench}                         & Solução Numérica            & \gls{mape}                   \\
+        \hline
+        K-Means            & Rodinia~\cite{rodinia}                             & Aprendizado de Máquina      & \gls{mcr}                     \\
+        \hline
+        Mandelbrot         & Debian Benchmarks Game~\cite{debianBenchmarksGame} & Visualização Computacional  & \gls{mape}                   \\
+        \hline
+        PI de Monte Carlo  & Debian Benchmarks Game~\cite{debianBenchmarksGame} & Probabilidade e Estatística & \gls{mape}                   \\
+        \hline
+    \end{tabular}
+    \fonte{}
+    \label{tab:benchmarks}
+\end{table} 
 
-\begin{table}[H]
-	\centering
-	\caption{Resumo das aplicações utilizadas nos experimentos}
-	\begin{tabular}{|l|p{3.5cm}|l|l|}
-		\hline
-		\textbf{Aplicação} & \textbf{Fonte}                                     & \textbf{Domínio}            & \textbf{Métrica de Qualidade} \\
-		\hline
-		2MM                & PolyBench~\cite{polybench}                         & Álgebra Linear              & \gls{mape}                   \\
-		\hline
-		Correlação         & PolyBench~\cite{polybench}                         & Probabilidade e Estatística & \gls{mape}                   \\
-		\hline
-		Deriche            & PolyBench~\cite{polybench}                         & Processamento de Imagem     & \gls{ssim}                    \\
-		\hline
-		Jacobi 2D          & PolyBench~\cite{polybench}                         & Solução Numérica            & \gls{mape}                   \\
-		\hline
-		K-Means            & Rodinia~\cite{rodinia}                             & Aprendizado de Máquina      & \gls{mcr}                     \\
-		\hline
-		Mandelbrot         & Debian Benchmarks Game~\cite{debianBenchmarksGame} & Visualização Computacional  & \gls{mape}                   \\
-		\hline
-		PI de Monte Carlo  & Debian Benchmarks Game~\cite{debianBenchmarksGame} & Probabilidade e Estatística & \gls{mape}                   \\
-		\hline
-	\end{tabular}
-	\fonte{}
-	\label{tab:benchmarks}
-\end{table}
+As aplicações escolhidas apresentam diferentes padrões computacionais, possuem suporte robusto à paralelização e incluem etapas de execução tolerantes a aproximações. A \autoref{tab:benchmarks} resume os \textit{benchmarks} utilizados, detalhando a fonte, o domínio do problema e a respectiva métrica de qualidade. Cada programa avaliado serviu para avaliar o impacto das técnicas de aproximação no desempenho e na precisão dos cálculos.
 
-As aplicações selecionadas foram escolhidas por apresentarem diferentes padrões computacionais, possuírem suporte consistente à paralelização e incluírem etapas cujo resultado pode tolerar algum nível de aproximação. A \autoref{tab:benchmarks} resume as aplicações utilizadas nos experimentos, indicando suas fontes, domínios e métricas de qualidade. Cada uma das aplicações selecionadas, serviram para avaliar como as técnicas de aproximação implementadas afetam o desempenho e a acurácia, considerando diferentes ambientes computacionais e padrões de paralelismo.
+As métricas de qualidade variam conforme a natureza da aplicação. Para programas com saídas numéricas contínuas, como 2MM, Correlação, Jacobi 2D e PI de Monte Carlo, adotou-se o \gls{mape}. Essa métrica calcula a média do erro absoluto de forma percentual, dividindo a diferença entre a saída aproximada e a exata pelo próprio valor exato. Diferente de métricas simétricas, o \gls{mape} quantifica o desvio tendo o valor correto como referência absoluta. Isso facilita a interpretação da perda de precisão causada pela aproximação computacional.
 
-As métricas de qualidade foram definidas conforme a natureza da saída produzida por cada aplicação. Para aplicações com resultados numéricos contínuos, como 2MM, Correlação, Jacobi 2D e PI de Monte Carlo, adotou-se o \gls{mape}, pois essa métrica permite comparar valores aproximados e exatos mesmo quando variam de escala. No caso do K-Means, utilizou-se o \gls{mcr} por ser uma métrica específica para avaliar a precisão da atribuição dos pontos aos \textit{clusters}. Já na aplicação Deriche, cujo resultado é uma imagem filtrada, optou-se pelo \textit{ssim}, que mede a similaridade estrutural entre as imagens.
+No K-Means, utilizou-se o \gls{mcr}, uma métrica específica e apropriada para calcular a taxa de classificações incorretas na atribuição dos pontos aos \textit{clusters}. No caso do Deriche e do Mandelbrot, cujo processamento gera uma imagem, optou-se pelo \gls{ssim}, que quantifica matematicamente a similaridade estrutural e visual entre a imagem gerada e a referência correta.
