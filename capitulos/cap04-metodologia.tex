@@ -76,7 +76,7 @@ O algoritmo empregado segue o padrão clássico~\cite{axler2015} descrito na \au
 	\fonte{Adaptado do \citet{polybench}}
 \end{algorithm}
 
-O programa executa as duas multiplicações em sequência. Para reduzir o custo de criação de regiões paralelas, definiu-se uma única região que abrange ambas as operações. Esta mesma região serviu para a aplicação das técnicas de computação aproximada. Na abordagem \texttt{fastmath}, a região englobou toda a operação. A cláusula \texttt{perfo}, foi aplicada junto a diretiva \texttt{parallel for} englobando o laço mais externo. Por fim o \texttt{memo} foi aplicado no laço laço interno (\texttt{k}), memoizando toda a linha sendo calculada. 
+O programa executa as duas multiplicações em sequência. Para reduzir o custo de criação de regiões paralelas, definiu-se uma única região que abrange ambas as operações. Esta mesma região serviu para a aplicação das técnicas de computação aproximada. Na abordagem \texttt{fastmath}, a região englobou toda a operação. A cláusula \texttt{perfo}, foi aplicada junto a diretiva \texttt{parallel for} englobando o laço mais externo. Por fim o \texttt{memo} foi aplicado no laço interno (\texttt{k}), memoizando cada iteração. 
 
 Além da paralelização, outra otimização aplicada foi a alocação contígua de memória. Esta técnica também aparece nas outras aplicações que realizam cálculos em matrizes. Em vez de criar um bloco de memória separado para cada linha, o programa aloca um único espaço contínuo. Esta estratégia reduz o número de chamadas de alocação e melhora a localidade espacial.
 
@@ -277,7 +277,7 @@ A \autoref{fig:deriche} demonstra o efeito prático do filtro utilizando o coefi
     \label{fig:deriche}
 \end{figure}
 
-A implementação avaliada segue o padrão do conjunto PolyBench~\cite{polybench}. É importante ressaltar que este \textit{benchmark} foca estritamente no \textit{kernel} de suavização \gls{iir}, omitindo os passos de detecção de borda. O \autoref{alg:deriche} detalha a lógica exata utilizada nos testes. Para paralelizar a aplicação, definiu-se uma única região \texttt{OpenMP} que engloba as quatro fases de varredura. A cláusula \texttt{perfo} foi aplicada nos laços externos de cada uma das fases. A cláusula \texttt{fastmath} foi aplicada externamente englobando todas as demais regiões de código. Por fim a \texttt{memo} foi aplicada ao laço mais interno de cada uma das varreduras.
+A implementação avaliada segue o padrão do conjunto PolyBench~\cite{polybench}. É importante ressaltar que este \textit{benchmark} foca estritamente no \textit{kernel} de suavização \gls{iir}, omitindo os passos de detecção de borda. O \autoref{alg:deriche} detalha a lógica exata utilizada nos testes. Para paralelizar a aplicação, definiu-se uma única região \texttt{OpenMP} que engloba as quatro fases de varredura. A cláusula \texttt{perfo} foi aplicada nos laços externos de cada uma das fases. A cláusula \texttt{fastmath} foi aplicada externamente englobando todas as demais regiões de código. Por fim a \texttt{memo} foi aplicada internamente aos laços internos de cada uma das varreduras.
 
 \subsection{Jacobi 2D}\label{subsec:jacobi2d}
 
@@ -328,7 +328,7 @@ O Jacobi 2D é uma aplicação do método de Jacobi adaptado para problemas em d
 
 O \autoref{alg:jacobi2d} apresenta dependência sequencial entre as etapas de atualização, dificultando a paralelização total. Para contornar isso, a paralelização foi aplicada no laço mais externo, permitindo que cada etapa de varredura seja executada em paralelo. Já os laços internos foram anotados com diretivas \texttt{for} de modo a dividir o trabalho entre as \textit{threads} e sincronizá-las, assegurando que os dados produzidos em uma etapa estejam disponíveis antes da próxima atualização.
 
-A cláusula \texttt{perfo} foi aplicada diretamente nas diretivas \texttt{for} dos dois laços intermediários. A \texttt{fastmath} foi aplicada em todo o bloco de código. E por fim a cláusula \texttt{memo} foi aplicado de modo a memoizar ambos os laços intermediários.
+A cláusula \texttt{perfo} foi aplicada diretamente nas diretivas \texttt{for} dos dois laços intermediários. A \texttt{fastmath} foi aplicada em todo o bloco de código. E por fim a cláusula \texttt{memo} foi aplicado de modo a memoizar a região interna do laço mais interno.
 
 \subsection{K-means}\label{subsec:kmeans}
 
@@ -672,31 +672,31 @@ A análise dos resultados indica que as médias do tempo de execução e do núm
 A alta variabilidade dos ciclos ocorre porque o \texttt{perf} contabiliza o esforço computacional agregado de todos os núcleos. Essa métrica é sensível ao \textit{overhead} de paralelização, à espera ativa (\textit{busy-waiting}) em barreiras de sincronização e às variações de frequência do processador. Como o objetivo desta análise é demonstrar o ganho real de desempenho, adotou-se o tempo total de execução como métrica principal. O número de ciclos é útil para avaliar o custo energético ou a eficiência paralela, mas o tempo de execução reflete a redução do tempo de processamento proporcionada pelas múltiplas \textit{threads} de maneira direta, estável e consistente.
 
 \section{Resumo do conjunto de aplicações}\label{sec:resumo_exp}
- \begin{table}[H]
+\begin{table}[H]
     \centering
-    \caption{Resumo das aplicações utilizadas nos experimentos}
-    \begin{tabular}{|l|p{3.5cm}|l|l|}
+    \caption{Resumo das aplicações utilizadas nos experimentos e seus respectivos tamanhos de entrada}
+    \begin{tabular}{|l|p{2.4cm}|l|p{4.2cm}|l|}
         \hline
-        \textbf{Aplicação} & \textbf{Fonte}                                     & \textbf{Domínio}            & \textbf{Métrica de Qualidade} \\
+        \textbf{Aplicação} & \textbf{Fonte}                                     & \textbf{Domínio}            & \textbf{Entrada}                                                   & \textbf{Métrica} \\
         \hline
-        2MM                & PolyBench~\cite{polybench}                         & Álgebra Linear              & \gls{mape}                   \\
+        2MM                & PolyBench                         & Álgebra Linear              & Matrizes $2048 \times 2048$                                                   & \gls{mape}       \\
         \hline
-        Correlação         & PolyBench~\cite{polybench}                         & Probabilidade e Estatística & \gls{mape}                   \\
+        Correlação         & PolyBench                         & Probabilidade e Estatística & Matriz $8192 \times 256$ \newline (observações $\times$ variáveis)            & \gls{mape}       \\
         \hline
-        Deriche            & PolyBench~\cite{polybench}                         & Processamento de Imagem     & \gls{ssim}                    \\
+        Deriche            & PolyBench                         & Processamento de Imagem     & Imagem (\autoref{subfig:sunflower_orig})                                      & \gls{ssim}       \\
         \hline
-        Jacobi 2D          & PolyBench~\cite{polybench}                         & Solução Numérica            & \gls{mape}                   \\
+        Jacobi 2D          & PolyBench                         & Solução Numérica            & Matriz $2048 \times 2048$, $10$ passos                                        & \gls{mape}       \\
         \hline
-        K-Means            & Rodinia~\cite{rodinia}                             & Aprendizado de Máquina      & \gls{mcr}                     \\
+        K-Means            & Rodinia                             & Aprendizado de Máquina      & $1.313.220$ pontos, $10$ \textit{clusters}, $100$ iterações, limiar $5$  & \gls{mcr}        \\
         \hline
-        Mandelbrot         & Debian Benchmarks Game~\cite{debianBenchmarksGame} & Visualização Computacional  & \gls{mape}                   \\
+        Mandelbrot         & Debian Benchmarks Game & Visualização Computacional  & Imagem $2048 \times 2048$                                                     & \gls{mape}       \\
         \hline
-        PI de Monte Carlo  & Debian Benchmarks Game~\cite{debianBenchmarksGame} & Probabilidade e Estatística & \gls{mape}                   \\
+        PI de Monte Carlo  & Debian Benchmarks Game & Probabilidade e Estatística & $10^9$ iterações                                                              & \gls{mape}       \\
         \hline
     \end{tabular}
     \fonte{}
     \label{tab:benchmarks}
-\end{table} 
+\end{table}
 
 As aplicações escolhidas apresentam diferentes padrões computacionais, possuem suporte robusto à paralelização e incluem etapas de execução tolerantes a aproximações. A \autoref{tab:benchmarks} resume os \textit{benchmarks} utilizados, detalhando a fonte, o domínio do problema e a respectiva métrica de qualidade. Cada programa avaliado serviu para avaliar o impacto das técnicas de aproximação no desempenho e na precisão dos cálculos.
 
