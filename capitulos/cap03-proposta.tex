@@ -114,55 +114,57 @@ void kernel(float *a, float *b, int n) {
 
 \section{Memoização}\label{subsec:pragmaMemo}
 
-A cláusula \textit{memo} habilita a memoização aproximada em blocos de código arbitrários. Esta estratégia explora regiões que apresentam relações de entrada e saída estáveis, onde execuções sucessivas produzem resultados consistentes. O \autoref{code:pragmaMemo} apresenta a sintaxe da cláusula. A cláusula \texttt{memo}, necessita do parâmetro \textit{threshold}, definido entre 0 e 100, que serve para estabelecer o limite de erro percentual tolerável para a interpolação em relação ao resultado real, além disso a o seu uso exige a cláusula \textit{output}, que especifica uma única variável de saída a ser aproximada. 
+A cláusula \textit{memo} habilita a memoização aproximada em blocos de código arbitrários. Essa estratégia explora regiões que apresentam relações de entrada e saída estáveis, nas quais execuções sucessivas produzem resultados consistentes. O \autoref{code:pragmaMemo} apresenta a sintaxe da cláusula. A cláusula \texttt{memo} requer o parâmetro \textit{threshold}, definido entre 0 e 100, que estabelece o limite de erro percentual tolerável em relação ao resultado real. Além disso, seu uso exige a cláusula \textit{output}, que especifica uma única variável de saída a ser aproximada.
 
 \begin{sourcecode}[htb]
 \caption{\label{code:pragmaMemo}Sintaxe da cláusula \textit{memo}.}
 \begin{lstlisting}[frame=single, language=C++]
 #pragma omp approx memo(threshold) output(variable)
 \end{lstlisting}
-\fonte{Autor}
+\fonte{}
 \end{sourcecode}
 
-Internamente, a técnica utiliza uma estrutura de tabela \textit{hash} local para cada \textit{thread}. Essa organização permite que a \textit{runtime} intercepte a região anotada e gerencie o ciclo de vida dos dados sem contenção. Cada região corresponde a uma entrada na tabela. O funcionamento baseia-se em um sistema de aprendizado dinâmico composto por quatro estados principais: \textit{computing}, \textit{predicting}, \textit{validating} e \textit{empty}.
+Internamente, a técnica utiliza uma estrutura de tabela \textit{hash} local a cada \textit{thread}, denominada \texttt{kmp\_map\_t}. Essa estrutura armazena todas as regiões de código anotadas com a cláusula \textit{memo}. Cada região é identificada por uma chave inteira e associada a uma estrutura interna que mantém o estado da execução, o histórico de valores observados, as predições geradas e métricas de desempenho utilizadas para controle adaptativo. Essa organização permite que a \textit{runtime} intercepte a região anotada e gerencie o ciclo de vida dos dados sem contenção entre \textit{threads}.
 
-Inicialmente, no estado \textit{computing}, o código original é executado e o resultado é armazenado em um \textit{bucket} de histórico. Após essa coleta inicial, o sistema transita para o estado \textit{predicting}. Nesta fase, a \textit{runtime} ignora a execução do bloco de código e fornece um valor aproximado via interpolação. A quantidade de predições consecutivas é controlada por uma janela dinâmica, que define o intervalo antes da próxima validação.
+O funcionamento baseia-se em uma máquina de estados que controla o processo de aprendizado e validação da aproximação. Os estados utilizados são \textit{empty}, \textit{warmup}, \textit{computing}, \textit{predicting}, \textit{validating} e \textit{disabled}. Cada estado define uma etapa específica do ciclo de execução da memoização.
 
-Ao atingir o limite da janela, o sistema entra em \textit{validating}. O código original é executado novamente para que o resultado real seja comparado ao valor interpolado. O erro é calculado conforme a \autoref{eq:error_calc}. Se o erro estiver dentro do \textit{threshold} estipulado, a confiança no modelo aumenta e o tamanho da janela de predição dobra, até o limite de $2^{20}$. Caso contrário, a janela é reduzida para uma unidade, e o novo valor real é inserido no histórico para atualizar a base de amostras. Esse mecanismo garante que a aproximação acompanhe variações temporais no comportamento da aplicação. O fluxo de execução está ilustrado na \autoref{fig:memo}.
+Inicialmente, a região encontra-se no estado \textit{empty}, indicando que ainda não há dados associados àquela entrada na tabela. Em seguida, o sistema transita para o estado \textit{warmup}. Nesse estágio, o código original é executado normalmente por um número fixo de chamadas, atualmente configurado para 10 execuções. O objetivo é coletar uma referência inicial de tempo de execução da região, que será utilizada posteriormente para avaliar o custo adicional introduzido pela memoização.
 
-\begin{figure}[htb]
-\caption{Modelo de execução da cláusula \textit{memo} com aprendizado dinâmico.}
-\centering
-\includegraphics[scale=0.5]{figuras/memo.pdf}
-\label{fig:memo}
-\fonte{Autor}
-\end{figure}
+Após a fase de aquecimento, o sistema entra no estado \textit{computing}. Nessa etapa, o código original continua sendo executado e os valores produzidos são armazenados em um histórico associado a entrada da tabela. Esse histórico constitui a base de dados utilizada para gerar predições futuras.
 
-A interpolação é realizada por meio da média aritmética dos valores presentes no histórico de cada \textit{bucket}. A \autoref{eq:media_aritmetica} apresenta a fórmula aplicada para tipos escalares, onde $A$ representa o \textit{bucket} com os valores armazenados durante as execuções. Para variáveis booleanas, o sistema aplica um limiar onde o resultado é verdadeiro se a média for maior ou igual a 0,5.
+Quando dados suficientes foram coletados, o sistema transita para o estado \textit{predicting}. Nesse estágio, a \textit{runtime} deixa de executar o bloco de código original e passa a fornecer diretamente um valor previsto. A quantidade de predições consecutivas é controlada por uma janela dinâmica. Essa janela define quantas execuções podem ser aproximadas antes que o sistema realize uma nova verificação do modelo.
+
+Ao atingir o limite da janela, o sistema entra no estado \textit{validating}. Nesse momento, o código original é executado novamente e o resultado real é comparado ao valor previsto. O erro é calculado conforme a métrica definida na \autoref{eq:mape}. Se o erro estiver dentro do limite estabelecido pelo \textit{threshold}, o tamanho da janela de predição é ampliado de forma exponencial, dobrando seu valor até o limite máximo de $2^{20}$. Caso o erro ultrapasse o limite permitido, a janela é reduzida para uma unidade e o novo valor real é inserido no histórico. Esse mecanismo permite que o modelo se adapte a mudanças no comportamento da aplicação ao longo do tempo.
+
+Se o número de falhas consecutivas ultrapassar um limite calculado a partir do \textit{threshold}, a memoização é desabilitada permanentemente para aquela região. Esse limite é definido pela seguinte relação:
+
+\begin{equation}
+    T = \frac{100}{\text{threshold} + 1}
+    \label{eq:thresh}
+\end{equation}
+
+Além da validação baseada em erro, o sistema também monitora o custo de execução da memoização. A cada intervalo de chamadas, o tempo médio gasto na execução aproximada é comparado ao tempo médio observado durante a fase de aquecimento. Se o custo adicional exceder um fator de tolerância predefinido, a região é colocada no estado \textit{disabled}. Essa verificação evita que a técnica introduza \textit{overhead} significativo e degrade o desempenho da aplicação.
+
+A geração das predições é realizada por meio de uma média aritmética aplicada aos valores armazenados no histórico do \textit{bucket}. Esse processo funciona como uma média móvel, na qual cada novo valor observado é inserido em uma janela circular de tamanho limitado. A \autoref{eq:media_aritmetica} apresenta a expressão utilizada para calcular o valor previsto, onde $x_i$ representa cada valor armazenado e $N$ corresponde ao número de elementos disponíveis no histórico.
 
 \begin{equation}
 \label{eq:media_aritmetica}
-media = \frac{1}{n} \sum^{n - 1}_{i = 0} A_i
+P = \frac{1}{N} \sum^{N}_{i = 1} x_i
 \end{equation}
 
-A precisão da predição é avaliada pela diferença relativa entre o valor previsto ($p$) e o valor real ($r$), conforme descrito na \autoref{eq:error_calc}:
+Para variáveis booleanas, o sistema aplica um limiar simples: o valor previsto é considerado verdadeiro quando a média calculada é maior ou igual a 0,5. Esse comportamento permite tratar dados discretos mantendo consistência com a lógica binária da aplicação.
 
-\begin{equation}
-\label{eq:error_calc}
-erro = \frac{|p - r|}{|r|} \times 100
-\end{equation}
-
-O \autoref{code:exMemo} demonstra a aplicação da cláusula em um laço de repetição. Neste exemplo, a variável \textit{sum} é memoizada com um \textit{threshold} de erro de 10\%. O sistema ajustará o intervalo de predições automaticamente com base na estabilidade dos resultados de \textit{sum} durante a execução.
+O \autoref{code:exMemo} demonstra a aplicação da cláusula em um laço de repetição. Nesse exemplo, a variável \textit{sum} é memoizada com um \textit{threshold} de erro de 10\%.
 
 \begin{sourcecode}[htb]
 \caption{\label{code:exMemo}Exemplo de uso da cláusula \textit{memo}.}
 \begin{lstlisting}[frame=single, language=C++]
 for (int i = 0; i < N; i++) {
-	#pragma omp approx memo(10) output(sum)
-	{
-		sum += values[i];
-	}
+    #pragma omp approx memo(10) output(sum)
+    {
+        sum += values[i];
+    }
 }
 \end{lstlisting}
-\fonte{Autor}
+\fonte{}
 \end{sourcecode}

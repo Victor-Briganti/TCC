@@ -16,7 +16,7 @@ Os experimentos foram conduzidos em um computador com processador Intel Core i7-
 
 As aplicações foram executadas com 1, 2, 4 e 8 \textit{threads}. Cada configuração executada 10 vezes para assegurar médias confiáveis e mitigar o impacto de anomalias de execução. O ambiente foi configurado com a variável \texttt{OMP\_PROC\_BIND="TRUE"} para fixar as \textit{threads} aos núcleos físicos e \texttt{OMP\_APPROX="TRUE"} para ativar as rotinas de computação aproximada. Algoritmos dependentes de números aleatórios utilizaram sementes fixas, o que garante a reprodutibilidade dos dados.
 
-O conjunto de \textit{benchmarks} foi testado com cinco técnicas de aproximação: \texttt{fastmath}, \texttt{perfo\_init}, \texttt{perfo\_fini}, \texttt{perfo\_large} e \texttt{memo}. As abordagens baseadas em \texttt{perfo} utilizaram taxas de descarte de 10, 20, 30, 40 e 50. A técnica \texttt{memo} operou com limiares de 10\%, 25\%, 50\% e 100\%. A diretiva \texttt{fastmath} age de maneira binária e não possui parâmetros de configuração. Todos os códigos foram compilados com a \textit{flag} \texttt{-O3} para maximizar o desempenho base. Como as modificações de aproximação acontecem apenas na fase de geração de código ou em tempo de execução, as otimizações do compilador não interferem na semântica das técnicas avaliadas, o que preserva o comportamento esperado.
+O conjunto de \textit{benchmarks} foi testado com cinco técnicas de aproximação: \texttt{fastmath}, \texttt{perfo\_init}, \texttt{perfo\_fini}, \texttt{perfo\_large} e \texttt{memo}. A técnica \texttt{perfo\_large} foi testado com uma taxa de descarte de 10, 20, 30, 40 e 50. A \texttt{perfo\_init} e \texttt{perfo\_fini} foram avaliadas com um nível de descarte de 10, 100, 500 e 1000. Já a técnica \texttt{memo} operou com taxas de 10, 25, 50 e 100. A diretiva \texttt{fastmath} age de maneira binária e não possui parâmetros de configuração. Todos os códigos foram compilados com a \textit{flag} \texttt{-O3} para maximizar o desempenho base. Como as modificações de aproximação acontecem apenas na fase de geração de código ou em tempo de execução, as otimizações do compilador não interferem na semântica das técnicas avaliadas, o que preserva o comportamento esperado.
 
 A versão exata do algoritmo, executada com \texttt{OpenMP} e uma única \textit{thread}, serviu como \textit{baseline} para as métricas de desempenho. A coleta das informações ocorreu por meio da ferramenta \texttt{perf}. O cálculo das métricas de qualidade também adotou como referência a execução exata da aplicação, sem o uso de diretivas de aproximação.
 
@@ -685,7 +685,7 @@ A alta variabilidade dos ciclos ocorre porque o \texttt{perf} contabiliza o esfo
         \hline
         Deriche            & PolyBench                         & Processamento de Imagem     & Imagem (\autoref{subfig:sunflower_orig})                                      & \gls{ssim}       \\
         \hline
-        Jacobi 2D          & PolyBench                         & Solução Numérica            & Matriz $2048 \times 2048$, $10$ passos                                        & \gls{mape}       \\
+        Jacobi 2D          & PolyBench                         & Solução Numérica            & Matriz $2048 \times 2048$, $100$ passos                                        & \gls{mape}       \\
         \hline
         K-Means            & Rodinia                             & Aprendizado de Máquina      & $1.313.220$ pontos, $10$ \textit{clusters}, $100$ iterações, limiar $5$  & \gls{mcr}        \\
         \hline
