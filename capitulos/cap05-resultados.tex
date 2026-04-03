@@ -8,19 +8,91 @@ Esta seção apresenta a análise individual de cada aplicação do conjunto de 
 
 \subsection{2MM}\label{subsec:2mm_resultados}
 
-Em relação à acurácia e ao desempenho, a técnica \textit{perfo\_large} apresentou os maiores resultados, em termos de qualidade, essa técnica apresentou um erro médio que variou de 90.6\% a 97.9\%, dependendo da taxa de perforação e do número de \textit{threads}. Em contrapartida, essa mesma redução no número de iterações foi responsável pelos maiores ganhos de desempenho observados, considerando a execução comum com uma única \textit{thread}, cujo tempo médio foi de aproximadamente 11.35 segundos, a versão com taxa de aproximação 50 reduziu o tempo médio para cerca de 1.21 segundos, o que corresponde a um ganho próximo de 9.4$\times$. Mesmo em configurações menos agressivas, como taxa 20 ou 30, os tempos médios permaneceram abaixo de 1.49 segundos, mantendo ganhos superiores a 7$\times$. 
+\begin{figure*}[tbh!]
+\caption{Técnicas baseadas em perforação de laço entregaram os melhores ganhos de tempo de execução, porém sacrificaram a precisão dos resultados.}
+\centering
+\subfloat[Desempenho do 2MM com \texttt{perfo\_large} e taxa de descarte de 50.]{
+\includegraphics[width=0.3\textwidth]{figuras/desempenho/2mmv0_perfo_large_50.pdf}
+\label{subfig:2mmv0_perfo_large_50_perf}
+}
+\hfill
+\subfloat[Desempenho do 2MM com \texttt{perfo\_init} e taxa de descarte de 1000.]{
+\includegraphics[width=0.3\textwidth]{figuras/desempenho/2mmv1_perfo_init_1000.pdf}
+\label{subfig:2mmv1_perfo_init_1000_perf}
+}
+\hfill
+\subfloat[Desempenho do 2MM com \texttt{memo} e limiar de 100.]{
+\includegraphics[width=0.3\textwidth]{figuras/desempenho/2mmv0_memo_100.pdf}
+\label{subfig:kmeans_memo_threshold50_perf}
+}
 
-As técnicas \textit{perfo\_init} e \textit{perfo\_fini} apresentaram comportamento semelhante entre si, tanto em termos de acurácia quanto de desempenho. O erro médio aumentou de forma consistente com o crescimento da taxa de aproximação. Para uma taxa de 10, o erro médio foi de aproximadamente 0.49\%. Com o aumento no nível de descarte, o erro também cresceu, atingindo cerca de 4.88\% para taxa 100, 24.41\% para taxa 500 e aproximadamente 48.83\% para taxa 1000. Em relação ao desempenho, aa execução com uma única \textit{thread}, a versão com a taxa de descarte de 500 reduziu o tempo médio de execução de aproximadamente 11.35 segundos para cerca de 7.96 segundos, enquanto a versão com taxa 1000 reduziu esse tempo para aproximadamente 5.83 segundos. Esses valores correspondem a ganhos superiores a 3$\times$ quando comparados à execução comum com múltiplas \textit{threads}. Para 8 \textit{threads}, por exemplo, a execução comum apresentou tempo médio de aproximadamente 3.89 segundos, enquanto a versão com taxa 1000 reduziu esse valor para cerca de 2.68 segundos.
+\subfloat[Acurácia do 2MM com \texttt{perfo\_large} e taxa de descarte de 50.]{
+\includegraphics[width=0.3\textwidth]{figuras/metricas/2mmv0_perfo_large_50.pdf}
+\label{subfig:2mmv0_perfo_large_50_mape}
+}
+\hfill
+\subfloat[Acurácia do 2MM com \texttt{perfo\_init} e taxa de descarte de 50.]{
+\includegraphics[width=0.3\textwidth]{figuras/metricas/2mmv1_perfo_init_1000.pdf}
+\label{subfig:2mmv1_perfo_init_1000_mape}
+}
+\hfill
+\subfloat[Acurácia do 2MM com \texttt{memo} e limiar de 100.]{
+\includegraphics[width=0.3\textwidth]{figuras/metricas/2mmv0_memo_100.pdf}
+\label{subfig:2mmv0_memo_100_mape}
+}
+\fonte{}
+\label{fig:2mm_results}
+\end{figure*}
 
-A técnica de memoização apresentou erro praticamente desprezível em todas as configurações avaliadas. Esse comportamento está diretamente relacionado ao mecanismo da cláusula responsável por evitar \textit{overhead}, no qual o sistema para de realizar memoização na região quando o custo adicional passa a superar os benefícios esperados. Mesmo assim houve uma perca de desempenho com essa técnica em todas as configurações testadas. Esse comportamento é justificado pelo custo adicional associado às estruturas de memoização, que foram ativadas para cada execução do laço mais interno, gerando um \textit{overhead} significativo na aplicação.
+Em relação à acurácia e ao desempenho, conforme ilustrado na Figura \ref{fig:2mm_results}, a técnica \textit{perfo\_large} apresentou os maiores resultados; em termos de qualidade, essa técnica apresentou um erro médio que variou de 90.6\% a 97.9\%, dependendo da taxa de perforação e do número de \textit{threads}. Em contrapartida, essa mesma redução no número de iterações foi responsável pelos maiores ganhos de desempenho observados. Considerando a execução comum com uma única \textit{thread}, cujo tempo médio foi de aproximadamente 11.35 segundos, a versão com taxa de aproximação 50 reduziu o tempo médio para cerca de 1.21 segundos, o que corresponde a um ganho próximo de 9.4$\times$. Mesmo em configurações menos agressivas, como taxa 20 ou 30, os tempos médios permaneceram abaixo de 1.49 segundos, mantendo ganhos superiores a 7$\times$. 
+
+As técnicas \textit{perfo\_init} e \textit{perfo\_fini} apresentaram comportamento semelhante entre si, tanto em termos de acurácia quanto de desempenho. O erro médio aumentou de forma consistente com o crescimento da taxa de aproximação. Para uma taxa de 10, o erro médio foi de aproximadamente 0.49\%. Com o aumento no nível de descarte, o erro também cresceu, atingindo cerca de 4.88\% para taxa 100, 24.41\% para taxa 500 e aproximadamente 48.83\% para taxa 1000. Em relação ao desempenho, a execução com uma única \textit{thread} na versão com a taxa de descarte de 500 reduziu o tempo médio de execução de aproximadamente 11.35 segundos para cerca de 7.96 segundos, enquanto a versão com taxa 1000 reduziu esse tempo para aproximadamente 5.83 segundos. Esses valores correspondem a ganhos superiores a 3$\times$ quando comparados à execução comum com múltiplas \textit{threads}. Para 8 \textit{threads}, por exemplo, a execução comum apresentou tempo médio de aproximadamente 3.89 segundos, enquanto a versão com taxa 1000 reduziu esse valor para cerca de 2.68 segundos.
+
+A técnica de memoização apresentou erro praticamente desprezível em todas as configurações avaliadas. Esse comportamento está diretamente relacionado ao mecanismo da cláusula responsável por evitar \textit{overhead}, no qual o sistema para de realizar memoização na região quando o custo adicional passa a superar os benefícios esperados. Mesmo assim houve uma perda de desempenho com essa técnica em todas as configurações testadas. Esse comportamento é justificado pelo custo adicional associado às estruturas de memoização, que foram ativadas para cada execução do laço mais interno, gerando um \textit{overhead} significativo na aplicação.
 
 Por fim, a técnica \textit{fastmath} não introduziu alterações significativas na acurácia dos resultados, indicando que as otimizações de ponto flutuante habilitadas pelo compilador não modificaram de forma relevante a precisão numérica da aplicação. Em termos de desempenho, essa técnica também não apresentou ganhos em nenhuma das configurações avaliadas.
 
-Uma análise de perfilamento com a ferramenta \textit{kcachegrind}, mostrou que a execução do \textit{perfo\_large} reduziu a região de multiplicação de matrizes para apenas 3.8\% dos ciclos, tornando a função de saída o gargalo da aplicação (consumindo 92.94\% dos ciclos). Também foi possível observar que, embora tenha ocorrido uma redução no número de instruções executadas dentro dos laços, houve um aumento relativo no custo das barreiras de sincronização, uma vez que as \textit{threads} terminam seu trabalho mais rapidamente e passam a aguardar nesses pontos de sincronização. De forma geral, os resultados mostram que as técnicas baseadas em perforação de laço foram as mais eficazes para reduzir o tempo de execução da aplicação, mas esse ganho ocorre as custas de uma baixa acurácia nos resultados.
+Uma análise de perfilamento com a ferramenta \textit{kcachegrind}, mostrou que a execução do \textit{perfo\_large} reduziu a região de multiplicação de matrizes para apenas 3.8\% dos ciclos, tornando a função de saída o gargalo da aplicação (consumindo 92.94\% dos ciclos). Também foi possível observar que, embora tenha ocorrido uma redução no número de instruções executadas dentro dos laços, houve um aumento relativo no custo das barreiras de sincronização, uma vez que as \textit{threads} terminam seu trabalho mais rapidamente e passam a aguardar nesses pontos de sincronização. De forma geral, os resultados mostram que as técnicas baseadas em perforação de laço foram as mais eficazes para reduzir o tempo de execução da aplicação, mas esse ganho ocorre às custas de uma baixa acurácia nos resultados.
 
 \subsection{Correlação}\label{subsec:correlation_resultados}
 
-A técnica \texttt{perfo\_large} apresentou o maior impacto tanto em desempenho quanto em qualidade. Observou-se um ganho de desempenho consistente em todas as configurações, com tempos médios de execução próximos de 0.35 segundos, enquanto a execução comum com uma única \textit{thread} apresentou tempo médio de aproximadamente 0.74 segundos. Esse comportamento representa um ganho de desempenho próximo de 2$\times$. Esse resultado está diretamente associado à redução significativa do número de iterações executadas no laço mais interno, o que diminuiu o custo computacional da aplicação.
+\begin{figure*}[tbh!]
+\caption{\texttt{perfo\_large} foi a técnica que apresentou o maior ganho de desempenho da aplicação, enquanto as demais técnicas falharam em trazer ganhos.}
+\centering
+\subfloat[Desempenho do Correlation com \texttt{perfo\_large} e taxa de descarte de 50.]{
+\includegraphics[width=0.3\textwidth]{figuras/desempenho/correlationv0_perfo_large_50.pdf}
+\label{subfig:correlationv0_perfo_large_50_perf}
+}
+\hfill
+\subfloat[Desempenho do Correlation com \texttt{memo} e limiar de 100.]{
+\includegraphics[width=0.3\textwidth]{figuras/desempenho/correlationv0_memo_100.pdf}
+\label{subfig:correlationv0_memo_100_perf}
+}
+\hfill
+\subfloat[Desempenho do Correlation com \texttt{fastmath}.]{
+\includegraphics[width=0.3\textwidth]{figuras/desempenho/correlationv0_fastmath_None.pdf}
+\label{subfig:correlationv0_fastmath_None_perf}
+}
+
+\subfloat[Acurácia do Correlation com \texttt{perfo\_large} e taxa de descarte de 50.]{
+\includegraphics[width=0.3\textwidth]{figuras/metricas/correlationv0_perfo_large_50.pdf}
+\label{subfig:correlationv0_perfo_large_50_mape}
+}
+\hfill
+\subfloat[Acurácia do Correlation com \texttt{memo} e limiar de 100.]{
+\includegraphics[width=0.3\textwidth]{figuras/metricas/correlationv0_memo_100.pdf}
+\label{subfig:correlationv0_memo_100_mape}
+}
+\hfill
+\subfloat[Acurácia do Correlation com \texttt{fastmath}.]{
+\includegraphics[width=0.3\textwidth]{figuras/metricas/correlationv0_fastmath_None.pdf}
+\label{subfig:correlationv0_fastmath_None_mape}
+}
+\fonte{}
+\label{fig:correlation_results}
+\end{figure*}
+
+A técnica \texttt{perfo\_large} apresentou o maior impacto tanto em desempenho quanto em qualidade, como evidenciado na Figura \ref{fig:correlation_results}. Observou-se um ganho de desempenho consistente em todas as configurações, com tempos médios de execução próximos de 0.35 segundos, enquanto a execução comum com uma única \textit{thread} apresentou tempo médio de aproximadamente 0.74 segundos. Esse comportamento representa um ganho de desempenho próximo de 2$\times$. Esse resultado está diretamente associado à redução significativa do número de iterações executadas no laço mais interno, o que diminuiu o custo computacional da aplicação.
 
 Essa redução veio com o custo de uma degradação acima de 90\% na qualidade dos resultados. O erro médio permaneceu elevado em todas as configurações, variando de aproximadamente 90.96\% no menor nível de aproximação até cerca de 98.14\% no maior nível. Esse resultado sugere que o cálculo de correlação depende fortemente da avaliação completa das amostras e que a omissão de parte dos dados compromete a acurácia do algoritmo.
 
@@ -28,7 +100,7 @@ Já as técnicas \texttt{perfo\_init} e \texttt{perfo\_fini} apresentaram um com
 
 A \texttt{memo} apresentou um comportamento equilibrado entre desempenho e qualidade. O erro médio permaneceu baixo em todas as configurações, variando de aproximadamente 0.39\% até cerca de 0.79\% no pior caso, mesmo com o aumento do número de \textit{threads}. Esse resultado indica que a reutilização de valores previamente computados preservou a estabilidade numérica do algoritmo. Em termos de desempenho, o ganho não foi muito expressivo, o tempo médio de execução com 8 \textit{threads} foi de aproximadamente 0.466 segundos, enquanto a execução comum apresentou tempo médio de cerca de 0.474 segundos.
 
-Já a \texttt{fastmath} apresentou resultados semelhantes aos observados com \texttt{memo}. O erro médio permaneceu estável em aproximadamente 0.36\% em todas as configurações de paralelismo, indicando que as otimizações de ponto flutuante introduzidas pelo compilador não comprometeu de forma significativa a precisão do cálculo. E em termos de desempenho, observou-se um resultado similar ao do \texttt{memo}, ou seja, não foram valores muito expressivos.
+Já a \texttt{fastmath} apresentou resultados semelhantes aos observados com \texttt{memo}. O erro médio permaneceu estável em aproximadamente 0.36\% em todas as configurações de paralelismo, indicando que as otimizações de ponto flutuante introduzidas pelo compilador não comprometeram de forma significativa a precisão do cálculo. E em termos de desempenho, observou-se um resultado similar ao do \texttt{memo}, ou seja, não foram valores muito expressivos.
 
 A análise de perfilamento indicou que o laço mais interno é responsável por cerca de 22\% dos ciclos totais, enquanto a região principal da aplicação consumiu aproximadamente 47.74\%. Com a aplicação da técnica \texttt{perfo\_large}, o consumo de ciclos do laço foi reduzido para aproximadamente 1.68\%, tornando a leitura do arquivo o gargalo principal da aplicação. Essa redução também foi observada com o \texttt{memo}, mas com essa técnica o ganho foi parcialmente compensado pelo custo adicional introduzido pela \textit{runtime}.
 
@@ -36,21 +108,108 @@ De forma geral, os resultados dessa aplicação indicam que técnicas que preser
 
 \subsection{Deriche}\label{subsec:deriche_resultados}
 
-A avaliação da aplicação Deriche revela como diferentes estratégias de aproximação impactam o tempo de execução e a qualidade visual da imagem gerada. Para estabelecer uma base de comparação, a execução comum otimizada com \texttt{OpenMP} obteve tempos médios de 0.064 segundos com uma \textit{thread} e 0.058 segundos com quatro \textit{threads}.
+\begin{figure*}[tbh!]
+\caption{Técnicas de perforação proporcionaram ganhos significativos de desempenho sem comprometer de forma expressiva a saída. Em contrapartida, a memoização apresentou um efeito duplamente negativo, pois não gerou aceleração e ainda reduziu a acurácia dos resultados.}
+\centering
+\subfloat[Desempenho do Deriche com \texttt{perfo\_large} e taxa de descarte de 50.]{
+\includegraphics[width=0.3\textwidth]{figuras/desempenho/derichev0_perfo_large_50.pdf}
+\label{subfig:derichev0_perfo_large_50_perf}
+}
+\hfill
+\subfloat[Desempenho do Deriche com \texttt{memo} e limiar de 100.]{
+\includegraphics[width=0.3\textwidth]{figuras/desempenho/derichev0_memo_100.pdf}
+\label{subfig:derichev0_memo_100_perf}
+}
+\hfill
+\subfloat[Desempenho do Deriche com \texttt{fastmath}.]{
+\includegraphics[width=0.3\textwidth]{figuras/desempenho/derichev1_perfo_init_1000.pdf}
+\label{subfig:derichev0_fastmath_None_perf}
+}
 
-A técnica \texttt{perfo\_large} apresentou ganhos de desempenho consistentes, alcançando acelerações de até 1.6$\times$ em relação à execução original. O tempo de execução variou entre 0.040 e 0.049 segundos nas execuções aproximadas que utilizaram de 1 a 4 \textit{threads}, o que apresentam um leve ganho se comparado com o tempo médio da execução comum que foi de 0.064 segundos com 1 \textit{thread} e 0.058 segundos com 4 \textit{threads}. Contudo, a similaridade da imagem gerada em relação à original sofreu uma degradação, registrando valores próximos a 12\% de similaridade com a taxa de aproximação configurada em 10, caindo para aproximadamente 5.6\% com a taxa em 50.
+\subfloat[Acurácia do Deriche com \texttt{perfo\_large} e taxa de descarte de 50.]{
+\includegraphics[width=0.3\textwidth]{figuras/metricas/derichev0_perfo_large_50.pdf}
+\label{subfig:derichev0_perfo_large_50_mape}
+}
+\hfill
+\subfloat[Acurácia do Deriche com \texttt{memo} e limiar de 100.]{
+\includegraphics[width=0.3\textwidth]{figuras/metricas/derichev0_memo_100.pdf}
+\label{subfig:derichev0_memo_100_mape}
+}
+\hfill
+\subfloat[Acurácia do Deriche com \texttt{fastmath}.]{
+\includegraphics[width=0.3\textwidth]{figuras/metricas/derichev1_perfo_init_1000.pdf}
+\label{subfig:derichev0_fastmath_None_mape}
+}
+\fonte{}
+\label{fig:deriche_results}
+\end{figure*}
 
-As estratégias \texttt{perfo\_init} e \texttt{perfo\_fini} exibiram comportamentos semelhantes entre si. A qualidade dos dados caiu de forma proporcional ao tamanho do \texttt{drop}. Taxas menores, como o valor 10, mantiveram a similaridade em torno de 99\%, valores intermediários, como 100, reduziram a qualidade para cerca de 87.6\% e por fim taxas agressivas, com saltos de 500 e 1000, derrubaram a acurácia para 39.7\% e 4\%, respectivamente. Em contrapartida, as configurações de 500 e 1000 proporcionaram reduções substanciais no tempo de execução, atingindo marcas de 0.036 segundos para \texttt{perfo\_init} e 0.037 segundos para \texttt{perfo\_fini} com o uso de 4 \textit{threads}..
+A avaliação da aplicação Deriche revela como diferentes estratégias de aproximação impactam o tempo de execução e a qualidade visual da imagem gerada, resultados estes consolidados na Figura \ref{fig:deriche_results}. Para estabelecer uma base de comparação, a execução comum otimizada com \texttt{OpenMP} obteve tempos médios de 0.064 segundos com uma \textit{thread} e 0.058 segundos com quatro \textit{threads}.
 
-A cláusula \texttt{fastmath} não alterou o aspecto visual de forma prática, mantendo uma taxa de similaridade estável em 99.99\%. Apesar da alta precisão preservada, a adoção dessa técnica gerou uma leve perda de desempenho, o que pode ser explicado pelo fato de que a região precisou ser extraída para que as otimizações fossem aplicadas, o que gera um \textit{overhead} de chamadas. Os tempos de execução ficaram na casa de 0.065 segundos para uma \textit{thread}, um valor superior à base de comparação comum. A estratégia \texttt{memo}, de maneira similar, não obteve vantagens de tempo de execução se comparado com a execução comum, embora tenha alcançado um padrão de qualidade aceitável com valores próximos a 80\% de similaridade na maior parte dos testes.
+A técnica \texttt{perfo\_large} apresentou ganhos de desempenho consistentes, alcançando acelerações de até 1.6$\times$ em relação à execução original. O tempo de execução variou entre 0.040 e 0.049 segundos nas execuções aproximadas que utilizaram de 1 a 4 \textit{threads}, o que apresenta um leve ganho se comparado com o tempo médio da execução comum que foi de 0.064 segundos com 1 \textit{thread} e 0.058 segundos com 4 \textit{threads}. Contudo, a similaridade da imagem gerada em relação à original sofreu uma degradação, registrando valores próximos a 12\% de similaridade com a taxa de aproximação configurada em 10, caindo para aproximadamente 5.6\% com a taxa em 50.
 
-O perfilamento da aplicação mostrou que o maior número de ciclos da aplicação é gasto no processo de escrita do arquivo no formato JPEG. Como as técnica de aproximação geram imagens com um nível significativamente menor de detalhes, as etapas de compressão e quantização nativas do codificador JPEG tornam-se mais rápidas. Isso reduz o tempo total da aplicação de forma indireta, o que explica os ganhos nas estratégias de perforação.
+As estratégias \texttt{perfo\_init} e \texttt{perfo\_fini} exibiram comportamentos semelhantes entre si. A qualidade dos dados caiu de forma proporcional ao tamanho do \texttt{drop}. Taxas menores, como o valor 10, mantiveram a similaridade em torno de 99\%; valores intermediários, como 100, reduziram a qualidade para cerca de 87.6\%; e, por fim, taxas agressivas, com saltos de 500 e 1000, derrubaram a acurácia para 39.7\% e 4\%, respectivamente. Em contrapartida, as configurações de 500 e 1000 proporcionaram reduções substanciais no tempo de execução, atingindo marcas de 0.036 segundos para \texttt{perfo\_init} e 0.037 segundos para \texttt{perfo\_fini} com o uso de 4 \textit{threads}.
+
+\begin{figure*}[tbh!]
+\caption{A perforação ao ser aplicada no algoritmo omite parte da imagem de saída..}
+\centering
+\subfloat[Saída do Deriche de uma execução comum com 8 \textit{threads} e um alpha igual a 0.5.]{
+\includegraphics[width=0.3\textwidth]{figuras/deriche_common8.jpeg}
+\label{subfig:deriche_common8}
+}
+\subfloat[Saída do Deriche de uma execução \texttt{perfo\_init} com taxa de descarte de 100, 8 \textit{threads} e um alpha igual a 0.5.]{
+\includegraphics[width=0.3\textwidth]{figuras/deriche_perfo_init8_100.jpeg}
+\label{subfig:deriche_perfo_init8_100}
+}
+\fonte{}
+\label{fig:deriche_output}
+\end{figure*}
+
+As saídas visuais podem ser comparadas na Figura \ref{fig:deriche_output}. A cláusula \texttt{fastmath} não alterou o aspecto visual de forma prática, mantendo uma taxa de similaridade estável em 99.99\%. Apesar da alta precisão preservada, a adoção dessa técnica gerou uma leve perda de desempenho, o que pode ser explicado pelo fato de que a região precisou ser extraída para que as otimizações fossem aplicadas, gerando um \textit{overhead} de chamadas. Os tempos de execução ficaram na casa de 0.065 segundos para uma \textit{thread}, um valor superior à base de comparação comum. A estratégia \texttt{memo}, de maneira similar, não obteve vantagens de tempo de execução se comparado com a execução comum, embora tenha alcançado um padrão de qualidade aceitável com valores próximos a 80\% de similaridade na maior parte dos testes.
+
+O perfilamento da aplicação mostrou que o maior número de ciclos da aplicação é gasto no processo de escrita do arquivo no formato JPEG. Como as técnicas de aproximação geram imagens com um nível significativamente menor de detalhes, as etapas de compressão e quantização nativas do codificador JPEG tornam-se mais rápidas. Isso reduz o tempo total da aplicação de forma indireta, o que explica os ganhos nas estratégias de perforação.
 
 \subsection{Jacobi 2D}\label{subsec:jacobi2d_resultados}
 
-O Jacobi 2D foi a aplicação que apresentou um baixo nível de erro em todos os tipos de aproximação, se comparado com as demais aplicações. A técnica \texttt{perfo\_large} registrou um erro médio em torno de 0,03\%, um valor baixo em comparação com a execução original. As estratégias \texttt{perfo\_init} e \texttt{perfo\_fini} apresentaram perdas de precisão ainda menores, mantendo-se consistentemente abaixo de 0,01\%. A diretiva \texttt{fastmath} manteve a integridade total dos cálculos, não introduzindo qualquer desvio nos valores. E por fim a técnica \texttt{memo} também manteve um erro médio baixo na grande maioria dos cenários, com a única exceção na taxa de aproximação igual a 100 e 8 \textit{threads}, na qual o erro foi de 17,5\%.
+\begin{figure*}[tbh!]
+\caption{Enquanto a \texttt{perfo\_large} gerou ganhos de desempenho, demais técnicas não foram suficientes para ultrapassar a execução comum.}
+\centering
+\subfloat[Desempenho do Jacobi 2D com \texttt{perfo\_large} e taxa de descarte de 50.]{
+\includegraphics[width=0.3\textwidth]{figuras/desempenho/jacobi2dv0_perfo_large_50.pdf}
+\label{subfig:jacobi2dv0_perfo_large_50_perf}
+}
+\hfill
+\subfloat[Desempenho do Jacobi 2D com \texttt{perfo\_init} e taxa de descarte de 1000.]{
+\includegraphics[width=0.3\textwidth]{figuras/desempenho/jacobi2dv1_perfo_init_1000.pdf}
+\label{subfig:jacobi2dv1_perfo_init_1000_perf}
+}
+\hfill
+\subfloat[Desempenho do Jacobi 2D com \texttt{perfo\_fini} e taxa de descarte de 1000.]{
+\includegraphics[width=0.3\textwidth]{figuras/desempenho/jacobi2dv1_perfo_fini_1000.pdf}
+\label{subfig:jacobi2dv1_perfo_fini_1000_perf}
+}
 
-Já na questão de desempenho a técnica \texttt{perfo\_large} foi a única que apresentou ganhos significativos em todas as configurações, chegando a ganhos de até 2,75$\times$ em relação à execução original, e mantendo uma aceleração superior a 2$\times$ em todas as configurações avaliadas. A execução comum com uma \textit{thread}, leva cerca de 5,94 segundos para ser concluída, enquanto a aplicação com a \texttt{perfo\_large} e uma taxa de 50 e a mesma quantidade de \textit{threads}, leva somente 2,49 segundos.
+\subfloat[Acurácia do Jacobi 2D com \texttt{perfo\_large} e taxa de descarte de 50.]{
+\includegraphics[width=0.3\textwidth]{figuras/metricas/jacobi2dv0_perfo_large_50.pdf}
+\label{subfig:jacobi2dv0_perfo_large_50_mape}
+}
+\hfill
+\subfloat[Acurácia do Jacobi 2D com \texttt{perfo\_init} e taxa de descarte de 1000.]{
+\includegraphics[width=0.3\textwidth]{figuras/metricas/jacobi2dv1_perfo_init_1000.pdf}
+\label{subfig:jacobi2dv1_perfo_init_1000_mape}
+}
+\hfill
+\subfloat[Acurácia do Jacobi 2D com \texttt{perfo\_fini} e taxa de descarte de 1000.]{
+\includegraphics[width=0.3\textwidth]{figuras/metricas/jacobi2dv1_perfo_fini_1000.pdf}
+\label{subfig:jacobi2dv1_perfo_fini_1000_mape}
+}
+\fonte{}
+\label{fig:jacobi2d_results}
+\end{figure*}
+
+O Jacobi 2D foi a aplicação que apresentou um baixo nível de erro em todos os tipos de aproximação, se comparado com as demais aplicações, o que pode ser verificado na Figura \ref{fig:jacobi2d_results}. A técnica \texttt{perfo\_large} registrou um erro médio em torno de 0,03\%, um valor baixo em comparação com a execução original. As estratégias \texttt{perfo\_init} e \texttt{perfo\_fini} apresentaram perdas de precisão ainda menores, mantendo-se consistentemente abaixo de 0,01\%. A diretiva \texttt{fastmath} manteve a integridade total dos cálculos, não introduzindo qualquer desvio nos valores. E por fim a técnica \texttt{memo} também manteve um erro médio baixo na grande maioria dos cenários, com a única exceção na taxa de aproximação igual a 100 e 8 \textit{threads}, na qual o erro foi de 17,5\%.
+
+Já na questão de desempenho, a técnica \texttt{perfo\_large} foi a única que apresentou ganhos significativos em todas as configurações, chegando a ganhos de até 2,75$\times$ em relação à execução original, e mantendo uma aceleração superior a 2$\times$ em todas as configurações avaliadas. A execução comum com uma \textit{thread} leva cerca de 5,94 segundos para ser concluída, enquanto a aplicação com a \texttt{perfo\_large} e uma taxa de 50 e a mesma quantidade de \textit{threads} leva somente 2,49 segundos.
 
 A técnica \texttt{memo} gerou perda de desempenho em todas suas versões, chegando até a ultrapassar 22 segundos no cenário com apenas uma \textit{thread}. Esse atraso é justificado pelo alto \textit{overhead} inserido a cada iteração para o gerenciamento das estruturas de dados da memoização, que assim como no 2MM foi realizado a cada iteração do laço mais interno. A cláusula \texttt{fastmath} também não produziu melhorias no tempo de execução desta aplicação específica.
 
@@ -58,29 +217,152 @@ Por fim, a análise da aplicação por meio de ferramentas de perfilamento indic
 
 \subsection{K-Means}\label{subsec:kmeans_resultados}
 
-O \textit{K-Means} apresenta como principal gargalo de desempenho a etapa de busca pelos pontos mais próximos aos centroides. O perfilamento da execução comum demonstra que essa fase consome aproximadamente 59 bilhões de ciclos de processamento, o que representa 39.88\% do tempo total da aplicação. A execução da aplicação com 1 \textit{thread} executa em uma média de 14.83 segundos, enquanto a versão com 8 \textit{threads} conclui o processamento em 3.93 segundos.
+\begin{figure*}[tbh!]
+\caption{Aplicação apresentou ganhos de desempenho com o uso das diferentes técnicas de aproximação, porém não sem gerar uma degradação na qualidade dos resultados finais.}
+\centering
+\subfloat[Desempenho do K-Means com \texttt{perfo\_large} e taxa de descarte de 50.]{
+\includegraphics[width=0.3\textwidth]{figuras/desempenho/kmeansv0_perfo_large_50.pdf}
+\label{subfig:kmeansv0_perfo_large_50_perf}
+}
+\hfill
+\subfloat[Desempenho do K-Means com \texttt{memo} e limiar de 100.]{
+\includegraphics[width=0.3\textwidth]{figuras/desempenho/kmeansv0_memo_100.pdf}
+\label{subfig:kmeansv0_memo_100_perf}
+}
+\hfill
+\subfloat[Desempenho do K-Means com \texttt{fastmath}.]{
+\includegraphics[width=0.3\textwidth]{figuras/desempenho/kmeansv0_fastmath_None.pdf}
+\label{subfig:kmeansv0_fastmath_None_perf}
+}
 
-A aplicação da técnica \texttt{perfo\_large}, reduziu a proporção de ciclos na região crítica de 39.88\% para apenas 0.43\%. Essa diminuição drástica de processamento gerou ganhos de desempenho superiores a 10$\times$ em relação à execução comum. Os tempos de execução mantiveram valores entre 1.35 e 1.49 segundos em todas as configurações de \textit{threads} e taxas de aproximação. Contudo, a métrica de erro médio ficou estagnada em torno de 70\% em todos os cenários.
+\subfloat[Acurácia do K-Means com \texttt{perfo\_large} e taxa de descarte de 50.]{
+\includegraphics[width=0.3\textwidth]{figuras/metricas/kmeansv0_perfo_large_50.pdf}
+\label{subfig:kmeansv0_perfo_large_50_mcr}
+}
+\hfill
+\subfloat[Acurácia do K-Means com \texttt{perfo\_init} e taxa de descarte de 100.]{
+\includegraphics[width=0.3\textwidth]{figuras/metricas/kmeansv0_memo_100.pdf}
+\label{subfig:kmeansv0_memo_100_mcr}
+}
+\hfill
+\subfloat[Acurácia do K-Means com \texttt{fastmath}.]{
+\includegraphics[width=0.3\textwidth]{figuras/metricas/kmeansv0_fastmath_None.pdf}
+\label{subfig:kmeansv0_fastmath_None_mcr}
+}
+\fonte{}
+\label{fig:kmeans_results}
+\end{figure*}
 
-As estratégias \texttt{perfo\_init} e \texttt{perfo\_fini} apresentaram comportamentos similares. A quantidade de ciclos gastos na região crítica caiu para 14.90\% dos ciclos, com essas técnicas. O tempo de execução variou de 2.18 segundos com uma \textit{thread} até 1.50 segundos com 8 \textit{threads}. Apesar de garantirem um ganho de velocidade próximo a 10$\times$, a perda na acurácia foi similar ao \texttt{perfo\_large} mantendo o erro na faixa de 70\%.
+O \textit{K-Means} apresenta como principal gargalo de desempenho a etapa de busca pelos pontos mais próximos aos centroides. O comportamento do algoritmo com as aproximações pode ser observado na Figura \ref{fig:kmeans_results}. O perfilamento da execução comum demonstra que essa fase consome aproximadamente 59 bilhões de ciclos de processamento, o que representa 39.88\% do tempo total da aplicação. A execução da aplicação com 1 \textit{thread} executa em uma média de 14.83 segundos, enquanto a versão com 8 \textit{threads} conclui o processamento em 3.93 segundos.
 
-A técnica \texttt{memo}, reduziu os ciclos da região crítica para 0.33\%. No entanto, o custo das suas estruturas internas introduziu alguns ciclos extras durante a execução. Nas taxas de aproximação de 10, 25 e 50, a técnica prejudicou o desempenho geral da aplicação. O tempo de execução com uma \textit{thread} subiu para cerca de 15.6 segundos, e com 8 \textit{threads} ficou em torno 4.19 segundos. O ganho de desempenho expressivo ocorreu apenas na taxa máxima de 100, atingindo 1.39 segundos com 8 \textit{threads}.
+A aplicação da técnica \texttt{perfo\_large} reduziu a proporção de ciclos na região crítica de 39.88\% para apenas 0.43\%. Essa diminuição drástica de processamento gerou ganhos de desempenho superiores a 10$\times$ em relação à execução comum. Os tempos de execução mantiveram valores entre 1.35 e 1.49 segundos em todas as configurações de \textit{threads} e taxas de aproximação. Contudo, a métrica de erro médio ficou estagnada em torno de 70\% em todos os cenários.
+
+As estratégias \texttt{perfo\_init} e \texttt{perfo\_fini} apresentaram comportamentos similares. A quantidade de ciclos gastos na região crítica caiu para 14.90\% dos ciclos com essas técnicas. O tempo de execução variou de 2.18 segundos com uma \textit{thread} até 1.50 segundos com 8 \textit{threads}. Apesar de garantirem um ganho de velocidade próximo a 10$\times$, a perda na acurácia foi similar ao \texttt{perfo\_large}, mantendo o erro na faixa de 70\%.
+
+A técnica \texttt{memo} reduziu os ciclos da região crítica para 0.33\%. No entanto, o custo das suas estruturas internas introduziu alguns ciclos extras durante a execução. Nas taxas de aproximação de 10, 25 e 50, a técnica prejudicou o desempenho geral da aplicação. O tempo de execução com uma \textit{thread} subiu para cerca de 15.6 segundos, e com 8 \textit{threads} ficou em torno de 4.19 segundos. O ganho de desempenho expressivo ocorreu apenas na taxa máxima de 100, atingindo 1.39 segundos com 8 \textit{threads}.
 
 A qualidade dos dados gerados pela cláusula \texttt{memo} sofreu degradação diretamente proporcional ao aumento do número de \textit{threads} e da taxa de aproximação. Com uma \textit{thread} e taxas de até 50, a execução não apresentou erro. Porém, ao elevar o paralelismo para 8 \textit{threads} na mesma taxa de 50, o erro saltou para 55.29\%. Na taxa extrema de 100, o erro alcançou 81.47\% na execução sequencial e chegou a 89.41\% com 8 \textit{threads}. A técnica \texttt{fastmath}, que habilita otimizações agressivas de ponto flutuante via compilador, reproduziu o mesmo padrão de perda de acurácia da memoização, mas falhou em entregar qualquer ganho de desempenho prático em relação à execução original.
 
-Desse modo temos que o algoritmo \textit{K-Means} conseguiu obter ganhos de desempenho com as diferentes técnicas de aproximação empregadas, porém ele se mostrou sensível as mesmas em relação a acurácia de saída, chegando a níveis de degradação superiores a 70\%.
+Desse modo, temos que o algoritmo \textit{K-Means} conseguiu obter ganhos de desempenho com as diferentes técnicas de aproximação empregadas, porém ele se mostrou sensível a elas em relação à acurácia de saída, chegando a níveis de degradação superiores a 70\%.
 
 \subsection{Mandelbrot}\label{subsec:mandelbrot_resultados}
 
-As cláusulas \texttt{perfo\_init}, \texttt{perfo\_fini} e \texttt{fastmath} não geraram alterações nas imagens em comparação com a execução original. Por outro lado, a técnica \texttt{perfo\_large} manteve a similaridade visual em aproximadamente 80\%, apresentando apenas leves variações. A técnica \texttt{memo} também alcançou valores de similaridade muito próximos aos da versão original na maioria dos cenários. Essa similaridade variou de 81\% em execuções seriais até mais de 99\% em configurações com múltiplas \textit{threads} e taxas de descarte menores, com a única exceção na taxa de aproximação igual a 100, na qual a similaridade estabilizou em torno de 80\% independentemente da quantidade de \textit{threads} utilizadas.
+\begin{figure*}[tbh!]
+\caption{Aplicação apresentou bons resultados tanto no desempenho quanto na acurácia nas técnicas \texttt{perfo\_large} e \texttt{memo}.}
+\centering
+\subfloat[Desempenho do Mandelbrot com \texttt{perfo\_large} e taxa de descarte de 50.]{
+\includegraphics[width=0.3\textwidth]{figuras/desempenho/mandelbrotv0_perfo_large_50.pdf}
+\label{subfig:mandelbrotv0_perfo_large_50_perf}
+}
+\hfill
+\subfloat[Desempenho do Mandelbrot com \texttt{memo} e limiar de 100.]{
+\includegraphics[width=0.3\textwidth]{figuras/desempenho/mandelbrotv0_memo_100.pdf}
+\label{subfig:mandelbrotv0_memo_100_perf}
+}
+\hfill
+\subfloat[Desempenho do Mandelbrot com \texttt{perfo\_fini} e taxa de descarte de 1000.]{
+\includegraphics[width=0.3\textwidth]{figuras/desempenho/mandelbrotv1_perfo_fini_1000.pdf}
+\label{subfig:mandelbrotv1_perfo_fini_1000_perf}
+}
 
-Já na questão de desempenho a estratégia \texttt{perfo\_large} obteve os melhores valores, apresentando ganhos superiores a 6$\times$ em todas as configurações testadas, chegando a acelerações de até 8$\times$ em relação à execução original. A execução comum da \textit{baseline} com uma \textit{thread} leva cerca de 0,288 segundos para ser concluída, enquanto a aplicação com a \texttt{perfo\_large} reduz esse tempo para o intervalo de 0,036 a 0,055 segundos.
+\subfloat[Acurácia do Mandelbrot com \texttt{perfo\_large} e taxa de descarte de 50.]{
+\includegraphics[width=0.3\textwidth]{figuras/metricas/mandelbrotv0_perfo_large_50.pdf}
+\label{subfig:mandelbrotv0_perfo_large_50_ssim}
+}
+\hfill
+\subfloat[Acurácia do Mandelbrot com \texttt{perfo\_init} e limiar de 100.]{
+\includegraphics[width=0.3\textwidth]{figuras/metricas/mandelbrotv0_memo_100.pdf}
+\label{subfig:mandelbrotv0_memo_100_ssim}
+}
+\hfill
+\subfloat[Acurácia do Mandelbrot com \texttt{perfo\_fini} e taxa de descarte de 1000.]{
+\includegraphics[width=0.3\textwidth]{figuras/metricas/mandelbrotv1_perfo_fini_1000.pdf}
+\label{subfig:mandelbrotv1_perfo_fini_1000_mcr}
+}
+\fonte{}
+\label{fig:mandelbrot_results}
+\end{figure*}
 
-A técnica \texttt{memo} obteve ganhos exclusivamente na configuração com taxa 100, alcançando acelerações de até 5$\times$ em relação à execução original. Nessa configuração específica, o tempo reduziu de 0,32 segundos na \textit{baseline} serial para 0,159 segundos, atingindo 0,061 segundos quando escalado para 8 \textit{threads}. Contudo, nas demais taxas de aproximação (10, 25 e 50), a técnica sofreu perda de desempenho. As abordagens \texttt{perfo\_init}, \texttt{perfo\_fini} e \texttt{fastmath} também não produziram melhorias no tempo de execução desta aplicação.
+As cláusulas \texttt{perfo\_init}, \texttt{perfo\_fini} e \texttt{fastmath} não geraram alterações nas imagens em comparação com a execução original, como demonstrado na Figura \ref{fig:mandelbrot_results}. Por outro lado, a técnica \texttt{perfo\_large} manteve a similaridade visual em aproximadamente 80\%, apresentando apenas leves variações. A técnica \texttt{memo} também alcançou valores de similaridade muito próximos aos da versão original na maioria dos cenários. Essa similaridade variou de 81\% em execuções seriais até mais de 99\% em configurações com múltiplas \textit{threads} e taxas de descarte menores, com a única exceção na taxa de aproximação igual a 100, na qual a similaridade estabilizou em torno de 80\% independentemente da quantidade de \textit{threads} utilizadas.
+
+Já na questão de desempenho, a estratégia \texttt{perfo\_large} obteve os melhores valores, apresentando ganhos superiores a 6$\times$ em todas as configurações testadas, chegando a acelerações de até 8$\times$ em relação à execução original. A execução comum da \textit{baseline} com uma \textit{thread} leva cerca de 0,288 segundos para ser concluída, enquanto a aplicação com a \texttt{perfo\_large} reduz esse tempo para o intervalo de 0,036 a 0,055 segundos.
+
+\begin{figure*}[tbh!]
+\caption{Mesmo com a aplicação da técnica de aproximação o formato do conjunto foi gerado corretamente.}
+\centering
+\subfloat[Saída do Mandelbrot de uma execução comum com 8 \textit{threads}.]{
+\includegraphics[width=0.3\textwidth]{figuras/mandelbrot_common8.jpg}
+\label{subfig:mandelbrot_common8}
+}
+\subfloat[Saída do Mandelbrot de uma execução com \texttt{perfo\_large} taxa de descarte de 10 e 8 \textit{threads}.]{
+\includegraphics[width=0.3\textwidth]{figuras/mandelbrot_perfo_large8_10.jpg}
+\label{subfig:mandelbrot_perfo_large8_10}
+}
+\fonte{}
+\label{fig:mandelbrot_output}
+\end{figure*}
+
+Exemplos dessas saídas visuais estão expostos na Figura \ref{fig:mandelbrot_output}. A técnica \texttt{memo} obteve ganhos exclusivamente na configuração com taxa 100, alcançando acelerações de até 5$\times$ em relação à execução original. Nessa configuração específica, o tempo reduziu de 0,32 segundos na \textit{baseline} serial para 0,159 segundos, atingindo 0,061 segundos quando escalado para 8 \textit{threads}. Contudo, nas demais taxas de aproximação (10, 25 e 50), a técnica sofreu perda de desempenho. As abordagens \texttt{perfo\_init}, \texttt{perfo\_fini} e \texttt{fastmath} também não produziram melhorias no tempo de execução desta aplicação.
 
 \subsection{PI de Monte Carlo}\label{subsec:pi_resultados}
 
-Ambas as técnicas \texttt{perfo\_init} e \texttt{perfo\_fini} apresentaram uma variação de erro inferior a 0,01\% e não obtiveram ganho de desempenho. Isso é explicado pois a quantidade de iterações que foram saltadas não foi suficiente para superar o custo de criação e gerenciamento do laço paralelo. A técnica \texttt{fastmath} acompanhou esse mesmo comportamento, apresentando erro semelhante e nenhuma melhora no tempo de execução.
+\begin{figure*}[tbh!]
+\caption{A memoização foi uma técnica que não só diminuiu o desempenho da aplicação como também gerou uma saída completamente fora do esperado.}
+\centering
+\subfloat[Desempenho de PI com \texttt{perfo\_large} e taxa de descarte de 50.]{
+\includegraphics[width=0.3\textwidth]{figuras/desempenho/piv0_perfo_large_50.pdf}
+\label{subfig:piv0_perfo_large_50_perf}
+}
+\hfill
+\subfloat[Desempenho de PI com \texttt{memo} e limiar de 100.]{
+\includegraphics[width=0.3\textwidth]{figuras/desempenho/piv0_memo_100.pdf}
+\label{subfig:piv0_memo_100_perf}
+}
+\hfill
+\subfloat[Desempenho de PI com \texttt{perfo\_fini} e taxa de descarte de 1000.]{
+\includegraphics[width=0.3\textwidth]{figuras/desempenho/piv1_perfo_fini_1000.pdf}
+\label{subfig:piv1_perfo_fini_1000_perf}
+}
+
+\subfloat[Acurácia de PI com \texttt{perfo\_large} e taxa de descarte de 50.]{
+\includegraphics[width=0.3\textwidth]{figuras/metricas/piv0_perfo_large_50.pdf}
+\label{subfig:piv0_perfo_large_50_mape}
+}
+\hfill
+\subfloat[Acurácia de PI com \texttt{perfo\_init} e limiar de 100.]{
+\includegraphics[width=0.3\textwidth]{figuras/metricas/piv0_memo_100.pdf}
+\label{subfig:piv0_memo_100_mape}
+}
+\hfill
+\subfloat[Acurácia de PI com \texttt{perfo\_fini} e taxa de descarte de 1000.]{
+\includegraphics[width=0.3\textwidth]{figuras/metricas/piv1_perfo_fini_1000.pdf}
+\label{subfig:piv0_perfo_init_100_mape}
+}
+\fonte{}
+\label{fig:pi_results}
+\end{figure*}
+
+Ambas as técnicas \texttt{perfo\_init} e \texttt{perfo\_fini} apresentaram uma variação de erro inferior a 0,01\% e não obtiveram ganho de desempenho, o que é corroborado pelos dados da Figura \ref{fig:pi_results}. Isso é explicado pois a quantidade de iterações que foram saltadas não foi suficiente para superar o custo de criação e gerenciamento do laço paralelo. A técnica \texttt{fastmath} acompanhou esse mesmo comportamento, apresentando erro semelhante e nenhuma melhora no tempo de execução.
 
 Por outro lado, a técnica \texttt{perfo\_large} com a configuração de descarte de 50 e alocação de 4 \textit{threads} alcançou um tempo de 0,033 segundos, o que contrasta diretamente com os 2,69 segundos gastos pela execução comum com uma única \textit{thread}. Esse valor indica um ganho de desempenho na ordem de 80$\times$. A análise dos dados de perfilamento confirmou que essa aceleração ocorre devido à drástica redução na quantidade de ciclos de processamento executados. Apesar do ganho de velocidade, a técnica afetou negativamente a acurácia na saída do programa, apresentando 100\% de erro em todos os cenários.
 
@@ -88,10 +370,10 @@ Já a cláusula \texttt{memo} apresentou o pior cenário geral, com degradação
 
 \section{Avaliação das Técnicas Empregadas}\label{sec:avaliacao}
 
-A análise conjunta das aplicações revela padrões de comportamento consistentes para cada técnica de aproximação inserida no ambiente paralelo. De maneira geral a diretiva \texttt{perfo\_large} se destacou ao gerar ganhos de desempenho em quase todas as aplicações avaliadas. Essa técnica reduz drasticamente o volume total de instruções processadas ao alterar a variável de indução do laço principal. Essa diminuição de carga computacional proporcionou diminuição na quantidade de ciclos de execução e consequentemente uma acelerações no tempo de execução total, superando com facilidade o custo de sincronização das \textit{threads}. Contudo, esse salto de velocidade cobra um preço alto na qualidade das saídas. Na maioria dos testes, a abordagem causou uma degradação severa na acurácia do programa, chegando até a 100\% de erro.
+A análise conjunta das aplicações revela padrões de comportamento consistentes para cada técnica de aproximação inserida no ambiente paralelo. De maneira geral, a diretiva \texttt{perfo\_large} se destacou ao gerar ganhos de desempenho em quase todas as aplicações avaliadas. Essa técnica reduz drasticamente o volume total de instruções processadas ao alterar a variável de indução do laço principal. Essa diminuição de carga computacional proporcionou diminuição na quantidade de ciclos de execução e, consequentemente, acelerações no tempo de execução total, superando com facilidade o custo de sincronização das \textit{threads}. Contudo, esse salto de velocidade cobra um preço alto na qualidade das saídas. Na maioria dos testes, a abordagem causou uma degradação severa na acurácia do programa, chegando até a 100\% de erro.
 
 A técnica \texttt{memo} demonstrou possuir um bom potencial de aceleração, mas ficou evidente que ela não pode ser aplicada em qualquer situação. O sucesso da memoização depende da previsibilidade das entradas e do custo inerente à região aproximada. Em laços com poucas instruções ou em algoritmos que exigem dados estritamente aleatórios, como o método de Monte Carlo, o \textit{overhead} introduzido pelo gerenciamento interno das estruturas de dados supera qualquer benefício de reutilização de valores. Nesses cenários adversos, a cláusula gera lentidão e pode até mesmo quebrar o algoritmo da aplicação. Sua adoção exige um cálculo cuidadoso para garantir que o tempo economizado ao evitar recomputações seja superior ao tempo gasto com buscas em memória.
 
-As abordagens \texttt{perfo\_init} e \texttt{perfo\_fini} também trouxeram resultados interessantes, comportando-se de forma quase idêntica entre si. Diferente da técnica \texttt{perfo\_large}, essas estratégias conseguem manter níveis muito altos de qualidade nas saídas quando submetidas a configurações moderadas, pois preservam a maior parte do espaço de iteração. No entanto, elas dependem obrigatoriamente de uma alta taxa de descarte para apresentar ganhos reais de desempenho. Em taxas baixas, a economia de tempo gerada ao saltar as iterações iniciais ou finais não justificam o uso da aproximação na região. Somente quando há um grande salto no processamento é que o ganho de tempo se torna expressivo, o que acaba sacrificando de forma proporcional a precisão do programa.
+As abordagens \texttt{perfo\_init} e \texttt{perfo\_fini} também trouxeram resultados interessantes, comportando-se de forma quase idêntica entre si. Diferente da técnica \texttt{perfo\_large}, essas estratégias conseguem manter níveis muito altos de qualidade nas saídas quando submetidas a configurações moderadas, pois preservam a maior parte do espaço de iteração. No entanto, elas dependem obrigatoriamente de uma alta taxa de descarte para apresentar ganhos reais de desempenho. Em taxas baixas, a economia de tempo gerada ao saltar as iterações iniciais ou finais não justifica o uso da aproximação na região. Somente quando há um grande salto no processamento é que o ganho de tempo se torna expressivo, o que acaba sacrificando de forma proporcional a precisão do programa.
 
 Por fim, a cláusula \texttt{fastmath} foi uma estratégia que não introduziu ganhos significativos de desempenho em nenhum dos cenários de teste. Embora tenha preservado a integridade dos cálculos e a similaridade visual dos dados com uma margem de erro mínima, as otimizações de ponto flutuante falharam em acelerar as aplicações práticas. Em alguns programas, a necessidade de isolar a região do código para aplicar essas otimizações causou um leve aumento no tempo total da execução.

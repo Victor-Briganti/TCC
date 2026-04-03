@@ -22,6 +22,3 @@
 *.fdb_latexmk
 *.ind
 *.blg
-*.pdf
-
-!figuras/*.pdf
