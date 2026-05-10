@@ -1,16 +1,16 @@
 \chapter{Fundamentaç\~ao Te\'orica}\label{cap:fundamentacaoTeorica}
 
-Este capítulo apresenta os conceitos relacionados a \gls{ca} e \gls{cp}. Primeiramente aborda-se a definição de \gls{ca}, seu uso em aplicações, os desafios enfrentados por essa estratégia e o detalhamento dos algoritmos de perforação de laço, memoização e aproximação de ponto flutuante. Por fim apresenta também conceitos de \gls{cp} com um foco no uso da ferramenta OpenMP.
+Este capítulo apresenta os conceitos relacionados a \gls{ca} e \gls{cp}. Primeiramente aborda-se a definição de \gls{ca}, seu uso em aplicações, os desafios enfrentados por essa estratégia e o detalhamento dos algoritmos de perforação de laço, memoização e aproximação de ponto flutuante. Por fim, apresenta também conceitos de \gls{cp} com um foco no uso da ferramenta OpenMP.
 
 \section{Computação Aproximada}\label{sec:compAprox}
 
-A \gls{ca} consiste em um conjunto de técnicas aplicadas a cenários onde os resultados exatos não são estritamente necessários ou em que as aplicações apresentam resiliência suficiente para lidar com pequenas imprecisões em suas computações. Nessas situações, o uso de tais técnicas pode proporcionar ganhos significativos de desempenho e eficiência energética, mantendo a margem de erro em níveis reduzidos. Um exemplo é o uso de redes neurais para aproximar a divergência de \textit{branch} em instruções \gls{simd}, capaz de alcançar aceleração de até 14,8$\times$ com acurácia de 96\%~\cite{grigorian2015}. Por esse motivo, a \gls{ca} se mostra especialmente atraente em domínios como análise de dados, reconhecimento de padrões, processamento de imagens e sinais~\cite{mittal2016, chippa2013}.
+A \gls{ca} consiste em um conjunto de técnicas aplicadas a cenários nos quais os resultados exatos não são estritamente necessários ou em que as aplicações apresentam resiliência suficiente para lidar com pequenas imprecisões em suas computações. Nessas situações, o uso de tais técnicas pode proporcionar ganhos significativos de desempenho e eficiência energética, mantendo a margem de erro em níveis reduzidos. Um exemplo é o uso de redes neurais para aproximar a divergência de \textit{branch} em instruções \gls{simd}, capaz de alcançar aceleração de até 14,8$\times$ com acurácia de 96\%~\cite{grigorian2015}. Por esse motivo, a \gls{ca} se mostra especialmente atraente em domínios como análise de dados, reconhecimento de padrões, processamento de imagens e sinais~\cite{mittal2016, chippa2013}.
 
-As diferentes estratégias de aproximação podem ser classificadas conforme a camada em que são aplicadas na pilha computacional. No nível de \textit{hardware}, destacam-se técnicas que envolvem desde unidades funcionais aproximadas, como somadores, multiplicadores e divisores, até abordagens como \textit{overclocking}~\cite{leon2025a,leon2025b} e o uso de memórias aproximadas~\cite{fabricio2020}. No nível de \textit{software}, encontram-se estratégias mais generalistas, incluindo linguagens de programação aproximada~\cite{sampson2015}, \textit{runtimes} com suporte à aproximação~\cite{li2018,reis2024} e otimizações realizadas em nível de compilador~\cite{oliveira2024a,oliveira2024b}.
+As diferentes estratégias de aproximação podem ser classificadas conforme a camada em que são aplicadas na pilha computacional. No \textit{hardware}, destacam-se técnicas que envolvem desde unidades funcionais aproximadas, como somadores, multiplicadores e divisores, até abordagens como \textit{overclocking}~\cite{leon2025a,leon2025b} e o uso de memórias aproximadas~\cite{fabricio2020}. No \textit{software}, encontram-se estratégias mais generalistas, incluindo linguagens de programação aproximada~\cite{sampson2015}, \textit{runtimes} com suporte à aproximação~\cite{li2018,reis2024} e otimizações realizadas em compilador~\cite{oliveira2024a,oliveira2024b}.
 
-Apesar de seus benefícios, esse paradigma enfrenta desafios significativos. Em primeiro lugar, nem todas as aplicações são resilientes a erros em sua execução, limitando o uso de técnicas mais generalistas e torna necessário definir métricas que permitam ajustar o grau de precisão desejado, seja pelo usuário ou pela própria aplicação~\cite{mittal2016}. Além disso, medir corretamente o nível de erro introduzido não é trivial, pois nem sempre está claro qual métrica deve ser aplicada à saída da aplicação~\cite{felzmann2021}. Outro ponto crítico é a propagação dos erros, que pode comprometer toda a execução: em alguns casos, a aplicação pode falhar abruptamente; em outros, concluir sua execução de forma aparentemente correta, mas com resultados significativamente distantes do esperado~\cite{fabricio2020}.
+Apesar de seus benefícios, esse paradigma enfrenta desafios significativos. Nem todas as aplicações são resilientes a erros em sua execução, limitando o uso de técnicas mais generalistas e torna necessário definir métricas que permitam ajustar o grau de precisão desejado, seja pelo usuário ou pela própria aplicação~\cite{mittal2016}. Além disso, medir corretamente o nível de erro introduzido não é trivial, pois nem sempre está claro qual métrica deve ser aplicada à saída da aplicação~\cite{felzmann2021}. Outro ponto crítico é a propagação dos erros, que pode comprometer toda a execução: em alguns casos, a aplicação pode falhar abruptamente; em outros, concluir sua execução de forma aparentemente correta, mas com resultados significativamente distantes do esperado~\cite{fabricio2020}.
 
-Diante disso é possível observar que a \gls{ca} não se restringe a um único método, mas a um conjunto de estratégias que exploram diferentes aspectos da execução de um programa. Na subseção seguinte, são detalhados quatro dessas estratégias: perforação de laço, memoização, aproximação de ponto flutuante e o descarte de tarefas.
+Diante disso, \gls{ca} não se restringe a um único método, mas a um conjunto de estratégias que exploram diferentes aspectos da execução de um programa. Na subseção seguinte, são detalhados quatro dessas estratégias: perforação de laço, memoização, aproximação de ponto flutuante e o descarte de tarefas.
 
 \subsection{Perforação de Laço}\label{subsec:perfLaco}
 
@@ -25,7 +25,7 @@ for (int i = 0; i < N; i += a) {
 \fonte{}
 \end{sourcecode}
 
-Uma forma direta de aplicar a \textit{loop perforation} consiste em modificar a expressão de incremento da variável de indução para que parte das iterações seja ignorada. No exemplo do \autoref{code:loopCanon}, se o incremento original for \texttt{a = 1} (\texttt{i++}), todas as iterações são executadas. Se o alterarmos para \texttt{a = 2} (\texttt{i += 2}), o laço passa a saltar uma iteração a cada passo, realizando apenas metade do trabalho computacional. A \autoref{fig:perfoMod} ilustra o comportamento, dessa modificaçõe nas iterações, na qual os blocos em azul representam as iterações efetivamente executadas e os blocos em branco indicam as iterações omitidas devido ao aumento do passo.
+Uma forma direta de aplicar a \textit{loop perforation} consiste em modificar a expressão de incremento da variável de indução para que parte das iterações seja ignorada. No exemplo do \autoref{code:loopCanon}, se o incremento original for \texttt{a = 1} (\texttt{i++}), todas as iterações são executadas. Se o alterarmos para \texttt{a = 2} (\texttt{i += 2}), o laço passa a saltar uma iteração a cada passo, realizando apenas metade do trabalho computacional. A \autoref{fig:perfoMod} ilustra o comportamento, dessa modificação nas iterações, na qual os blocos em azul representam as iterações efetivamente executadas e os blocos em branco indicam as iterações omitidas devido ao aumento do passo.
 
 \begin{figure}[htb]
 \caption{Modelo de execução do algoritmo de \textit{loop perforation}.}
@@ -45,7 +45,7 @@ Na prática, as saídas são armazenadas em uma estrutura de dados e reutilizada
 
 \subsection{Aproximação de Ponto Flutuante}\label{subsec:pontoFlut}
 
-A representação de números reais por meio de números de ponto flutuante envolvem aproximação por padrão devido à impossibilidade de representar valores contínuos com memória finita, se impossibilita representar um número infinito com um número finito de \textit{bits}~\cite{monniaux2008}. Por esse motivo aritmética com números de ponto flutuante usualmente introduzem erros de aproximação que variam conforme a ordem de execução dessas operações, resultando em um valor completamente diferente do esperado. Um exemplo disso pode ser observado na \autoref{fig:floatPoint}.
+A representação de números reais por meio de números de ponto flutuante envolvem aproximação por padrão devido à impossibilidade de representar valores contínuos com memória finita~\cite{monniaux2008}. Por esse motivo, aritmética com números de ponto flutuante usualmente introduz erros de aproximação que variam conforme a ordem de execução dessas operações. Um exemplo disso pode ser observado na \autoref{fig:floatPoint}.
 
 \begin{figure}[htb]
     \caption{Erro introduzido na aritmética de ponto flutuante.}
@@ -55,7 +55,7 @@ A representação de números reais por meio de números de ponto flutuante envo
     \addcontentsline{loge}{figure}{\protect\numberline{\thefigure}Erro introduzido na aritmética de ponto flutuante.}
 \end{figure}
 
-Para reduzir esse tipo de problema, compiladores evitam aplicar otimizações que possam amplificar erros em operações de ponto flutuante. No entanto, alguns compiladores permitem habilitar explicitamente tais otimizações. Por exemplo, \texttt{Clang} e \texttt{GCC} oferecem a opção \texttt{ffast-math}, que permite aplicar essas otimizações durante a compilação de todo o módulo~\cite{gccffast, clangffast}. O Microsoft Visual C++ (\texttt{MSVC}) disponibiliza a diretiva \texttt{\#pragma float\_control}, que permite definir regiões específicas do código nas quais essas otimizações podem ser aplicadas~\cite{msvcfast}. Por fim, o compilador da Intel (\texttt{ICC}) também fornece suporte a aproximações em ponto flutuante por meio das \textit{flags} \texttt{fp-speculation}, \texttt{Qfp-speculation} e \texttt{-fp-model=fast[=1|2]}~\cite{intelfast}.
+Para reduzir esse tipo de problema, compiladores evitam aplicar otimizações que possam amplificar erros em operações de ponto flutuante. No entanto, alguns compiladores permitem habilitar explicitamente tais otimizações. Por exemplo, \texttt{Clang} e \texttt{GCC} oferecem a opção \texttt{--ffast-math}, que permite aplicar essas otimizações durante a compilação de todo o módulo~\cite{gccffast, clangffast}. O Microsoft Visual C++ (\texttt{MSVC}) disponibiliza a diretiva \texttt{\#pragma float\_control}, que permite definir regiões específicas do código nas quais essas otimizações podem ser aplicadas~\cite{msvcfast}. Por fim, o compilador da Intel (\texttt{ICC}) também fornece suporte a aproximações em ponto flutuante por meio das \textit{flags} \texttt{fp-speculation}, \texttt{Qfp-speculation} e \texttt{-fp-model=fast[=1|2]}~\cite{intelfast}.
 
 \section{Impacto da Aproximação no Resultado de Computações}\label{sec:impacto}
 
@@ -130,7 +130,7 @@ O OpenMP é estruturado em uma arquitetura em camadas, composta por anotações 
 O \autoref{code:produtoVet} apresenta a implementação sequencial de um produto escalar entre vetores. A paralelização utilizando a biblioteca \texttt{pthreads}, apresentado no \autoref{code:produtoThread}, exige a criação explícita de \textit{threads}, gerenciamento de regiões de memória e sincronização dos resultados parciais. Em contraste, a \autoref{code:produtoOmp} implementado com o OpenMP, evidencia a simplicidade proporcionada pelas diretivas: uma única anotação é suficiente para paralelizar o laço de cálculo, delegando à \textit{runtime} a criação e sincronização das \textit{threads}.
 
 \begin{sourcecode}[htb]
-    \caption{Estrutura de um laço canônico.}
+    \caption{Implementação sequencial de um produto escalar.}
     \label{code:produtoVet}
     \begin{lstlisting}[frame=single, language=C++]
 for (int i = 0; i < N; i++) {
@@ -141,7 +141,7 @@ for (int i = 0; i < N; i++) {
 \end{sourcecode}
 
 \begin{sourcecode}[htb]
-    \caption{Estrutura de um laço canônico.}
+    \caption{Implementação paralelizada com \texttt{pthreads} de um produto escalar.}
     \label{code:produtoThread}
     \begin{lstlisting}[frame=single, language=C++]
 void *compute_partial_dot(void *arg) {
@@ -179,7 +179,7 @@ for (int i = 0; i < NUM_THREADS; i++) {
 \end{sourcecode}
 
 \begin{sourcecode}[htb]
-    \caption{Estrutura de um laço canônico.}
+    \caption{Implementação paralelizada com OpenMP de um produto escalar.}
     \label{code:produtoOmp}
     \begin{lstlisting}[frame=single, language=C++]
 #pragma omp parallel for reduction(+ : result)
@@ -190,7 +190,7 @@ for (int i = 0; i < N; i++) {
     \fonte{}
 \end{sourcecode}
 
-Tipicamente, uma diretiva OpenMP é aplicada a uma região de código, como um laço, para indicar que ela pode ser executada em paralelo. Durante a compilação, o compilador isola o bloco de código anotado e o transforma em uma função separada, conhecida como \textit{outlined function}, onde variáveis privadas, memória de pilha e pontos de sincronização são automaticamente configurados. Em tempo de execução, a \textit{runtime} do OpenMP é responsável por gerenciar essas funções extraídas, criando e coordenando múltiplas \textit{threads} que executam cópias dessa função de acordo com o modelo \textit{fork-join}. Por exemplo, a diretiva \texttt{\#pragma omp parallel} cria um time de \textit{threads}, cada uma executando a função correspondente à região paralela. Ao final da região paralela, as \textit{threads} são sincronizadas (\textit{join}) e a execução retorna ao fluxo sequencial. Essa abordagem permite paralelizar regiões de código com esforço reduzido de gerenciamento, mantendo controle sobre sincronização e compartilhamento de dados~\cite{mattson2019}.
+Tipicamente, uma diretiva OpenMP é aplicada a uma região de código, como um laço, para indicar que ela pode ser executada em paralelo. Durante a compilação, o compilador isola o bloco de código anotado e o transforma em uma função separada, conhecida como \textit{outlined function}, na qual variáveis privadas, memória de pilha e pontos de sincronização são automaticamente configurados. Em tempo de execução, a \textit{runtime} do OpenMP é responsável por gerenciar essas funções extraídas, criando e coordenando múltiplas \textit{threads} que executam cópias dessa função de acordo com o modelo \textit{fork-join}. Por exemplo, a diretiva \texttt{\#pragma omp parallel} cria um time de \textit{threads}, cada uma executando a função correspondente à região paralela. Ao final da região paralela, as \textit{threads} são sincronizadas (\textit{join}) e a execução retorna ao fluxo sequencial. Essa abordagem permite paralelizar regiões de código com esforço reduzido de gerenciamento, mantendo controle sobre sincronização e compartilhamento de dados~\cite{mattson2019}.
 
 \begin{figure}[htb]
     \caption{Modelo \textit{fork-join} de execução do \texttt{OpenMP}.}
@@ -206,9 +206,9 @@ O modelo \textit{fork-join} pode ser observado de forma esquemática na \autoref
 
 Esta seção apresenta arcabouços baseados no paradigma de \gls{ca} que implementam suporte ao nível de linguagem de programação, especialmente aqueles que utilizam anotações de código e mecanismos de execução em \textit{runtime}. Os arcabouços e aplicações selecionados buscam oferecer ao desenvolvedor maior controle sobre as técnicas utilizadas e sobre as regiões de código que podem ser aproximadas.
 
-O ACCEPT (Approximate C Compiler for Energy and Performance Trade-Off)~\cite{sampson2015} é um arcabouço implementado sobre a infraestrutura do LLVM, que introduz a palavra-chave \texttt{ACCEPT} na sintaxe das linguagens C/C++. Essa palavra-chave permite diferenciar regiões de código aproximadas daquelas que devem ser executadas de forma precisa. O arcabouço também implementa etapas de análise para verificar a possibilidade de aproximação dessas regiões, avaliando não apenas a validade das transformações, mas também viabilizando a aplicação de diferentes técnicas de otimização aproximada, de maneira análoga ao funcionamento de um compilador paralelizador.
+O Approximate C Compiler for Energy and Performance Trade-Off (ACCEPT)~\cite{sampson2015} é um arcabouço implementado sobre a infraestrutura do LLVM, que introduz a palavra-chave \texttt{ACCEPT} na sintaxe das linguagens C/C++. Essa palavra-chave permite diferenciar regiões de código aproximadas daquelas que devem ser executadas de forma precisa. O arcabouço também implementa etapas de análise para verificar a possibilidade de aproximação dessas regiões, avaliando a validade das transformações, e viabilizando a aplicação de diferentes técnicas de otimização aproximada, de maneira análoga ao funcionamento de um compilador paralelizador.
 
-A infraestrutura do ACCEPT permite, por meio de anotações de código e análises estáticas e dinâmicas, identificar regiões de código potencialmente aproximáveis. Essas regiões podem ser exploradas para aplicar técnicas como perforação de laço, elisão de sincronização e até mesmo o uso de redes neurais em \textit{hardware} para estimar saídas. Além disso, o arcabouço incorpora um \textit{autotuner} que utiliza métricas fornecidas pelo usuário para avaliar se as aproximações aplicadas mantêm a qualidade de saída nos limites esperados, garantindo que o programa não apresente falhas durante a execução.
+A infraestrutura do ACCEPT permite, por meio de anotações de código e análises estáticas e dinâmicas, identificar regiões de código potencialmente aproximáveis. Essas regiões podem aplicar técnicas como perforação de laço, remoção de estruturas de sincronização e até mesmo o uso de redes neurais em \textit{hardware} para estimar saídas. Além disso, o arcabouço incorpora um \textit{autotuner} que utiliza métricas fornecidas pelo usuário para avaliar se as aproximações aplicadas mantêm a qualidade de saída nos limites esperados, garantindo que o programa não apresente falhas durante a execução.
 
 \citet{vassiliadis2015} propõem uma extensão ao OpenMP que incorpora suporte à \gls{ca} no modelo de programação baseado em tarefas. Em sua proposta, o programador pode especificar funções aproximadas alternativas que podem ser escolhidas em tempo de execução para substituir versões precisas de determinadas tarefas. Assim, parte das tarefas é executada de forma exata, enquanto outras utilizam versões aproximadas, reduzindo o consumo energético e mantendo a qualidade de acordo com limites definidos pelo usuário.
 

@@ -4,7 +4,7 @@ Este capítulo apresenta a metodologia e os recursos utilizados no desenvolvimen
 
 \section{Ambiente e Configuração Experimental}\label{sec:config}
 
-Os experimentos foram conduzidos em um computador com processador Intel Core i7-4790, operando a uma frequência base de 3.6 GHz. O processador possui quatro núcleos físicos e suporte a oito \textit{threads}. A hierarquia de memória \textit{cache} é composta por 32 KB em L1, 256 KB em L2 e 8 MB em L3. O sistema conta com 32 GB de memória RAM DDR3, divididos em quatro módulos de 8 GB em \textit{dual-channel} a 1600 MT/s. O sistema operacional adotado foi o Ubuntu 22.04.4 LTS. A \autoref{fig:compArchitecture} detalha a arquitetura de memória e a organização dos núcleos utilizados nos testes.
+Os experimentos foram conduzidos em um computador com processador Intel Core i7-4790, operando a uma frequência base de 3,6 GHz. O processador possui quatro núcleos físicos e suporte a oito \textit{threads}. A hierarquia de memória é composta por 32 KB em L1, 256 KB em L2 e 8 MB em L3, além de 32 GB de memória RAM DDR3, divididos em quatro módulos de 8 GB em \textit{dual-channel} a 1600 MT/s. O sistema operacional adotado foi o Ubuntu 22.04.4 LTS. A \autoref{fig:compArchitecture} detalha a arquitetura de memória e a organização dos núcleos utilizados nos testes.
 
 \begin{figure}[htb]
 \caption{Especificação do computador utilizado em testes.}
@@ -14,15 +14,15 @@ Os experimentos foram conduzidos em um computador com processador Intel Core i7-
 \addcontentsline{loge}{figure}{\protect\numberline{\thefigure}Especificação do computador utilizado na avaliação experimental.}
 \end{figure}
 
-As aplicações foram executadas com 1, 2, 4 e 8 \textit{threads}. Cada configuração executada 10 vezes para assegurar médias confiáveis e mitigar o impacto de anomalias de execução. O ambiente foi configurado com a variável \texttt{OMP\_PROC\_BIND="TRUE"} para fixar as \textit{threads} aos núcleos físicos e \texttt{OMP\_APPROX="TRUE"} para ativar as rotinas de computação aproximada. Algoritmos dependentes de números aleatórios utilizaram sementes fixas, o que garante a reprodutibilidade dos dados.
+As aplicações foram executadas com 1, 2, 4 e 8 \textit{threads}. Cada configuração executada 10 vezes para e mitigar o impacto de anomalias de execução. O ambiente foi configurado com a variável \texttt{OMP\_PROC\_BIND="TRUE"} para fixar as \textit{threads} aos núcleos físicos e \texttt{OMP\_APPROX="TRUE"} para ativar as rotinas de computação aproximada. Algoritmos dependentes de números aleatórios utilizaram sementes fixas, o que garante a reprodutibilidade dos dados.
 
-O conjunto de \textit{benchmarks} foi testado com cinco técnicas de aproximação: \texttt{fastmath}, \texttt{perfo\_init}, \texttt{perfo\_fini}, \texttt{perfo\_large} e \texttt{memo}. A técnica \texttt{perfo\_large} foi testado com uma taxa de descarte de 10, 20, 30, 40 e 50. A \texttt{perfo\_init} e \texttt{perfo\_fini} foram avaliadas com um nível de descarte de 10, 100, 500 e 1000. Já a técnica \texttt{memo} operou com taxas de 10, 25, 50 e 100. A diretiva \texttt{fastmath} age de maneira binária e não possui parâmetros de configuração. Todos os códigos foram compilados com a \textit{flag} \texttt{-O3} para maximizar o desempenho base. Como as modificações de aproximação acontecem apenas na fase de geração de código ou em tempo de execução, as otimizações do compilador não interferem na semântica das técnicas avaliadas, o que preserva o comportamento esperado.
+O conjunto de \textit{benchmarks} foi testado isoladamente com cinco técnicas de aproximação: \texttt{fastmath}, \texttt{perfo\_init}, \texttt{perfo\_fini}, \texttt{perfo\_large} e \texttt{memo}, as aplicações que foram utilizadas estão disponíveis no repositório do projeto~\footnote{Disponível em: https://github.com/Victor-Briganti/approx-benchmark}. A técnica \texttt{perfo\_large} foi testado com uma taxa de descarte de 10, 20, 30, 40 e 50. A \texttt{perfo\_init} e \texttt{perfo\_fini} foram avaliadas com um nível de descarte de 10, 100, 500 e 1000. Já a técnica \texttt{memo} operou com taxas de 10, 25, 50 e 100. A diretiva \texttt{fastmath} não possui parâmetros de configuração. Todos os códigos foram compilados com a \textit{flag} \texttt{-O3} para maximizar o desempenho base. Como as modificações de aproximação acontecem apenas na fase de geração de código ou em tempo de execução, as otimizações do compilador não interferem na semântica das técnicas avaliadas, o que preserva o comportamento esperado.
 
 A versão exata do algoritmo, executada com \texttt{OpenMP} e uma única \textit{thread}, serviu como \textit{baseline} para as métricas de desempenho. A coleta das informações ocorreu por meio da ferramenta \texttt{perf}. O cálculo das métricas de qualidade também adotou como referência a execução exata da aplicação, sem o uso de diretivas de aproximação.
 
 \section{Conjunto de \textit{Benchmarks}}\label{sec:benchmark}
 
-A seleção das aplicações que compõem o conjunto de benchmarks~\footnote{Disponível em: https://github.com/Victor-Briganti/approx-benchmark} teve como principais critérios a tolerância a erros e a estrutura do algoritmo. Buscou-se contemplar uma gama ampla de domínios, incluindo \textit{machine learning}, álgebra linear, modelos estatísticos e multimídia. Outro objetivo foi preservar ao máximo o código original durante a inserção das regiões paralelizadas, evitando modificações significativas na implementação. As aplicações 2MM, Correlação, Deriche e Jacobi 2D foram obtidas a partir do conjunto PolyBench~\cite{polybench}, K-Means foi obtida a partir do Rodinia~\cite{rodinia} e o Mandelbrot e PI de Monte Carlo foram adaptações do Debian Benchmarks Game~\cite{debianBenchmarksGame}.
+A seleção das aplicações que compõem o conjunto de benchmarks teve como principais critérios a tolerância a erros e a estrutura do algoritmo. Buscou-se contemplar uma gama ampla de domínios, incluindo \textit{machine learning}, álgebra linear, modelos estatísticos e multimídia. Outro objetivo foi preservar ao máximo o código original durante a inserção das regiões paralelizadas, evitando modificações significativas na implementação. As aplicações 2MM, Correlação, Deriche e Jacobi 2D foram obtidas a partir do conjunto PolyBench~\cite{polybench}, K-Means foi obtida a partir do Rodinia~\cite{rodinia} e o Mandelbrot e PI de Monte Carlo foram adaptações do Debian Benchmarks Game~\cite{debianBenchmarksGame}.
 
 \subsection{2MM}\label{subsec:2mm}
 
@@ -58,7 +58,7 @@ O algoritmo empregado segue o padrão clássico~\cite{axler2015} descrito na \au
 	\end{bmatrix}
 \end{equation}
 
-\begin{algorithm}[htb]
+\begin{sourcecode}[htb]
 	\caption{Multiplicação de matrizes.}
 	\label{alg:mul_matrix}
 	\hrule
@@ -73,8 +73,8 @@ O algoritmo empregado segue o padrão clássico~\cite{axler2015} descrito na \au
 		\ENDFOR
 	\end{algorithmic}
 	\hrule
-	\fonte{Adaptado do \citet{polybench}}
-\end{algorithm}
+	\fonte{Adaptado de \citet{polybench}}
+\end{sourcecode}
 
 O programa executa as duas multiplicações em sequência. Para reduzir o custo de criação de regiões paralelas, definiu-se uma única região que abrange ambas as operações. Esta mesma região serviu para a aplicação das técnicas de computação aproximada. Na abordagem \texttt{fastmath}, a região englobou toda a operação. A cláusula \texttt{perfo}, foi aplicada junto a diretiva \texttt{parallel for} englobando o laço mais externo. Por fim o \texttt{memo} foi aplicado no laço interno (\texttt{k}), memoizando cada iteração. 
 
@@ -82,7 +82,7 @@ Além da paralelização, outra otimização aplicada foi a alocação contígua
 
 \subsection{Correlação}\label{subsec:correlation}
 
-A correlação é uma métrica estatística que quantifica o grau de associação entre duas variáveis~\cite{morettin2010}. A existência de correlação indica que alterações em uma variável tendem a acompanhar alterações na outra. Essa relação é positiva se ambas as variáveis crescem ou decrescem juntas, e negativa se movem em direções opostas. O coeficiente de correlação varia de -1 a 1, onde valores próximos a 1 ou -1 apontam para uma forte correlação positiva ou negativa, respectivamente, e valores próximos a 0 denotam associação fraca ou inexistente. A \autoref{fig:correlation} ilustra esses três cenários, permitindo a observação visual do comportamento das variáveis.
+A correlação é uma métrica estatística que quantifica o grau de associação entre duas variáveis~\cite{morettin2010}. A existência de correlação indica que alterações em uma variável tendem a acompanhar alterações na outra. Essa relação é positiva se ambas as variáveis crescem ou decrescem juntas, e negativa se movem em direções opostas. O coeficiente de correlação varia de -1 a 1, nos quais valores próximos a 1 ou -1 apontam para uma forte correlação positiva ou negativa, respectivamente, e valores próximos a 0 denotam associação fraca ou inexistente. A \autoref{fig:correlation} ilustra esses três cenários, permitindo a observação visual do comportamento das variáveis.
 
 \begin{figure}[htb]
     \caption{Gráfico do cálculo de coeficiente de correlação de Pearson.}
@@ -93,14 +93,14 @@ A correlação é uma métrica estatística que quantifica o grau de associaçã
     \addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Gráfico do cálculo de coeficiente de correlação de Pearson}
 \end{figure}
 
-O cálculo da correlação é comumente realizado pela fórmula do Coeficiente de Correlação de Pearson, apresentado na \autoref{eq:correlation}~\cite{morettin2010}. Nesta equação, $x$ e $y$ representam os valores das variáveis, e $m_x$ e $m_y$ correspondem às suas respectivas médias. A implementação do \textit{benchmark} PolyBench~\cite{polybench} está descrita nos Algoritmos~\ref{alg:correlation_matrix} e~\ref{alg:correlation}.
+O cálculo da correlação é comumente realizado pela fórmula do Coeficiente de Correlação de Pearson, apresentado na \autoref{eq:correlation}~\cite{morettin2010}. Nessa equação, $x$ e $y$ representam os valores das variáveis, e $m_x$ e $m_y$ correspondem às suas respectivas médias. A implementação de correlação do PolyBench~\cite{polybench} está descrita nos Algoritmos~\ref{alg:correlation_matrix} e~\ref{alg:correlation}.
 
 \begin{equation}
     \label{eq:correlation}
     r = \frac{\sum(x - m_x)(y - m_y)}{\sqrt{\sum(x-m_x)^2 \sum(y - m_y)^2}}
 \end{equation}
 
-\begin{algorithm}[htb]
+\begin{sourcecode}[htb]
     \caption{Construção da matriz de correlação.}
     \label{alg:correlation_matrix}
     \hrule
@@ -120,9 +120,9 @@ O cálculo da correlação é comumente realizado pela fórmula do Coeficiente d
     \end{algorithmic}
     \hrule
     \fonte{Adaptado de \citet{polybench}}
-\end{algorithm}
+\end{sourcecode}
 
-\begin{algorithm}[htb]
+\begin{sourcecode}[htb]
     \caption{Cálculo do coeficiente de correlação de Pearson.}
     \label{alg:correlation}
     \hrule
@@ -146,9 +146,9 @@ O cálculo da correlação é comumente realizado pela fórmula do Coeficiente d
     \end{algorithmic}
     \hrule
     \fonte{Adaptado de \citet{polybench}}
-\end{algorithm}
+\end{sourcecode}
 
-O resultado do cálculo de correlação compõe uma matriz simétrica, ilustrada na \autoref{tab:correlation}. Os valores na parte inferior da matriz espelham os da parte superior em relação à diagonal principal. Esta diagonal é preenchida com valores $1.0$, que representam a autocorrelação perfeita de cada variável. A propriedade de simetria permite otimizações no código, pois passa a ser necessário calcular somente parte das iterações, podendo reutilizar os valores para a outra metade da matriz.
+O resultado do cálculo de correlação compõe uma matriz simétrica, ilustrada na \autoref{tab:correlation}. Os valores na parte inferior da matriz espelham os da parte superior em relação à diagonal principal. Essa diagonal é preenchida com valores $1.0$, que representam a autocorrelação perfeita de cada variável. A propriedade de simetria permite otimizações no código, pois passa a ser necessário calcular somente parte das iterações, podendo reutilizar os valores para a outra metade da matriz.
 
 \begin{table}[htb]
     \caption{Representação da correlação entre as diferentes variáveis.}
@@ -170,13 +170,13 @@ O resultado do cálculo de correlação compõe uma matriz simétrica, ilustrada
     \label{tab:correlation}
 \end{table}
 
-O \autoref{alg:correlation_matrix} explora essa propriedade de simetria. As anotações de paralelização foram inseridas nesta mesma região do código, especificamente no laço de repetição mais externo. A cláusula \texttt{perfo} foi adicionada a este laço. Já as diretivas \texttt{fastmath} e \texttt{memo} foram aplicadas no cálculo detalhado no \autoref{alg:correlation}, ambas aplicadas externamente ao laço.
+O \autoref{alg:correlation_matrix} explora essa propriedade de simetria. As anotações de paralelização foram inseridas nesta mesma região do código, especificamente no laço de repetição da linha 1. A cláusula \texttt{perfo} foi adicionada a este mesmo laço. Já as diretivas \texttt{fastmath} e \texttt{memo} foram aplicadas no cálculo detalhado no \autoref{alg:correlation}, ambas aplicadas externamente ao laço de repetição da linha 6.
 
 \subsection{Deriche}\label{subsec:deriche}
 
-No processamento de imagens, o algoritmo de Deriche aplica uma filtragem recursiva para suavização e detecção de bordas~\cite{deriche1987}. O método surgiu como uma otimização do detector de Canny. O objetivo principal é aproximar as propriedades de um filtro Gaussiano por meio de um filtro \gls{iir}.
+No processamento de imagens, o algoritmo de Deriche aplica uma filtragem recursiva para suavização e detecção de bordas~\cite{deriche1987}. O método surgiu como uma otimização do detector de Canny. O objetivo é aproximar as propriedades de um filtro Gaussiano por meio de um filtro \gls{iir}.
 
-\begin{algorithm}[H]
+\begin{sourcecode}[H]
     \caption{Algoritmo Deriche de suavização 2D.}
     \label{alg:deriche}
     \hrule
@@ -243,7 +243,7 @@ No processamento de imagens, o algoritmo de Deriche aplica uma filtragem recursi
     \end{algorithmic}
     \hrule
     \fonte{Adaptado de \citet{polybench}}
-\end{algorithm}
+\end{sourcecode}
 
 Diferente de abordagens baseadas em janelas de convolução fixas, o filtro de Deriche armazena e reaproveita os cálculos intermediários de \textit{pixels} vizinhos. Por ser um filtro separável, a operação bidimensional ocorre em etapas unidimensionais independentes. A implementação processa a imagem primeiramente na vertical em ambos os sentidos, e em seguida, processa a matriz na horizontal, também em ambos os sentidos. Essa abordagem proporciona uma suavização eficiente do ruído enquanto preserva as bordas estruturais.
 
@@ -259,7 +259,7 @@ O parâmetro $\alpha$ controla a intensidade da suavização. Ele ajusta o equil
     y^2_{ij} = a_3x_{ij + 1} + a_4x_{ij + 2} + b_1y^2_{ij + 1} + b_2y^2_{ij + 2}
 \end{equation}
 
-A \autoref{fig:deriche} demonstra o efeito prático do filtro utilizando o coeficiente $\alpha = 1.5$. A \autoref{subfig:sunflower_orig} apresenta a entrada original em escala de cinza, enquanto a \autoref{subfig:sunflower_deri} exibe a saída do processamento. O filtro atenua as texturas da imagem, o que facilita o processo computacional de identificar os contornos primários na etapa posterior.
+A Figura~\ref{fig:deriche} demonstra o efeito prático do filtro utilizando o coeficiente $\alpha = 1.5$. A Figura~\ref{subfig:sunflower_orig} apresenta a entrada original em escala de cinza, enquanto a Figura~\ref{subfig:sunflower_deri} exibe a saída do processamento. O filtro atenua as texturas da imagem, o que facilita o processo computacional de identificar os contornos primários na etapa posterior.
 
 \begin{figure}[htb]
     \caption{Aplicação do filtro de Deriche.}
@@ -277,7 +277,7 @@ A \autoref{fig:deriche} demonstra o efeito prático do filtro utilizando o coefi
     \label{fig:deriche}
 \end{figure}
 
-A implementação avaliada segue o padrão do conjunto PolyBench~\cite{polybench}. É importante ressaltar que este \textit{benchmark} foca estritamente no \textit{kernel} de suavização \gls{iir}, omitindo os passos de detecção de borda. O \autoref{alg:deriche} detalha a lógica exata utilizada nos testes. Para paralelizar a aplicação, definiu-se uma única região \texttt{OpenMP} que engloba as quatro fases de varredura. A cláusula \texttt{perfo} foi aplicada nos laços externos de cada uma das fases. A cláusula \texttt{fastmath} foi aplicada externamente englobando todas as demais regiões de código. Por fim a \texttt{memo} foi aplicada internamente aos laços internos de cada uma das varreduras.
+A implementação avaliada segue o padrão do conjunto PolyBench~\cite{polybench}. Este \textit{benchmark} foca estritamente no \textit{kernel} de suavização \gls{iir}, omitindo os passos de detecção de borda. O \autoref{alg:deriche} detalha a lógica exata utilizada nos testes. Para paralelizar a aplicação, definiu-se uma única região \texttt{OpenMP} que engloba as quatro fases de varredura. A cláusula \texttt{perfo} foi aplicada nos laços externos de cada uma das fases. A cláusula \texttt{fastmath} foi aplicada externamente englobando todas as demais regiões de código. Por fim a \texttt{memo} foi aplicada no corpo dos laços internos de cada uma das varreduras.
 
 \subsection{Jacobi 2D}\label{subsec:jacobi2d}
 
@@ -300,10 +300,10 @@ Esse algoritmo foi selecionado do conjunto de Polybench~\cite{polybench} e adota
 	\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Execução do algoritmo de estêncil}
 \end{figure}
 
-O Jacobi 2D é uma aplicação do método de Jacobi adaptado para problemas em duas dimensões. Sua implementação se baseia em um algoritmo de estêncil, no qual cada ponto de uma malha bidimensional é atualizado com base na média artimética dos seus quatro vizinhos imediatos (acima, abaixo, esquerda e a direita), como mostra a \autoref{fig:jacobi2d}. Após um número suficiente de iterações, a malha converge para uma configuração estável que representa uma aproximação da solução contínua do problema. O \autoref{alg:jacobi2d} apresenta a implementação utilizada pelo \textit{benchmark}.
+O Jacobi 2D é uma aplicação do método de Jacobi adaptado para problemas em duas dimensões. Sua implementação se baseia em um algoritmo de estêncil, no qual cada ponto de uma malha bidimensional é atualizado com base na média artimética dos seus quatro vizinhos imediatos (acima, abaixo, esquerda e direita), como mostra a \autoref{fig:jacobi2d}. Após um número suficiente de iterações, a malha converge para uma configuração estável que representa uma aproximação da solução contínua do problema. O \autoref{alg:jacobi2d} apresenta a implementação utilizada pelo \textit{benchmark}.
 
-\begin{algorithm}[htb]
-	\caption{Método de Jacobi em duas dimensões}
+\begin{sourcecode}[htb]
+	\caption{Método de Jacobi em duas dimensões.}
 	\label{alg:jacobi2d}
 	\hrule
 	\begin{algorithmic}[1]
@@ -324,18 +324,18 @@ O Jacobi 2D é uma aplicação do método de Jacobi adaptado para problemas em d
 	\end{algorithmic}
 	\hrule
 	\fonte{Adaptado do \citet{polybench}}
-\end{algorithm}
+\end{sourcecode}
 
-O \autoref{alg:jacobi2d} apresenta dependência sequencial entre as etapas de atualização, dificultando a paralelização total. Para contornar isso, a paralelização foi aplicada no laço mais externo, permitindo que cada etapa de varredura seja executada em paralelo. Já os laços internos foram anotados com diretivas \texttt{for} de modo a dividir o trabalho entre as \textit{threads} e sincronizá-las, assegurando que os dados produzidos em uma etapa estejam disponíveis antes da próxima atualização.
+O \autoref{alg:jacobi2d} apresenta dependência sequencial entre as etapas de atualização, dificultando a paralelização total. Para contornar essa dependência, a paralelização foi aplicada no laço mais externo, permitindo que cada etapa de varredura seja executada em paralelo. Já os laços internos foram anotados com diretivas \texttt{for} de modo a dividir o trabalho entre as \textit{threads} e sincronizá-las, assegurando que os dados produzidos em uma etapa estejam disponíveis antes da próxima atualização.
 
-A cláusula \texttt{perfo} foi aplicada diretamente nas diretivas \texttt{for} dos dois laços intermediários. A \texttt{fastmath} foi aplicada em todo o bloco de código. E por fim a cláusula \texttt{memo} foi aplicado de modo a memoizar a região interna do laço mais interno.
+A cláusula \texttt{perfo} foi aplicada diretamente nas diretivas \texttt{for} dos dois laços intermediários. A \texttt{fastmath} foi aplicada em todo o bloco de código. E por fim a cláusula \texttt{memo} foi aplicada de modo a memoizar o corpo dos laços da linha 3 e 8.
 
 \subsection{K-means}\label{subsec:kmeans}
 
-O algoritmo K-means~\cite{macqueen1967} é uma técnica de aprendizado não supervisionado. Seu objetivo principal é particionar um conjunto de dados em $k$ grupos, garantindo que os elementos de cada grupo sejam similares entre si.
+O algoritmo K-means~\cite{macqueen1967} é uma técnica de aprendizado não supervisionado. Seu objetivo é particionar um conjunto de dados em $k$ grupos, garantindo que os elementos de cada grupo sejam similares entre si.
 
-\begin{algorithm}[htb!]
-    \caption{Algoritmo K-means}
+\begin{sourcecode}[htb!]
+    \caption{Algoritmo K-means.}
     \label{alg:kmeans}
     \hrule
     \begin{algorithmic}[1]
@@ -393,13 +393,13 @@ O algoritmo K-means~\cite{macqueen1967} é uma técnica de aprendizado não supe
         \RETURN $centroids$
     \end{algorithmic}
     \hrule
-    \fonte{Adaptado de \citet{polybench}}
-\end{algorithm}
+    \fonte{Adaptado de \citet{rodinia}}
+\end{sourcecode}
 
-O método define inicialmente $k$ centroides, que atuam como pontos de referência no espaço de características (\texttt{features}). Cada ponto do conjunto de dados é associado ao centroide mais próximo utilizando uma métrica de distância. Após a etapa de atribuição, o algoritmo atualiza a posição de cada centroide calculando a média das coordenadas dos pontos pertencentes ao seu respectivo grupo. A \autoref{fig:kmeans} demonstra a evolução espacial desse processo. Os triângulos representam os centroides, os círculos indicam os dados e as áreas coloridas demarcam as fronteiras dos agrupamentos formados.
+O método define inicialmente $k$ centroides, que atuam como pontos de referência no espaço de características (\texttt{features}). Cada ponto do conjunto de dados é associado ao centroide mais próximo utilizando a distância euclidiana. Após a etapa de atribuição, o algoritmo atualiza a posição de cada centroide calculando a média das coordenadas dos pontos pertencentes ao seu respectivo grupo. A \autoref{fig:kmeans} demonstra a evolução espacial desse processo. Os triângulos representam os centroides, os círculos indicam os dados e as áreas coloridas demarcam as fronteiras dos agrupamentos formados.
 
 \begin{figure}[htb]
-    \caption{Agrupamentos ao longo das iterações do algoritmo K-means}
+    \caption{Agrupamentos ao longo das iterações do algoritmo K-means.}
     \centering
     \includegraphics[scale=0.7]{figuras/kmeans.png}
     \label{fig:kmeans}
@@ -409,10 +409,10 @@ O método define inicialmente $k$ centroides, que atuam como pontos de referênc
 
 O processo de agrupamento ocorre de forma iterativa. Os dados são reagrupados a cada atualização dos centroides. A execução termina quando o sistema atinge o critério de convergência. Esse critério pode ser um limite máximo de iterações (\texttt{iterations}) ou uma variação na posição dos centroides inferior a um limiar específico (\texttt{threshold}). O \autoref{alg:kmeans}~\cite{rodinia} detalha a lógica geral da aplicação, abrangendo a inicialização dos centroides, a atribuição dos pontos, a atualização das coordenadas médias e a verificação de parada.
 
-Para determinar a qual agrupamento um ponto pertence, o algoritmo invoca a função de cálculo de distância \texttt{find\_nearest\_point}, detalhada no \autoref{alg:find_nearest_point}. A função compara iterativamente as características de um ponto com as de todos os centroides disponíveis. Visando otimizar o desempenho computacional, a implementação utiliza a distância euclidiana ao quadrado, omitindo a operação de raiz quadrada, uma vez que a relação de grandeza entre as distâncias permanece inalterada. O laço interno acumula a diferença quadrática de cada característica. Sempre que o algoritmo encontra uma distância menor que o menor valor registrado até o momento (\texttt{minDist}), ele atualiza o índice do centroide correspondente.
+Para determinar a qual agrupamento um ponto pertence, o algoritmo invoca a função de cálculo de distância \texttt{find\_nearest\_point}, detalhada no \autoref{alg:find_nearest_point}. A função compara iterativamente as características de um ponto com as de todos os centroides disponíveis. Visando otimizar o desempenho computacional, a implementação utiliza a distância euclidiana ao quadrado, omitindo a operação de raiz quadrada, uma vez que a relação de grandeza entre as distâncias permanece inalterada. O laço interno acumula a diferença quadrática de cada característica. Sempre que o algoritmo encontra uma distância menor que o menor valor registrado até o momento (\texttt{minDist}), ele atualiza o índice do centróide correspondente.
 
-\begin{algorithm}[htb!]
-    \caption{Função \texttt{find\_nearest\_point}}
+\begin{sourcecode}[htb!]
+    \caption{Função \texttt{find\_nearest\_point}.}
     \label{alg:find_nearest_point}
     \hrule
     \begin{algorithmic}[1]
@@ -441,9 +441,9 @@ Para determinar a qual agrupamento um ponto pertence, o algoritmo invoca a funç
         \RETURN $index$
     \end{algorithmic}
     \hrule
-\end{algorithm}
+\end{sourcecode}
 
-As anotações do \texttt{OpenMP} foram aplicadas nos laços intermedários ao laço que itera sobre os dados, focando no laço principal que mapeia os pontos de dados (\texttt{numPoints}) e no laço que consolida as coordenadas dos agrupamentos (\texttt{numClusters}), apresentado no \autoref{alg:kmeans}. A cláusula \texttt{perfo} foi aplicada nesses laços. A cláusula \texttt{fastmath} foi aplicada sobre o \autoref{alg:find_nearest_point}. E o \texttt{memo} foi aplicado internamente ao laço que mapeias os pontos de dados, memoizando os resultados retornados pela função \texttt{find\_nearest\_point}.
+As anotações do \texttt{OpenMP} foram aplicadas nos laços das linhas 13 e 24, focando no laço principal que mapeia os pontos de dados (\texttt{numPoints}) e no laço que consolida as coordenadas dos agrupamentos (\texttt{numClusters}), apresentados no \autoref{alg:kmeans}. A cláusula \texttt{perfo} também foi aplicada nesses laços. A cláusula \texttt{fastmath} foi aplicada sobre todo \autoref{alg:find_nearest_point}. E \texttt{memo} foi aplicada internamente ao laço da linha 13, memoizando os resultados retornados pela função \texttt{find\_nearest\_point}.
 
 \subsection{Mandelbrot}\label{subsec:mandelbrot}
 
@@ -463,7 +463,7 @@ O conjunto de Mandelbrot é bidimensional e definido no plano dos números compl
     z_{n + 1} = z_n^{2} + c
 \end{equation}
 
-Para gerar a representação visual do conjunto, mapeia-se cada \textit{pixel} de uma imagem para um número complexo $c$. As regiões do plano onde $c$ pertence ao conjunto recebem então uma representação visual específica. Os valores de $c$ são selecionados dentro de um retângulo no plano complexo. A parte real fica no intervalo $[-2, 1]$ e a parte imaginária no intervalo $[-1.5, 1.5]$. A conversão das coordenadas dos \textit{pixels} para o plano complexo utiliza as Equações~\ref{eq:mandelbrot-cx} e~\ref{eq:mandelbrot-cy}. Nessas equações, $p_x$ e $p_y$ representam as coordenadas do \textit{pixel}. Os parâmetros $x_{\text{min}}$ e $x_{\text{max}}$ definem o domínio da parte real, enquanto $y_{\text{min}}$ e $y_{\text{max}}$ definem o domínio da parte imaginária.
+Para gerar a representação visual do conjunto, mapeia-se cada \textit{pixel} de uma imagem para um número complexo $c$. As regiões do plano nas quais $c$ pertence ao conjunto recebem então uma representação visual específica. Os valores de $c$ são selecionados dentro de um retângulo no plano complexo. A parte real fica no intervalo $[-2, 1]$ e a parte imaginária no intervalo $[-1.5, 1.5]$. A conversão das coordenadas dos \textit{pixels} para o plano complexo utiliza as Equações~\ref{eq:mandelbrot-cx} e~\ref{eq:mandelbrot-cy}. Nessas equações, $p_x$ e $p_y$ representam as coordenadas do \textit{pixel}. Os parâmetros $x_{\text{min}}$ e $x_{\text{max}}$ definem o domínio da parte real, enquanto $y_{\text{min}}$ e $y_{\text{max}}$ definem o domínio da parte imaginária.
 
 \begin{equation}
     \label{eq:mandelbrot-cx}
@@ -477,8 +477,8 @@ Para gerar a representação visual do conjunto, mapeia-se cada \textit{pixel} d
 
 Os valores $c_x$ e $c_y$ alimentam as iterações de Mandelbrot. O algoritmo testa cada ponto da imagem. Se a sequência $z_n$ não divergir após um limite máximo de iterações, o \textit{pixel} correspondente recebe cor. A \autoref{fig:mandelbrot} mostra uma visualização clássica do conjunto. O \autoref{alg:mandelbrot}~\cite{debianBenchmarksGame} detalha o cálculo matemático, e o \autoref{alg:mandelbrot-image} descreve a rotina para desenhar a imagem.
 
-\begin{algorithm}[htb]
-    \caption{Cálculo do conjunto de Mandelbrot}
+\begin{sourcecode}[htb]
+    \caption{Cálculo do conjunto de Mandelbrot.}
     \label{alg:mandelbrot}
     \hrule
     \begin{algorithmic}[1]
@@ -494,10 +494,10 @@ Os valores $c_x$ e $c_y$ alimentam as iterações de Mandelbrot. O algoritmo tes
     \end{algorithmic}
     \hrule
     \fonte{Adaptado de \citet{debianBenchmarksGame}}
-\end{algorithm}
+\end{sourcecode}
 
-\begin{algorithm}[htb]
-    \caption{Geração da imagem do conjunto de Mandelbrot}
+\begin{sourcecode}[htb]
+    \caption{Geração da imagem do conjunto de Mandelbrot.}
     \label{alg:mandelbrot-image}
     \hrule
     \begin{algorithmic}[1]
@@ -527,13 +527,13 @@ Os valores $c_x$ e $c_y$ alimentam as iterações de Mandelbrot. O algoritmo tes
     \end{algorithmic}
     \hrule
     \fonte{Adaptado de \citet{debianBenchmarksGame}}
-\end{algorithm}
+\end{sourcecode}
 
 As diretivas de compilação foram inseridas no laço mais externo do algoritmo de geração de imagem (\autoref{alg:mandelbrot-image}). A cláusula \texttt{perfo} também foi adicionada a essa região. Em contraste, as cláusulas \texttt{fastmath} e \texttt{memo} foram aplicadas para cobrir todo o laço do \autoref{alg:mandelbrot}.
 
 \subsection{PI de Monte Carlo}\label{subsec:pi}
 
-O método de Monte Carlo engloba algoritmos estatísticos que aplicam amostragem aleatória para solucionar problemas determinísticos ou estimar valores numéricos~\cite{morettin2010}. Sua principal característica é a geração de entradas aleatórias num domínio previamente definido, seguido da aplicação de uma regra ou função para computar a saída, cujo resultado é então agregado para formar uma estimativa.
+O método de Monte Carlo engloba algoritmos estatísticos que aplicam amostragem aleatória para solucionar problemas determinísticos ou estimar valores numéricos~\cite{morettin2010}. Sua principal característica é a geração de entradas aleatórias em um domínio previamente definido, seguido da aplicação de uma regra ou função para computar a saída, cujo resultado é então agregado para formar uma estimativa.
 
 \begin{equation}
 \label{eq:area_circle}
@@ -566,8 +566,8 @@ A aplicação do método para estimar $\pi$ é intuitiva. Considere um círculo 
 \addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Método de Monte Carlo.}
 \end{figure}
 
- \begin{algorithm}[htb]
-    \caption{Cálculo de PI pelo método de Monte Carlo}
+ \begin{sourcecode}[htb]
+    \caption{Cálculo de PI pelo método de Monte Carlo.}
     \label{alg:pi}
     \hrule
     \begin{algorithmic}[1]
@@ -586,7 +586,7 @@ A aplicação do método para estimar $\pi$ é intuitiva. Considere um círculo 
     \end{algorithmic}
     \hrule
     \fonte{}
-\end{algorithm} 
+\end{sourcecode} 
 
 O domínio de amostragem corresponde à área do quadrado. O algoritmo gera múltiplos pontos aleatórios dentro desse limite. Para cada coordenada ($x$,$y$), calcula-se então a distância até a origem. O ponto pertence ao círculo se a distância for menor ou igual a 1. A \autoref{eq:pi_monte} demonstra que a estimativa de $\pi$ equivale a razão entre a quantidade de pontos contidos no círculo e o total de pontos gerados, mulltiplicados por 4. A \autoref{fig:pi} ilustra o processo de amostragem. O \autoref{alg:pi} detalha a implementação adotada no \textit{benchmark}.
 
@@ -674,7 +674,7 @@ A alta variabilidade dos ciclos ocorre porque o \texttt{perf} contabiliza o esfo
 \section{Resumo do conjunto de aplicações}\label{sec:resumo_exp}
 \begin{table}[H]
     \centering
-    \caption{Resumo das aplicações utilizadas nos experimentos e seus respectivos tamanhos de entrada}
+    \caption{Resumo das aplicações utilizadas nos experimentos e seus respectivos tamanhos de entrada.}
     \begin{tabular}{|l|p{2.4cm}|l|p{4.2cm}|l|}
         \hline
         \textbf{Aplicação} & \textbf{Fonte}                                     & \textbf{Domínio}            & \textbf{Entrada}                                                   & \textbf{Métrica} \\
