@@ -14,15 +14,17 @@ Os experimentos foram conduzidos em um computador com processador Intel Core i7-
 \addcontentsline{loge}{figure}{\protect\numberline{\thefigure}Especificação do computador utilizado na avaliação experimental.}
 \end{figure}
 
-As aplicações foram executadas com 1, 2, 4 e 8 \textit{threads}. Cada configuração executada 10 vezes para e mitigar o impacto de anomalias de execução. O ambiente foi configurado com a variável \texttt{OMP\_PROC\_BIND="TRUE"} para fixar as \textit{threads} aos núcleos físicos e \texttt{OMP\_APPROX="TRUE"} para ativar as rotinas de computação aproximada. Algoritmos dependentes de números aleatórios utilizaram sementes fixas, o que garante a reprodutibilidade dos dados.
+As aplicações foram executadas com 1, 2, 4 e 8 \textit{threads}. Cada configuração executada 10 vezes para e mitigar o impacto de anomalias de execução. O ambiente foi configurado com a variável \texttt{OMP\_PROC\_BIND="TRUE"} para fixar as \textit{threads} aos núcleos físicos e \texttt{OMP\_APPROX="TRUE"} para ativar as rotinas de computação aproximada. Regiões que utilizaram da cláusula \texttt{for} foram executadas com o escalonamento estático. Algoritmos dependentes de números aleatórios utilizaram sementes fixas, o que garante a reprodutibilidade dos dados.
 
-O conjunto de \textit{benchmarks} foi testado isoladamente com cinco técnicas de aproximação: \texttt{fastmath}, \texttt{perfo\_init}, \texttt{perfo\_fini}, \texttt{perfo\_large} e \texttt{memo}, as aplicações que foram utilizadas estão disponíveis no repositório do projeto~\footnote{Disponível em: https://github.com/Victor-Briganti/approx-benchmark}. A técnica \texttt{perfo\_large} foi testado com uma taxa de descarte de 10, 20, 30, 40 e 50. A \texttt{perfo\_init} e \texttt{perfo\_fini} foram avaliadas com um nível de descarte de 10, 100, 500 e 1000. Já a técnica \texttt{memo} operou com taxas de 10, 25, 50 e 100. A diretiva \texttt{fastmath} não possui parâmetros de configuração. Todos os códigos foram compilados com a \textit{flag} \texttt{-O3} para maximizar o desempenho base. Como as modificações de aproximação acontecem apenas na fase de geração de código ou em tempo de execução, as otimizações do compilador não interferem na semântica das técnicas avaliadas, o que preserva o comportamento esperado.
+O conjunto de \textit{benchmarks} foi testado isoladamente com cinco técnicas de aproximação: \texttt{fastmath}, \texttt{perfo\_init}, \texttt{perfo\_fini}, \texttt{perfo\_large} e \texttt{memo}, as aplicações que foram utilizadas estão disponíveis no repositório do projeto~\footnote{Disponível em: https://github.com/Victor-Briganti/approx-benchmark}. A técnica \texttt{perfo\_large} foi testado com uma taxa de descarte de 10, 20, 30, 40 e 50. A \texttt{perfo\_init} e \texttt{perfo\_fini} foram avaliadas com um nível de descarte de 10, 100, 500 e 1000. Cabe ressaltar que os parâmetros fornecidos para as abordagens \texttt{perfo} não representam porcentagens, mas sim valores absolutos que indicam a quantidade exata de iterações do laço que serão descartadas. Já a técnica \texttt{memo} operou com taxas de 10, 25, 50 e 100. A escolha desses parâmetros teve como objetivo representar diferentes níveis de agressividade para cada técnica, permitindo observar o comportamento e a degradação das aplicações sob variadas intensidades de aproximação. A diretiva \texttt{fastmath} não possui parâmetros de configuração. Todos os códigos foram compilados com a \textit{flag} \texttt{-O3} para maximizar o desempenho base. Como as modificações de aproximação acontecem apenas na fase de geração de código ou em tempo de execução, as otimizações do compilador não interferem na semântica das técnicas avaliadas, o que preserva o comportamento esperado.
 
-A versão exata do algoritmo, executada com \texttt{OpenMP} e uma única \textit{thread}, serviu como \textit{baseline} para as métricas de desempenho. A coleta das informações ocorreu por meio da ferramenta \texttt{perf}. O cálculo das métricas de qualidade também adotou como referência a execução exata da aplicação, sem o uso de diretivas de aproximação.
+A medição do desempenho das aplicações foi realizada com base no tempo total de execução, utilizando a ferramenta \texttt{perf} para a coleta dessas informações. A versão exata do algoritmo, executada com \texttt{OpenMP} e uma única \textit{thread}, foi utilizada como \textit{baseline} tanto para as métricas de desempenho quanto para as métricas de qualidade, estas últimas calculadas a partir da comparação com a execução sem o uso de diretivas de aproximação.
+
+Além das medições de tempo, a identificação das regiões quentes de código foi conduzida com o auxílio do \texttt{valgrind}, por meio da análise da quantidade de ciclos consumidos em diferentes trechos da aplicação. Embora ciclos de processador representem uma métrica mais detalhada do custo computacional interno, a utilização do \texttt{perf} em aplicações paralelas não fornece uma maneira simples de identificar o consumo de ciclos individual de cada \textit{thread}, especialmente considerando que os ciclos são acumulados entre elas. Dessa forma, o tempo de execução foi adotado como principal métrica de desempenho para a comparação entre as versões das aplicações, enquanto a análise de regiões quentes utilizou ciclos de processador para identificar regiões de maior custo computacional.
 
 \section{Conjunto de \textit{Benchmarks}}\label{sec:benchmark}
 
-A seleção das aplicações que compõem o conjunto de benchmarks teve como principais critérios a tolerância a erros e a estrutura do algoritmo. Buscou-se contemplar uma gama ampla de domínios, incluindo \textit{machine learning}, álgebra linear, modelos estatísticos e multimídia. Outro objetivo foi preservar ao máximo o código original durante a inserção das regiões paralelizadas, evitando modificações significativas na implementação. As aplicações 2MM, Correlação, Deriche e Jacobi 2D foram obtidas a partir do conjunto PolyBench~\cite{polybench}, K-Means foi obtida a partir do Rodinia~\cite{rodinia} e o Mandelbrot e PI de Monte Carlo foram adaptações do Debian Benchmarks Game~\cite{debianBenchmarksGame}.
+A seleção das aplicações que compõem o conjunto de benchmarks teve como principais critérios a tolerância a erros e a estrutura do algoritmo. Buscou-se contemplar uma gama ampla de domínios, incluindo \textit{machine learning}, álgebra linear, modelos estatísticos e multimídia. Outro objetivo foi preservar ao máximo o código original durante a inserção das regiões paralelizadas, evitando modificações significativas na implementação. As aplicações 2MM, Correlação, Deriche e Jacobi 2D foram obtidas a partir do conjunto PolyBench~\cite{polybench}, K-Means foi obtida a partir do Rodinia~\cite{rodinia} e o Mandelbrot e PI de Monte Carlo foram adaptações do Debian Benchmarks Game~\cite{debianBenchmarksGame}. Em relação à precisão dos dados, o tipo padrão adotado foi o \texttt{double}, com exceção do Deriche e do K-Means, que operam com \texttt{float}. Esse tipo padrão foi definido, com o objetivo de submeter as aplicações a um ambiente de alta carga computacional.
 
 \subsection{2MM}\label{subsec:2mm}
 
@@ -76,7 +78,9 @@ O algoritmo empregado segue o padrão clássico~\cite{axler2015} descrito na \au
 	\fonte{Adaptado de \citet{polybench}}
 \end{sourcecode}
 
-O programa executa as duas multiplicações em sequência. Para reduzir o custo de criação de regiões paralelas, definiu-se uma única região que abrange ambas as operações. Esta mesma região serviu para a aplicação das técnicas de computação aproximada. Na abordagem \texttt{fastmath}, a região englobou toda a operação. A cláusula \texttt{perfo}, foi aplicada junto a diretiva \texttt{parallel for} englobando o laço mais externo. Por fim o \texttt{memo} foi aplicado no laço interno (\texttt{k}), memoizando cada iteração. 
+O programa executa duas multiplicações de matrizes em sequência. A partir do perfilamento da aplicação, identificou-se que a multiplicação de matrizes corresponde à região computacionalmente mais intensa, consumindo aproximadamente 54\% dos ciclos de execução, enquanto a etapa de saída dos dados é responsável por cerca de 44\%. Com base nesse perfil, a multiplicação foi selecionada como região alvo para anotação com \texttt{OpenMP}.
+
+Para reduzir o \textit{overhead} associado à criação de regiões paralelas, utilizou-se uma única região paralela aplicada ao laço da linha 1, que também serviu como escopo para as técnicas de computação aproximada. Na \texttt{fastmath}, a aproximação foi aplicada sobre toda a operação; a cláusula \texttt{perfo} também foi inserida nessa região; por fim, a técnica \texttt{memo} foi empregada na linha 4, memoizando cada interação de $k$.
 
 Além da paralelização, outra otimização aplicada foi a alocação contígua de memória. Esta técnica também aparece nas outras aplicações que realizam cálculos em matrizes. Em vez de criar um bloco de memória separado para cada linha, o programa aloca um único espaço contínuo. Esta estratégia reduz o número de chamadas de alocação e melhora a localidade espacial.
 
@@ -93,7 +97,7 @@ A correlação é uma métrica estatística que quantifica o grau de associaçã
     \addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Gráfico do cálculo de coeficiente de correlação de Pearson}
 \end{figure}
 
-O cálculo da correlação é comumente realizado pela fórmula do Coeficiente de Correlação de Pearson, apresentado na \autoref{eq:correlation}~\cite{morettin2010}. Nessa equação, $x$ e $y$ representam os valores das variáveis, e $m_x$ e $m_y$ correspondem às suas respectivas médias. A implementação de correlação do PolyBench~\cite{polybench} está descrita nos Algoritmos~\ref{alg:correlation_matrix} e~\ref{alg:correlation}.
+O cálculo da correlação é comumente realizado pela fórmula do Coeficiente de Correlação de Pearson, apresentado na \autoref{eq:correlation}~\cite{morettin2010}. Nessa equação, $x$ e $y$ representam os valores das variáveis, e $m_x$ e $m_y$ correspondem às suas respectivas médias. A implementação de correlação do PolyBench~\cite{polybench} está descrita nos  Códigos~\ref{alg:correlation_matrix} e~\ref{alg:correlation}.
 
 \begin{equation}
     \label{eq:correlation}
@@ -170,7 +174,7 @@ O resultado do cálculo de correlação compõe uma matriz simétrica, ilustrada
     \label{tab:correlation}
 \end{table}
 
-O \autoref{alg:correlation_matrix} explora essa propriedade de simetria. As anotações de paralelização foram inseridas nesta mesma região do código, especificamente no laço de repetição da linha 1. A cláusula \texttt{perfo} foi adicionada a este mesmo laço. Já as diretivas \texttt{fastmath} e \texttt{memo} foram aplicadas no cálculo detalhado no \autoref{alg:correlation}, ambas aplicadas externamente ao laço de repetição da linha 6.
+O perfilamento dessa implementação mostrou que os dois códigos apresentados estavam consumindo cerca de 47\% dos ciclos. Visando melhor dividir a carga de trabalho as anotações de paralelização foram inseridas no laço de repetição da linha 1 do \autoref{alg:correlation_matrix}. A cláusula \texttt{perfo} foi adicionada a este mesmo laço. Já as diretivas \texttt{fastmath} e \texttt{memo} foram aplicadas no cálculo detalhado no \autoref{alg:correlation}, ambas aplicadas externamente ao laço de repetição da linha 6.
 
 \subsection{Deriche}\label{subsec:deriche}
 
@@ -185,7 +189,6 @@ No processamento de imagens, o algoritmo de Deriche aplica uma filtragem recursi
         \REQUIRE Coeficiente de suavização $\alpha$
         \STATE $I_{out} \gets$ nova Matriz $h \times w$ preenchida com zeros
 
-        \COMMENT{Cálculo dos coeficientes de suavização}
         \STATE $k \gets \frac{(1 - e^{-\alpha})^2}{1 + 2\alpha e^{-\alpha} - e^{-2\alpha}}$
         \STATE $a_1 \gets k$
         \STATE $a_2 \gets k \cdot e^{-\alpha} \cdot (\alpha - 1)$
@@ -195,7 +198,6 @@ No processamento de imagens, o algoritmo de Deriche aplica uma filtragem recursi
         \STATE $b_1 \gets 2^{- \alpha}$
         \STATE $b_2 \gets -e^{-2\alpha}$
 
-        \COMMENT{Varredura Vertical (Cima para Baixo)}
         \FOR{$i = 0$ até $w - 1$, com passo $1$}
         \STATE $xm_1 \gets 0$, $ym_1 \gets 0$, $ym_2 \gets 0$
         \FOR{$j = 0$ até $h - 1$, com passo $1$}
@@ -206,7 +208,6 @@ No processamento de imagens, o algoritmo de Deriche aplica uma filtragem recursi
         \ENDFOR
         \ENDFOR
 
-        \COMMENT{Varredura Vertical (Baixo para Cima)}
         \FOR{$i = 0$ até $w - 1$, com passo $1$}
         \STATE $xp_1 \gets 0$, $xp_2 \gets 0$, $yp_1 \gets 0$, $yp_2 \gets 0$
         \FOR{$j = h - 1$ até $0$, com passo $-1$}
@@ -217,7 +218,6 @@ No processamento de imagens, o algoritmo de Deriche aplica uma filtragem recursi
         \ENDFOR
         \ENDFOR
 
-        \COMMENT{Varredura Horizontal (Esquerda para Direita)}
         \FOR{$j = 0$ até $h - 1$, com passo $1$}
         \STATE $tm_1 \gets 0$, $ym_1 \gets 0$, $ym_2 \gets 0$
         \FOR{$i = 0$ até $w - 1$, com passo $1$}
@@ -228,7 +228,6 @@ No processamento de imagens, o algoritmo de Deriche aplica uma filtragem recursi
         \ENDFOR
         \ENDFOR
 
-        \COMMENT{Varredura Horizontal (Direita para Esquerda)}
         \FOR{$j = 0$ até $h - 1$, com passo $1$}
         \STATE $tp_1 \gets 0$, $tp_2 \gets 0$, $yp_1 \gets 0$, $yp_2 \gets 0$
         \FOR{$i = w - 1$ até $0$, com passo $-1$}
@@ -277,21 +276,17 @@ A Figura~\ref{fig:deriche} demonstra o efeito prático do filtro utilizando o co
     \label{fig:deriche}
 \end{figure}
 
-A implementação avaliada segue o padrão do conjunto PolyBench~\cite{polybench}. Este \textit{benchmark} foca estritamente no \textit{kernel} de suavização \gls{iir}, omitindo os passos de detecção de borda. O \autoref{alg:deriche} detalha a lógica exata utilizada nos testes. Para paralelizar a aplicação, definiu-se uma única região \texttt{OpenMP} que engloba as quatro fases de varredura. A cláusula \texttt{perfo} foi aplicada nos laços externos de cada uma das fases. A cláusula \texttt{fastmath} foi aplicada externamente englobando todas as demais regiões de código. Por fim a \texttt{memo} foi aplicada no corpo dos laços internos de cada uma das varreduras.
+O perfilamento desta aplicação mostrou que as chamadas de função relacionadas ao JPEG consomem a maior parte dos ciclos de execução, superando inclusive o próprio algoritmo de suavização. Apesar disso, como a implementação avaliada é derivada do trabalho presente no PolyBench~\cite{polybench}, que não inclui as chamadas de JPEG, optou-se por utilizar o \textit{kernel} de suavização como a região anotada. O \autoref{alg:deriche} detalha o \textit{kernel} implementado.
+
+Para paralelizar a aplicação, definiu-se uma única região \texttt{OpenMP}, iniciada na linha 10, englobando as quatro fases de varredura do algoritmo. A cláusula \texttt{perfo} foi aplicada aos laços externos das linhas 10, 19, 28 e 37. Já a cláusula \texttt{fastmath} foi aplicada externamente, abrangendo todas as demais regiões de código a partir da linha 10. Por fim, a técnica \texttt{memo} foi empregada no corpo dos laços internos de cada varredura, iniciando nas linhas 13, 22, 31 e 40.
 
 \subsection{Jacobi 2D}\label{subsec:jacobi2d}
 
-Em análise numérica, o método de Jacobi é um algoritmo iterativo utilizado para resolver sistemas de equações lineares do tipo $Ax = b$~\cite{szep2007}. Para que o método funcione adequadamente, o sistema deve atender a algumas condições específicas:
-
-\begin{itemize}
-	\item \textbf{Matriz quadrada:} A matriz dos coeficientes deve ter o mesmo número de linhas e colunas;
-	\item \textbf{Sistema linear:} Não deve haver termos como multiplicação entre variáveis ($xy$), potências superiores a 1 ($x^2$, $y^3$, etc.), nem funções não lineares, como seno, cosseno ou exponenciais ($e^x$);
-	\item \textbf{Diagonal dominante:} Embora não seja uma exigência absoluta, a presença de dominância diagonal na matriz dos coeficientes é altamente recomendada, pois contribui para a garantia de convergência do método. Em sua ausência, o processo iterativo pode apresentar convergência lenta ou até mesmo não convergir.
-\end{itemize}
+Em análise numérica, o método de Jacobi é um algoritmo iterativo utilizado para resolver sistemas de equações lineares do tipo $Ax = b$~\cite{szep2007}. Para que o método funcione adequadamente, o sistema deve atender a algumas condições específicas. A matriz dos coeficientes deve ser quadrada, ou seja, possuir o mesmo número de linhas e colunas. Além disso, o sistema deve ser linear, não podendo conter termos como multiplicação entre variáveis ($xy$), potências superiores a 1 ($x^2$, $y^3$, etc.) ou funções não lineares, como seno, cosseno e exponenciais ($e^x$). Embora não seja uma exigência absoluta, também é recomendável que a matriz apresente dominância diagonal, pois isso contribui para garantir a convergência do método. Na ausência dessa propriedade, o processo iterativo pode apresentar convergência lenta ou até mesmo não convergir
 
 Esse algoritmo foi selecionado do conjunto de Polybench~\cite{polybench} e adotado neste trabalho por sua natureza iterativa e previsível em termos de comportamento computacional. O processo inicia-se com a atribuição de valores iniciais arbitrários ao vetor $x$. Em seguida, realiza-se uma iteração para calcular uma nova estimativa da solução, com base exclusivamente nos valores da iteração anterior. Esses novos valores são utilizados como entrada para a próxima iteração. Esse procedimento é repetido até que a diferença entre iterações consecutivas seja inferior a um limiar de tolerância pré-definido, indicando a convergência para uma solução estável.
 
-\begin{figure}[b]
+\begin{figure}[htb]
 	\caption{Execução do algoritmo de estêncil.}
 	\centering
 	\includegraphics[scale=5]{figuras/jacobi2d.pdf}
@@ -300,7 +295,7 @@ Esse algoritmo foi selecionado do conjunto de Polybench~\cite{polybench} e adota
 	\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Execução do algoritmo de estêncil}
 \end{figure}
 
-O Jacobi 2D é uma aplicação do método de Jacobi adaptado para problemas em duas dimensões. Sua implementação se baseia em um algoritmo de estêncil, no qual cada ponto de uma malha bidimensional é atualizado com base na média artimética dos seus quatro vizinhos imediatos (acima, abaixo, esquerda e direita), como mostra a \autoref{fig:jacobi2d}. Após um número suficiente de iterações, a malha converge para uma configuração estável que representa uma aproximação da solução contínua do problema. O \autoref{alg:jacobi2d} apresenta a implementação utilizada pelo \textit{benchmark}.
+O Jacobi 2D é uma aplicação do método de Jacobi adaptado para problemas em duas dimensões. Sua implementação se baseia em um algoritmo de estêncil, no qual cada ponto de uma malha bidimensional é atualizado com base na média aritmética dos seus quatro vizinhos imediatos (acima, abaixo, esquerda e direita), como mostra a \autoref{fig:jacobi2d}. Após um número suficiente de iterações, a malha converge para uma configuração estável que representa uma aproximação da solução contínua do problema. O \autoref{alg:jacobi2d} apresenta a implementação utilizada pelo \textit{benchmark}.
 
 \begin{sourcecode}[htb]
 	\caption{Método de Jacobi em duas dimensões.}
@@ -326,7 +321,7 @@ O Jacobi 2D é uma aplicação do método de Jacobi adaptado para problemas em d
 	\fonte{Adaptado do \citet{polybench}}
 \end{sourcecode}
 
-O \autoref{alg:jacobi2d} apresenta dependência sequencial entre as etapas de atualização, dificultando a paralelização total. Para contornar essa dependência, a paralelização foi aplicada no laço mais externo, permitindo que cada etapa de varredura seja executada em paralelo. Já os laços internos foram anotados com diretivas \texttt{for} de modo a dividir o trabalho entre as \textit{threads} e sincronizá-las, assegurando que os dados produzidos em uma etapa estejam disponíveis antes da próxima atualização.
+O \autoref{alg:jacobi2d} apresenta dependência sequencial entre as etapas de atualização, dificultando a paralelização total do algoritmo. Além disso, sua carga computacional é semelhante à observada na aplicação 2MM, sendo dominada por operações sobre matrizes, o que faz com que essa etapa concentre a maior parte dos ciclos de execução da aplicação. Para contornar a dependência sequencial, a paralelização foi aplicada no laço mais externo da linha 1, permitindo que cada etapa de varredura seja executada em paralelo. Já os laços internos da linha 2 e 7, foram anotados com as diretivas \texttt{for}, de modo a dividir o trabalho entre as \textit{threads} e sincronizá-las, assegurando que os dados produzidos em uma etapa estejam disponíveis antes da próxima atualização.
 
 A cláusula \texttt{perfo} foi aplicada diretamente nas diretivas \texttt{for} dos dois laços intermediários. A \texttt{fastmath} foi aplicada em todo o bloco de código. E por fim a cláusula \texttt{memo} foi aplicada de modo a memoizar o corpo dos laços da linha 3 e 8.
 
@@ -475,7 +470,7 @@ Para gerar a representação visual do conjunto, mapeia-se cada \textit{pixel} d
     c_y = y_{\text{min}} + \frac{p_y}{\text{altura da imagem}} \cdot (y_{\text{max}} - y_{\text{min}})
 \end{equation}
 
-Os valores $c_x$ e $c_y$ alimentam as iterações de Mandelbrot. O algoritmo testa cada ponto da imagem. Se a sequência $z_n$ não divergir após um limite máximo de iterações, o \textit{pixel} correspondente recebe cor. A \autoref{fig:mandelbrot} mostra uma visualização clássica do conjunto. O \autoref{alg:mandelbrot}~\cite{debianBenchmarksGame} detalha o cálculo matemático, e o \autoref{alg:mandelbrot-image} descreve a rotina para desenhar a imagem.
+Os valores $c_x$ e $c_y$ alimentam as iterações de Mandelbrot. O algoritmo testa cada ponto da imagem. Se a sequência $z_n$ não divergir após um limite máximo de iterações, o \textit{pixel} correspondente recebe a cor preta. A \autoref{fig:mandelbrot} mostra uma visualização clássica do conjunto. O \autoref{alg:mandelbrot}~\cite{debianBenchmarksGame} detalha o cálculo matemático, e o \autoref{alg:mandelbrot-image} descreve a rotina para desenhar a imagem.
 
 \begin{sourcecode}[htb]
     \caption{Cálculo do conjunto de Mandelbrot.}
@@ -529,7 +524,9 @@ Os valores $c_x$ e $c_y$ alimentam as iterações de Mandelbrot. O algoritmo tes
     \fonte{Adaptado de \citet{debianBenchmarksGame}}
 \end{sourcecode}
 
-As diretivas de compilação foram inseridas no laço mais externo do algoritmo de geração de imagem (\autoref{alg:mandelbrot-image}). A cláusula \texttt{perfo} também foi adicionada a essa região. Em contraste, as cláusulas \texttt{fastmath} e \texttt{memo} foram aplicadas para cobrir todo o laço do \autoref{alg:mandelbrot}.
+O perfilamento desta aplicação mostra que o \autoref{alg:mandelbrot} é responsável por aproximadamente 96\% dos ciclos totais de execução. Apesar disso, o algoritmo possui uma instrução \texttt{return} dentro do laço principal, o que não é suportado pelo modelo de paralelização do \texttt{OpenMP}. Em razão dessa limitação, a região paralela escolhida foi o laço da linha 5 do \autoref{alg:mandelbrot-image}. Embora essa não seja a região mais quente da aplicação, essa abordagem evita a criação de uma nova região paralela a cada iteração e permite distribuir entre as \textit{threads} as regiões responsáveis pela maior parte da carga computacional.
+
+Seguindo essa estratégia, a cláusula \texttt{perfo} também foi aplicada a nessa mesma região. E as cláusulas \texttt{fastmath} e \texttt{memo} não apresentam a mesma restrição e, portanto, puderam ser aplicadas sobre todo o bloco do \autoref{alg:mandelbrot}.
 
 \subsection{PI de Monte Carlo}\label{subsec:pi}
 
@@ -595,81 +592,7 @@ O domínio de amostragem corresponde à área do quadrado. O algoritmo gera múl
 \pi \approx 4 \times \frac{\text{pontos dentro do círculo}}{\text{total de pontos}}
 \end{equation}
 
-O algoritmo utilizado para a geração de números pseudoaleatórios foi o \texttt{xorshift128+}~\cite{vigna2017}, escolhido principalmente pela sua simplicidade e velocidade. As anotações de paralelização foram realizadas no laço principal do \autoref{alg:pi}, e todas as diferentes cláusulas foram utilizadas para anotar essa região.
-
-\section{Análise de Desempenho}\label{sec:desempenho}
-
-Para identificar a métrica de desempenho mais adequada, avaliaram-se as aplicações 2MM e K-Means utilizando 1, 2, 4 e 8 \textit{threads}, cada uma delas sendo executada 10 vezes para melhor observar as variações do ambiente. A escolha dessas aplicações baseia-se em seus elevados tempos de execução, característica que evidencia de forma clara o impacto de cada método de medição.
-
-Utilizou-se a ferramenta \texttt{perf} para coletar métricas de baixo nível do \textit{hardware} e do sistema operacional. Os principais eventos monitorados foram o total de ciclos de CPU e o tempo total de execução. A Figura~\ref{subfig:2mm_cycles_avg} e Figura~\ref{subfig:2mm_cycles_std} apresentam a média e o coeficiente de variação dos ciclos para a aplicação 2MM, enquanto a Figura~\ref{subfig:2mm_time_avg} e Figura~\ref{subfig:2mm_time_std} ilustram as mesmas métricas para o tempo de execução. O comportamento do K-Means é detalhado na Figura~\ref{subfig:kmeans_cycles_avg} e Figura~\ref{subfig:kmeans_cycles_std} para os ciclos, e na Figura~\ref{subfig:kmeans_time_avg} e Figura~\ref{subfig:kmeans_time_std} para o tempo de execução.
-
-\begin{figure}[htbp]
-\caption{Medição de ciclos na aplicação 2MM.}
-\centering
-\subfloat[Média de ciclos]{
-\includegraphics[width=0.45\textwidth]{2mm_cycles_avg.pdf}
-\label{subfig:2mm_cycles_avg}
-}
-\hfill
-\subfloat[Coeficiente de variação dos ciclos]{
-\includegraphics[width=0.45\textwidth]{2mm_cycles_std.pdf}
-\label{subfig:2mm_cycles_std}
-}
-\fonte{}
-\label{fig:2mm_cycles}
-\end{figure}
-
-\begin{figure}[htbp]
-\caption{Medição de ciclos na aplicação K-Means.}
-\centering
-\subfloat[Média de ciclos]{
-\includegraphics[width=0.45\textwidth]{kmeans_cycles_avg.pdf}
-\label{subfig:kmeans_cycles_avg}
-}
-\hfill
-\subfloat[Coeficiente de variação dos ciclos]{
-\includegraphics[width=0.45\textwidth]{kmeans_cycles_std.pdf}
-\label{subfig:kmeans_cycles_std}
-}
-\fonte{}
-\label{fig:kmeans_cycles}
-\end{figure}
-
-\begin{figure}[htbp]
-\caption{Medição de tempo na aplicação 2MM.}
-\centering
-\subfloat[Média de tempo]{
-\includegraphics[width=0.45\textwidth]{2mm_time_avg.pdf}
-\label{subfig:2mm_time_avg}
-}
-\hfill
-\subfloat[Coeficiente de variação do tempo]{
-\includegraphics[width=0.45\textwidth]{2mm_time_std.pdf}
-\label{subfig:2mm_time_std}
-}
-\fonte{}
-\label{fig:2mm_time}
-\end{figure}
-
-\begin{figure}[htbp]
-\caption{Medição de tempo na aplicação K-Means.}
-\centering
-\subfloat[Média de tempo]{
-\includegraphics[width=0.45\textwidth]{kmeans_time_avg.pdf}
-\label{subfig:kmeans_time_avg}
-}
-\hfill
-\subfloat[Coeficiente de variação do tempo]{
-\includegraphics[width=0.45\textwidth]{kmeans_time_std.pdf}
-\label{subfig:kmeans_time_std}
-}
-\fonte{}
-\label{fig:kmeans_time}
-\end{figure}
-
-A análise dos resultados indica que as médias do tempo de execução e do número de ciclos apresentam padrões similares em ambas as aplicações. Contudo, o tempo de execução possui um coeficiente de variação significativamente menor. Na aplicação 2MM com 4 e 8 \textit{threads}, a variação do tempo de execução foi praticamente nula. No K-Means com 1 \textit{thread}, o coeficiente de variação dos ciclos atingiu aproximadamente 20\%, enquanto o do tempo de execução manteve-se próximo a 11\%, configurando uma diferença de quase duas vezes.
-
-A alta variabilidade dos ciclos ocorre porque o \texttt{perf} contabiliza o esforço computacional agregado de todos os núcleos. Essa métrica é sensível ao \textit{overhead} de paralelização, à espera ativa (\textit{busy-waiting}) em barreiras de sincronização e às variações de frequência do processador. Como o objetivo desta análise é demonstrar o ganho real de desempenho, adotou-se o tempo total de execução como métrica principal. O número de ciclos é útil para avaliar o custo energético ou a eficiência paralela, mas o tempo de execução reflete a redução do tempo de processamento proporcionada pelas múltiplas \textit{threads} de maneira direta, estável e consistente.
+O algoritmo utilizado para a geração de números pseudoaleatórios foi o \texttt{xorshift128+}~\cite{vigna2017}, escolhido principalmente por sua simplicidade e velocidade. A aplicação apresentada no \autoref{alg:pi} possui estrutura reduzida, sendo o laço principal responsável pela maior parte do tempo de execução. Dessa forma, todas as cláusulas de aproximação foram aplicadas nessa região. A paralelização e a cláusula \texttt{perfo} foram empregadas diretamente no laço principal, enquanto a cláusula \texttt{fastmath} foi aplicada sobre toda a operação realizada nessa região. Por fim, a técnica \texttt{memo} foi inserida a partir da linha 5, com o objetivo de memoizar os valores da variável $hit$.
 
 \section{Resumo do conjunto de aplicações}\label{sec:resumo_exp}
 \begin{table}[H]
@@ -698,8 +621,8 @@ A alta variabilidade dos ciclos ocorre porque o \texttt{perf} contabiliza o esfo
     \label{tab:benchmarks}
 \end{table}
 
-As aplicações escolhidas apresentam diferentes padrões computacionais, possuem suporte robusto à paralelização e incluem etapas de execução tolerantes a aproximações. A \autoref{tab:benchmarks} resume os \textit{benchmarks} utilizados, detalhando a fonte, o domínio do problema e a respectiva métrica de qualidade. Cada programa avaliado serviu para avaliar o impacto das técnicas de aproximação no desempenho e na precisão dos cálculos.
+As aplicações escolhidas apresentam diferentes padrões computacionais, possuem suporte à paralelização e incluem etapas de execução tolerantes a aproximações. A \autoref{tab:benchmarks} resume os \textit{benchmarks} utilizados, detalhando a fonte, o domínio do problema e a respectiva métrica de qualidade. Cada programa avaliado serviu para avaliar o impacto das técnicas de aproximação no desempenho e na precisão dos cálculos. 
 
-As métricas de qualidade variam conforme a natureza da aplicação. Para programas com saídas numéricas contínuas, como 2MM, Correlação, Jacobi 2D e PI de Monte Carlo, adotou-se o \gls{mape}. Essa métrica calcula a média do erro absoluto de forma percentual, dividindo a diferença entre a saída aproximada e a exata pelo próprio valor exato. Diferente de métricas simétricas, o \gls{mape} quantifica o desvio tendo o valor correto como referência absoluta. Isso facilita a interpretação da perda de precisão causada pela aproximação computacional.
+O tamanho das entradas de cada aplicação foi definido com base nos padrões já definidos nos seus \textit{benchmarks} de origem. As métricas de qualidade variam conforme a natureza da aplicação. Para programas com saídas numéricas contínuas, como 2MM, Correlação, Jacobi 2D e PI de Monte Carlo, adotou-se o \gls{mape}. Essa métrica calcula a média do erro absoluto de forma percentual, dividindo a diferença entre a saída aproximada e a exata pelo próprio valor exato. Diferente de métricas simétricas, o \gls{mape} quantifica o desvio tendo o valor correto como referência absoluta. Isso facilita a interpretação da perda de precisão causada pela aproximação computacional.
 
 No K-Means, utilizou-se o \gls{mcr}, uma métrica específica e apropriada para calcular a taxa de classificações incorretas na atribuição dos pontos aos \textit{clusters}. No caso do Deriche e do Mandelbrot, cujo processamento gera uma imagem, optou-se pelo \gls{ssim}, que quantifica matematicamente a similaridade estrutural e visual entre a imagem gerada e a referência correta.

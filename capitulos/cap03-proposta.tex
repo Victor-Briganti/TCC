@@ -1,31 +1,43 @@
 \chapter{Proposta}\label{cap:proposta}
 
-Este trabalho propõe o desenvolvimento de um novo construtor para a API \texttt{OpenMP}, visando facilitar a implementação de algoritmos de \gls{ca}. Alinhada ao modelo de execução baseado em diretivas de \texttt{OpenMP}, a proposta utiliza diretivas de compilação para identificar regiões passíveis de execução aproximada. A integração ao \texttt{OpenMP} assegura que tais técnicas sejam portáveis e adaptáveis a diferentes trechos de código.
+Este trabalho propõe o desenvolvimento de um novo construtor para a API \texttt{OpenMP}, visando facilitar a implementação de algoritmos de \gls{ca}. Alinhada ao modelo de execução baseado em diretivas de \texttt{OpenMP}, a proposta utiliza diretivas de compilação para identificar regiões passíveis de execução aproximada. A integração ao \texttt{OpenMP} assegura que tais técnicas sejam portáveis e adaptáveis a diferentes trechos de código. Esses trechos passam a ser a chamada região aproximada, que são as partes do código na qual as técnicas de aproximação vão ser aplicadas.
 
-O \autoref{code:pragmaApprox} apresenta a sintaxe da diretiva \texttt{\#pragma omp approx}, que delimita uma região de código na qual a técnica de aproximação será aplicada. Embora o construtor permita a combinação de múltiplas cláusulas para a definição de parâmetros, a implementação atual suporta o uso de apenas uma técnica por região de aproximada.
+O \autoref{code:pragmaApprox} apresenta a sintaxe da diretiva \texttt{\#pragma omp approx}, que delimita uma região de código na qual a técnica de aproximação será aplicada. Embora o construtor permita a combinação de múltiplas cláusulas para a definição de parâmetros, a implementação atual suporta o uso de uma técnica por região de aproximada. Essa escolha de projeto tem como objetivo garantir uma avaliação isolada de cada abordagem, facilitando a análise comparativa e evitando a explosão combinatória dos experimentos.
 
 \begin{sourcecode}[htb]
-    \caption{Sintaxe do construto \texttt{approx}.}
+    \caption{Sintaxe do construtor \texttt{approx}.}
     \label{code:pragmaApprox}
     \begin{lstlisting}[frame=single, language=C++]
-#pragma omp approx [clause, [[,]clause]]
+#pragma omp approx {memo(<option>), perfo(<option>), fastmath} [[,] clause]
     \end{lstlisting}
     \fonte{}
 \end{sourcecode}
 
-Além da diretiva, a proposta introduz a variável de ambiente \texttt{OMP\_APPROX}, que permite habilitar (\texttt{TRUE}) ou desabilitar (\texttt{FALSE}) as técnicas de aproximação sem a necessidade de modificar o código fonte ou realizar novas compilações. A implementação desse sistema assemelha-se ao funcionamento da cláusula \texttt{if}. Na prática, o compilador gera tanto a versão aproximada quanto a versão original do código. Durante a execução, o valor da variável de ambiente é verificado para decidir qual caminho de execução deve ser seguido.
+Além da diretiva, a proposta introduz a variável de ambiente \texttt{OMP\_APPROX}, que permite habilitar (\texttt{TRUE}) ou desabilitar (\texttt{FALSE}) as técnicas de aproximação sem a necessidade de modificar o código fonte ou realizar novas compilações. A implementação desse sistema assemelha-se ao funcionamento da cláusula \texttt{if}. Na prática, o compilador gera tanto a versão aproximada quanto a versão original do código. Durante a execução, o valor da variável de ambiente é verificado para decidir qual caminho de execução deve ser seguido, caos ela não esteja configurada o código original é executado.
 
 As seções subsequentes detalham as técnicas implementadas, suas respectivas cláusulas e parâmetros de configuração.
 
 \section{Perforação de Laço}\label{subsec:pragmaPerfo}
 
-A cláusula \texttt{perfo} habilita o uso de perforação de laços (\textit{loop perforation}), permitindo reduzir o número de iterações executadas. Essa cláusula deve ser utilizada em conjunto com a cláusula \texttt{for}, e suporta modificadores que definem tanto o algoritmo de perforação quanto a quantidade de iterações a serem descartadas. Os modificadores disponíveis são: \texttt{init}, \texttt{fini} e \texttt{large}. O \autoref{code:pragmaPerfo} apresenta a sintaxe da cláusula, na qual é necessário especificar um dos tipos de perforação e a taxa de descarte.
+A cláusula \texttt{perfo} habilita o uso de perforação de laços (\textit{loop perforation}), permitindo reduzir o número de iterações executadas. Essa cláusula deve ser utilizada em conjunto com a cláusula \texttt{for}, e suporta modificadores que definem tanto o algoritmo de perforação quanto a quantidade de iterações a serem descartadas. Os modificadores disponíveis são: \texttt{init}, \texttt{fini} e \texttt{large}. O \autoref{code:pragmaPerfo} apresenta a sintaxe da cláusula, na qual é necessário especificar um dos tipos de perforação e a taxa de descarte, e no \autoref{code:perfo_exemplo} temos um exemplo de uso dessa diretiva junto a cláusula \texttt{for}.
 
 \begin{sourcecode}[htb]
     \caption{Sintaxe da cláusula \texttt{perfo}.}
     \label{code:pragmaPerfo}
     \begin{lstlisting}[frame=single, language=C++]
 #pragma omp approx perfo({init, fini, large}, drop-rate)
+    \end{lstlisting}
+    \fonte{}
+\end{sourcecode}
+
+\begin{sourcecode}[htb]
+    \caption{Exemplo de uso da cláusula \texttt{perfo}.}
+    \label{code:perfo_exemplo}
+    \begin{lstlisting}[frame=single, language=C++]
+#pragma omp for approx perfo(init, 10)
+for (int i = 0; i < N; i++) {
+    ...
+}
     \end{lstlisting}
     \fonte{}
 \end{sourcecode}
@@ -114,7 +126,7 @@ void kernel(float *a, float *b, int n) {
 
 \section{Memoização}\label{subsec:pragmaMemo}
 
-A cláusula \textit{memo} habilita a memoização aproximada em blocos de código arbitrários. Essa estratégia explora regiões que apresentam relações de entrada e saída estáveis, nas quais execuções sucessivas produzem resultados consistentes. O \autoref{code:pragmaMemo} apresenta a sintaxe da cláusula. A cláusula \texttt{memo} requer o parâmetro \textit{threshold}, definido entre 0 e 100, que estabelece o limite de erro percentual tolerável em relação ao resultado real. Além disso, seu uso exige a cláusula \textit{output}, que especifica uma única variável de saída a ser aproximada.
+A cláusula \textit{memo} habilita a memoização aproximada em blocos de código arbitrários. Essa estratégia explora regiões que apresentam relações de entrada e saída estáveis, nas quais execuções sucessivas produzem resultados consistentes. O \autoref{code:pragmaMemo} apresenta a sintaxe da cláusula. A cláusula \texttt{memo} requer o parâmetro \textit{threshold}, definido entre 0 e 100, que estabelece o limite de erro percentual tolerável das amostragens coletadas para com o resultado original da região. Além disso, seu uso exige a cláusula \textit{output}, que especifica uma única variável de saída a ser aproximada.
 
 \begin{sourcecode}[htb]
 \caption{\label{code:pragmaMemo}Sintaxe da cláusula \textit{memo}.}
@@ -143,9 +155,9 @@ Se o número de falhas consecutivas ultrapassar um limite calculado a partir do 
     \label{eq:thresh}
 \end{equation}
 
-Além da validação baseada em erro, o sistema também monitora o custo de execução da memoização. A cada intervalo de chamadas, o tempo médio gasto na execução aproximada é comparado ao tempo médio observado durante a fase de aquecimento. Se o custo adicional exceder um fator de tolerância predefinido, a região é colocada no estado \textit{disabled}. Essa verificação evita que a técnica introduza \textit{overhead} significativo e degrade o desempenho da aplicação.
+Além da validação baseada em erro, o sistema também monitora o custo de execução da memoização. A cada intervalo de chamadas, o tempo médio da execução aproximada é comparado ao tempo médio observado durante a fase de aquecimento. Se o custo adicional exceder um fator de tolerância predefinido, a região é colocada no estado \textit{disabled}. Essa verificação evita que a técnica introduza \textit{overhead} significativo e degrade o desempenho da aplicação.
 
-A geração das predições é realizada por meio de uma média aritmética aplicada aos valores armazenados no histórico do \textit{bucket}. Esse processo funciona como uma média móvel, na qual cada novo valor observado é inserido em uma janela circular de tamanho limitado. A \autoref{eq:media_aritmetica} apresenta a expressão utilizada para calcular o valor previsto, na qual $x_i$ representa cada valor armazenado e $N$ corresponde ao número de elementos disponíveis no histórico.
+A geração das predições é realizada por meio de uma média aritmética aplicada aos valores armazenados no histórico do \textit{bucket}. Esse processo funciona como uma média móvel, na qual cada novo valor observado é inserido em uma janela circular de tamanho limitado. A \autoref{eq:media_aritmetica} apresenta a expressão utilizada para calcular o valor previsto, na qual $x_i$ representa cada valor normalizado armazenado e $N$ corresponde ao número de elementos disponíveis no histórico.
 
 \begin{equation}
 \label{eq:media_aritmetica}

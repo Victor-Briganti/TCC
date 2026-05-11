@@ -1,10 +1,10 @@
 \chapter{Resultados}\label{cap:resultados}
 
-Este capítulo apresenta os resultados obtidos a partir da aplicação das técnicas de \gls{ca} ao conjunto de \textit{benchmarks} selecionados. A análise considera tanto o desempenho quanto a qualidade dos resultados produzidos. Os gráficos apresentados comparam a execução comum (\textit{baseline}), definida como a execução da aplicação utilizando uma única \textit{thread} com o suporte da biblioteca \texttt{OpenMP}, com suas versões aproximadas, evidenciando a variação no tempo de execução e o impacto na acurácia das saídas.
+Este capítulo apresenta os resultados obtidos a partir da aplicação das técnicas de \gls{ca} ao conjunto de \textit{benchmarks} selecionados. A análise considera tanto o desempenho quanto a qualidade dos resultados produzidos. Os gráficos apresentados comparam a execução comum (\textit{baseline}), definida como a execução da aplicação utilizando uma única \textit{thread} com o suporte da biblioteca \texttt{OpenMP}, com suas versões aproximadas, evidenciando a variação no tempo de execução e o impacto no erro das saídas.
 
 \section{Análise por Aplicação}\label{sec:analise}
 
-Esta seção apresenta a análise individual de cada aplicação do conjunto de \textit{benchmarks}. Para cada programa, são discutidos os efeitos das técnicas de aproximação sobre o tempo de execução e a acurácia dos resultados, destacando limitações observadas e possíveis características que influenciam a sensibilidade à aproximação.
+Esta seção apresenta a análise individual de cada aplicação do conjunto de \textit{benchmarks}. Para cada programa, são discutidos os efeitos das técnicas de aproximação sobre o tempo de execução e o erro dos resultados, destacando limitações observadas e possíveis características que influenciam a sensibilidade à aproximação.
 
 \subsection{2MM}\label{subsec:2mm_resultados}
 
@@ -26,17 +26,17 @@ Esta seção apresenta a análise individual de cada aplicação do conjunto de 
 \label{subfig:kmeans_memo_threshold50_perf}
 }
 
-\subfloat[Acurácia do 2MM com \texttt{perfo\_large} e taxa de descarte de 50.]{
+\subfloat[Erro Médio do 2MM com \texttt{perfo\_large} e taxa de descarte de 50.]{
 \includegraphics[width=0.3\textwidth]{figuras/metricas/2mmv0_perfo_large_50.pdf}
 \label{subfig:2mmv0_perfo_large_50_mape}
 }
 \hfill
-\subfloat[Acurácia do 2MM com \texttt{perfo\_init} e taxa de descarte de 50.]{
+\subfloat[Erro Médio do 2MM com \texttt{perfo\_init} e taxa de descarte de 50.]{
 \includegraphics[width=0.3\textwidth]{figuras/metricas/2mmv1_perfo_init_1000.pdf}
 \label{subfig:2mmv1_perfo_init_1000_mape}
 }
 \hfill
-\subfloat[Acurácia do 2MM com \texttt{memo} e limiar de 100.]{
+\subfloat[Erro Médio do 2MM com \texttt{memo} e limiar de 100.]{
 \includegraphics[width=0.3\textwidth]{figuras/metricas/2mmv0_memo_100.pdf}
 \label{subfig:2mmv0_memo_100_mape}
 }
@@ -44,15 +44,15 @@ Esta seção apresenta a análise individual de cada aplicação do conjunto de 
 \label{fig:2mm_results}
 \end{figure*}
 
-Em relação à acurácia e ao desempenho, conforme ilustrado na Figura \ref{fig:2mm_results}, a técnica \textit{perfo\_large} apresentou os maiores resultados; em termos de qualidade, essa técnica apresentou um erro médio que variou de 90.6\% a 97.9\%, dependendo da taxa de perforação e do número de \textit{threads}. Em contrapartida, essa mesma redução no número de iterações foi responsável pelos maiores ganhos de desempenho observados. Considerando a execução comum com uma única \textit{thread}, cujo tempo médio foi de aproximadamente 11,35 segundos, a versão com taxa de aproximação 50 reduziu o tempo médio para cerca de 1,21 segundos, o que corresponde a um ganho próximo de 9,4$\times$. Mesmo em configurações menos agressivas, como taxa 20 ou 30, os tempos médios permaneceram abaixo de 1,49 segundos, mantendo ganhos superiores a 7$\times$. 
+Em relação ao erro e ao desempenho, conforme ilustrado na Figura \ref{fig:2mm_results}, a técnica \textit{perfo\_large} apresentou os maiores resultados; em termos de qualidade, essa técnica apresentou um erro médio que variou de 90.6\% a 97.9\%, dependendo da taxa de perforação e do número de \textit{threads}. Em contrapartida, essa mesma redução no número de iterações foi responsável pelos maiores ganhos de desempenho observados. Considerando a execução comum com uma única \textit{thread}, cujo tempo médio foi de aproximadamente 11,35 segundos, a versão com taxa de aproximação 50 reduziu o tempo médio para cerca de 1,21 segundos, o que corresponde a um ganho próximo de 9,4$\times$. Mesmo em configurações menos agressivas, como taxa 20 ou 30, os tempos médios permaneceram abaixo de 1,49 segundos, mantendo ganhos superiores a 7$\times$. 
 
-As técnicas \textit{perfo\_init} e \textit{perfo\_fini} apresentaram comportamento semelhante entre si, tanto em termos de acurácia quanto de desempenho. O erro médio aumentou de forma consistente com o crescimento da taxa de aproximação. Para uma taxa de 10, o erro médio foi de aproximadamente 049\%. Com o aumento no nível de descarte, o erro também cresceu, atingindo cerca de 4,88\% para taxa 100, 24,41\% para taxa 500 e aproximadamente 48,83\% para taxa 1000. Em relação ao desempenho, a execução com uma única \textit{thread} na versão com a taxa de descarte de 500 reduziu o tempo médio de execução de aproximadamente 11,35 segundos para cerca de 7.96 segundos, enquanto a versão com taxa 1000 reduziu esse tempo para aproximadamente 5.83 segundos. Esses valores correspondem a ganhos superiores a 3$\times$ quando comparados à execução comum com o mesmo número de \textit{threads}. Para 8 \textit{threads}, por exemplo, a execução comum apresentou tempo médio de aproximadamente 3,89 segundos, enquanto a versão com taxa 1000 reduziu esse valor para cerca de 2,68 segundos.
+As técnicas \textit{perfo\_init} e \textit{perfo\_fini} apresentaram comportamento semelhante entre si, tanto em termos de erro quanto de desempenho. O erro médio aumentou de forma consistente com o crescimento da taxa de aproximação. Para uma taxa de 10, o erro médio foi de aproximadamente 049\%. Com o aumento no nível de descarte, o erro também cresceu, atingindo cerca de 4,88\% para taxa 100, 24,41\% para taxa 500 e aproximadamente 48,83\% para taxa 1000. Em relação ao desempenho, a execução com uma única \textit{thread} na versão com a taxa de descarte de 500 reduziu o tempo médio de execução de aproximadamente 11,35 segundos para cerca de 7.96 segundos, enquanto a versão com taxa 1000 reduziu esse tempo para aproximadamente 5.83 segundos. Esses valores correspondem a ganhos superiores a 3$\times$ quando comparados à \textit{baseline} com o mesmo número de \textit{threads}. Para 8 \textit{threads}, por exemplo, a execução comum apresentou tempo médio de aproximadamente 3,89 segundos, enquanto a versão com taxa 1000 reduziu esse valor para cerca de 2,68 segundos.
 
 A técnica de memoização apresentou erro praticamente desprezível em todas as configurações avaliadas. Esse comportamento está diretamente relacionado ao mecanismo da cláusula responsável por evitar \textit{overhead}, no qual o sistema para de realizar memoização na região quando o custo adicional passa a superar os benefícios esperados. Mesmo assim houve uma perda de desempenho com essa técnica em todas as configurações testadas. Esse comportamento é justificado pelo custo adicional associado às estruturas de memoização, que foram ativadas para cada execução do laço mais interno, gerando um \textit{overhead} significativo na aplicação.
 
 Por fim, a técnica \textit{fastmath} não introduziu alterações significativas na acurácia dos resultados, indicando que as otimizações de ponto flutuante habilitadas pelo compilador não modificaram de forma relevante a precisão numérica da aplicação. Em termos de desempenho, essa técnica também não apresentou ganhos em nenhuma das configurações avaliadas.
 
-Uma análise de perfilamento com a ferramenta \textit{kcachegrind}, mostrou que a execução do \textit{perfo\_large} reduziu a região de multiplicação de matrizes para apenas 3,8\% dos ciclos, tornando a função de saída o gargalo da aplicação (consumindo 92,94\% dos ciclos). Também foi possível observar que, embora tenha ocorrido uma redução no número de instruções executadas dentro dos laços, houve um aumento relativo no custo das barreiras de sincronização, uma vez que as \textit{threads} terminam seu trabalho mais rapidamente e passam a aguardar nesses pontos de sincronização. De forma geral, os resultados mostram que as técnicas baseadas em perforação de laço foram as mais eficazes para reduzir o tempo de execução da aplicação, mas esse ganho ocorre às custas de uma baixa acurácia nos resultados.
+Uma análise de perfilamento com a ferramenta \textit{valgrind}, mostrou que a execução do \textit{perfo\_large} reduziu a região de multiplicação de matrizes para apenas 3,8\% dos ciclos, tornando a função de saída o gargalo da aplicação (consumindo 92,94\% dos ciclos). Também foi possível observar que, embora tenha ocorrido uma redução no número de instruções executadas dentro dos laços, houve um aumento relativo no custo das barreiras de sincronização, uma vez que as \textit{threads} terminam seu trabalho mais rapidamente e passam a aguardar nesses pontos de sincronização. De forma geral, os resultados mostram que as técnicas baseadas em perforação de laço foram as mais eficazes para reduzir o tempo de execução da aplicação, mas esse ganho ocorre às custas de uma baixa acurácia nos resultados.
 
 \subsection{Correlação}\label{subsec:correlation_resultados}
 
@@ -74,17 +74,17 @@ Uma análise de perfilamento com a ferramenta \textit{kcachegrind}, mostrou que 
 \label{subfig:correlationv0_fastmath_None_perf}
 }
 
-\subfloat[Acurácia do Correlation com \texttt{perfo\_large} e taxa de descarte de 50.]{
+\subfloat[Erro Médio do Correlation com \texttt{perfo\_large} e taxa de descarte de 50.]{
 \includegraphics[width=0.3\textwidth]{figuras/metricas/correlationv0_perfo_large_50.pdf}
 \label{subfig:correlationv0_perfo_large_50_mape}
 }
 \hfill
-\subfloat[Acurácia do Correlation com \texttt{memo} e limiar de 100.]{
+\subfloat[Erro Médio do Correlation com \texttt{memo} e limiar de 100.]{
 \includegraphics[width=0.3\textwidth]{figuras/metricas/correlationv0_memo_100.pdf}
 \label{subfig:correlationv0_memo_100_mape}
 }
 \hfill
-\subfloat[Acurácia do Correlation com \texttt{fastmath}.]{
+\subfloat[Erro Médio do Correlation com \texttt{fastmath}.]{
 \includegraphics[width=0.3\textwidth]{figuras/metricas/correlationv0_fastmath_None.pdf}
 \label{subfig:correlationv0_fastmath_None_mape}
 }
@@ -126,17 +126,17 @@ De forma geral, os resultados dessa aplicação indicam que técnicas que preser
 \label{subfig:derichev0_fastmath_None_perf}
 }
 
-\subfloat[Acurácia do Deriche com \texttt{perfo\_large} e taxa de descarte de 50.]{
+\subfloat[Erro Médio do Deriche com \texttt{perfo\_large} e taxa de descarte de 50.]{
 \includegraphics[width=0.3\textwidth]{figuras/metricas/derichev0_perfo_large_50.pdf}
 \label{subfig:derichev0_perfo_large_50_mape}
 }
 \hfill
-\subfloat[Acurácia do Deriche com \texttt{memo} e limiar de 100.]{
+\subfloat[Erro Médio do Deriche com \texttt{memo} e limiar de 100.]{
 \includegraphics[width=0.3\textwidth]{figuras/metricas/derichev0_memo_100.pdf}
 \label{subfig:derichev0_memo_100_mape}
 }
 \hfill
-\subfloat[Acurácia do Deriche com \texttt{fastmath}.]{
+\subfloat[Erro Médio do Deriche com \texttt{fastmath}.]{
 \includegraphics[width=0.3\textwidth]{figuras/metricas/derichev1_perfo_init_1000.pdf}
 \label{subfig:derichev0_fastmath_None_mape}
 }
@@ -148,7 +148,7 @@ A avaliação da aplicação Deriche revela como diferentes estratégias de apro
 
 A técnica \texttt{perfo\_large} apresentou ganhos de desempenho consistentes, alcançando acelerações de até 1,6$\times$ em relação à execução original. O tempo de execução variou entre 0,040 e 0,049 segundos nas execuções aproximadas que utilizaram de 1 a 4 \textit{threads}, o que apresenta um leve ganho se comparado com o tempo médio da execução comum que foi de 0,064 segundos com 1 \textit{thread} e 0,058 segundos com 4 \textit{threads}. Contudo, a similaridade da imagem gerada em relação à original sofreu uma degradação, registrando valores próximos a 12\% de similaridade com a taxa de aproximação configurada em 10, caindo para aproximadamente 5.6\% com a taxa em 50.
 
-As estratégias \texttt{perfo\_init} e \texttt{perfo\_fini} exibiram comportamentos semelhantes entre si. A qualidade dos dados caiu de forma proporcional ao tamanho do \texttt{drop}. Taxas menores, como o valor 10, mantiveram a similaridade em torno de 99\%; valores intermediários, como 100, reduziram a qualidade para cerca de 87,6\%; e, por fim, taxas agressivas, com saltos de 500 e 1000, derrubaram a acurácia para 39,7\% e 4\%, respectivamente. Em contrapartida, as configurações de 500 e 1000 proporcionaram reduções substanciais no tempo de execução, atingindo marcas de 0,036 segundos para \texttt{perfo\_init} e 0,037 segundos para \texttt{perfo\_fini} com o uso de 4 \textit{threads}.
+As estratégias \texttt{perfo\_init} e \texttt{perfo\_fini} exibiram comportamentos semelhantes entre si. A qualidade dos dados caiu de forma proporcional ao tamanho do \texttt{drop}. Taxas menores, como o valor 10, mantiveram a similaridade em torno de 99\%; valores intermediários, como 100, reduziram a qualidade para cerca de 87,6\%; e, por fim, taxas agressivas, com saltos de 500 e 1000, produziram erros de 39,7\% e 4\%, respectivamente. Em contrapartida, as configurações de 500 e 1000 proporcionaram reduções substanciais no tempo de execução, atingindo marcas de 0,036 segundos para \texttt{perfo\_init} e 0,037 segundos para \texttt{perfo\_fini} com o uso de 4 \textit{threads}.
 
 \begin{figure*}[tbh!]
 \caption{A perforação ao ser aplicada no algoritmo omite parte da imagem de saída..}
@@ -189,17 +189,17 @@ O perfilamento da aplicação mostrou que o maior número de ciclos da aplicaç�
 \label{subfig:jacobi2dv1_perfo_fini_1000_perf}
 }
 
-\subfloat[Acurácia do Jacobi 2D com \texttt{perfo\_large} e taxa de descarte de 50.]{
+\subfloat[Erro Médio do Jacobi 2D com \texttt{perfo\_large} e taxa de descarte de 50.]{
 \includegraphics[width=0.3\textwidth]{figuras/metricas/jacobi2dv0_perfo_large_50.pdf}
 \label{subfig:jacobi2dv0_perfo_large_50_mape}
 }
 \hfill
-\subfloat[Acurácia do Jacobi 2D com \texttt{perfo\_init} e taxa de descarte de 1000.]{
+\subfloat[Erro Médio do Jacobi 2D com \texttt{perfo\_init} e taxa de descarte de 1000.]{
 \includegraphics[width=0.3\textwidth]{figuras/metricas/jacobi2dv1_perfo_init_1000.pdf}
 \label{subfig:jacobi2dv1_perfo_init_1000_mape}
 }
 \hfill
-\subfloat[Acurácia do Jacobi 2D com \texttt{perfo\_fini} e taxa de descarte de 1000.]{
+\subfloat[Erro Médio do Jacobi 2D com \texttt{perfo\_fini} e taxa de descarte de 1000.]{
 \includegraphics[width=0.3\textwidth]{figuras/metricas/jacobi2dv1_perfo_fini_1000.pdf}
 \label{subfig:jacobi2dv1_perfo_fini_1000_mape}
 }
@@ -235,17 +235,17 @@ Por fim, a análise da aplicação por meio de ferramentas de perfilamento indic
 \label{subfig:kmeansv0_fastmath_None_perf}
 }
 
-\subfloat[Acurácia do K-Means com \texttt{perfo\_large} e taxa de descarte de 50.]{
+\subfloat[Erro Médio do K-Means com \texttt{perfo\_large} e taxa de descarte de 50.]{
 \includegraphics[width=0.3\textwidth]{figuras/metricas/kmeansv0_perfo_large_50.pdf}
 \label{subfig:kmeansv0_perfo_large_50_mcr}
 }
 \hfill
-\subfloat[Acurácia do K-Means com \texttt{perfo\_init} e taxa de descarte de 100.]{
+\subfloat[Erro Médio do K-Means com \texttt{perfo\_init} e taxa de descarte de 100.]{
 \includegraphics[width=0.3\textwidth]{figuras/metricas/kmeansv0_memo_100.pdf}
 \label{subfig:kmeansv0_memo_100_mcr}
 }
 \hfill
-\subfloat[Acurácia do K-Means com \texttt{fastmath}.]{
+\subfloat[Erro Médio do K-Means com \texttt{fastmath}.]{
 \includegraphics[width=0.3\textwidth]{figuras/metricas/kmeansv0_fastmath_None.pdf}
 \label{subfig:kmeansv0_fastmath_None_mcr}
 }
@@ -285,17 +285,17 @@ Desse modo, temos que o algoritmo \textit{K-Means} conseguiu obter ganhos de des
 \label{subfig:mandelbrotv1_perfo_fini_1000_perf}
 }
 
-\subfloat[Acurácia do Mandelbrot com \texttt{perfo\_large} e taxa de descarte de 50.]{
+\subfloat[Erro Médio do Mandelbrot com \texttt{perfo\_large} e taxa de descarte de 50.]{
 \includegraphics[width=0.3\textwidth]{figuras/metricas/mandelbrotv0_perfo_large_50.pdf}
 \label{subfig:mandelbrotv0_perfo_large_50_ssim}
 }
 \hfill
-\subfloat[Acurácia do Mandelbrot com \texttt{perfo\_init} e limiar de 100.]{
+\subfloat[Erro Médio do Mandelbrot com \texttt{perfo\_init} e limiar de 100.]{
 \includegraphics[width=0.3\textwidth]{figuras/metricas/mandelbrotv0_memo_100.pdf}
 \label{subfig:mandelbrotv0_memo_100_ssim}
 }
 \hfill
-\subfloat[Acurácia do Mandelbrot com \texttt{perfo\_fini} e taxa de descarte de 1000.]{
+\subfloat[Erro Médio do Mandelbrot com \texttt{perfo\_fini} e taxa de descarte de 1000.]{
 \includegraphics[width=0.3\textwidth]{figuras/metricas/mandelbrotv1_perfo_fini_1000.pdf}
 \label{subfig:mandelbrotv1_perfo_fini_1000_mcr}
 }
@@ -344,17 +344,17 @@ Exemplos dessas saídas visuais estão expostos na Figura \ref{fig:mandelbrot_ou
 \label{subfig:piv1_perfo_fini_1000_perf}
 }
 
-\subfloat[Acurácia de PI com \texttt{perfo\_large} e taxa de descarte de 50.]{
+\subfloat[Erro Médio de PI com \texttt{perfo\_large} e taxa de descarte de 50.]{
 \includegraphics[width=0.3\textwidth]{figuras/metricas/piv0_perfo_large_50.pdf}
 \label{subfig:piv0_perfo_large_50_mape}
 }
 \hfill
-\subfloat[Acurácia de PI com \texttt{perfo\_init} e limiar de 100.]{
+\subfloat[Erro Médio de PI com \texttt{perfo\_init} e limiar de 100.]{
 \includegraphics[width=0.3\textwidth]{figuras/metricas/piv0_memo_100.pdf}
 \label{subfig:piv0_memo_100_mape}
 }
 \hfill
-\subfloat[Acurácia de PI com \texttt{perfo\_fini} e taxa de descarte de 1000.]{
+\subfloat[Erro Médio de PI com \texttt{perfo\_fini} e taxa de descarte de 1000.]{
 \includegraphics[width=0.3\textwidth]{figuras/metricas/piv1_perfo_fini_1000.pdf}
 \label{subfig:piv0_perfo_init_100_mape}
 }
