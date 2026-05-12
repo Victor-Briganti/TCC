@@ -75,22 +75,6 @@ Por fim, o modificador \texttt{large} difere das técnicas anteriores por ser im
 
 \section{Aproximação de Ponto Flutuante}\label{subsec:pragmaFastmath}
 
-\begin{figure}[htbp]
-\caption{Comparativo de \textit{speedup} entre a biblioteca \texttt{fastmath} e a \texttt{math.h}.}
-\centering
-\includegraphics[width=0.7\textwidth]{figuras/fastmath_speedup.pdf}
-\fonte{}
-\label{fig:fastmath_speedup}
-\end{figure}
-
-\begin{figure}[htbp]
-\caption{Erro relativo entre as funções da \texttt{fastmath}.}
-\centering
-\includegraphics[width=0.7\textwidth]{figuras/fastmath_error.pdf}
-\fonte{}
-\label{fig:fastmath_error}
-\end{figure}
-
 A cláusula \texttt{fastmath} introduz otimizações agressivas de ponto flutuante em regiões específicas do código. Diferentemente da \textit{flag} de compilação \texttt{-ffast-math} do \textit{Clang}~\cite{clangffast}, que atua globalmente sobre todo o módulo, essa cláusula oferece um controle granular ao restringir as otimizações aos blocos delimitados pela diretiva \texttt{\#pragma omp approx fastmath}. Além disso, ao contrário da cláusula \texttt{perfo}, a \texttt{fastmath} não se limita a laços de repetição, podendo ser aplicada a blocos arbitrários de código. Assim, trechos de código podem se beneficiar de ganhos de desempenho sem comprometer a acurácia de trechos críticos do restante do programa.
 
 Quando a cláusula é utilizada, o compilador passa a habilitar as mesmas otimizações associadas à \texttt{-ffast-math}, flexibilizando operações de ponto flutuante, permitindo reordenação de operações aritméticas e eliminando verificações de segurança que impactam o desempenho. Além disso, a cláusula integra uma biblioteca matemática aproximada desenvolvida pelo próprio autor especificamente para este projeto\footnote{Disponível em: https://github.com/Victor-Briganti/fastmath/tree/main}. Essa biblioteca utiliza aproximações polinomiais baseadas em polinômios de Chebyshev~\cite{lloyd2019}, que permitem calcular funções matemáticas com menor custo computacional, explorando propriedades de aproximação numérica em intervalos bem definidos.
@@ -122,9 +106,25 @@ void kernel(float *a, float *b, int n) {
 
 \subsection{Avaliação Experimental da Biblioteca Aproximada}
 
-Para determinar quais funções da biblioteca aproximada seriam utilizadas durante a substituição, foi realizada uma análise experimental comparando o desempenho das implementações aproximadas com as funções originais da \texttt{math.h}. Essa análise considerou duas métricas principais: \textit{speedup} e erro relativo.
+\begin{figure}[htbp]
+\caption{Comparativo de \textit{speedup} entre a biblioteca \texttt{fastmath} e a \texttt{math}.}
+\centering
+\includegraphics[width=0.7\textwidth]{figuras/fastmath_speedup.pdf}
+\fonte{}
+\label{fig:fastmath_speedup}
+\end{figure}
 
-A \autoref{fig:fastmath_speedup} apresenta as diferenças de desempenho entre as funções da \texttt{math.h} e as implementações da biblioteca \texttt{fastmath}, ambas compiladas com o maior nível de otimização (\texttt{-O3}) e com a flag \texttt{-ffast-math} habilitada. Os resultados mostram que a maior parte das funções alcançou algum nível de ganho de desempenho. Entre os destaques estão \texttt{acos} e \texttt{asin}, que apresentaram \textit{speedup} aproximado de 2,09$\times$, enquanto a função \texttt{sqrt} atingiu ganhos de até 7,9$\times$ em relação à implementação da \texttt{math.h}. Dentre todas as funções avaliadas, apenas \texttt{atan} e \texttt{exp} não apresentaram ganhos de desempenho. A função \texttt{atan} registrou um \textit{slowdown} de aproximadamente 0,61$\times$, indicando uma perda de desempenho significativa. Já a função \texttt{exp} apresentou um \textit{slowdown} muito reduzido, de cerca de 0,05$\times$, mantendo um comportamento bastante próximo ao da implementação original.
+\begin{figure}[htbp]
+\caption{Erro relativo entre as funções da \texttt{fastmath}.}
+\centering
+\includegraphics[width=0.7\textwidth]{figuras/fastmath_error.pdf}
+\fonte{}
+\label{fig:fastmath_error}
+\end{figure}
+
+Para determinar quais funções da biblioteca aproximada seriam utilizadas durante a substituição, foi realizada uma análise experimental comparando o desempenho das implementações aproximadas com as funções originais da \texttt{math}. Essa análise considerou duas métricas principais: \textit{speedup} e erro relativo.
+
+A \autoref{fig:fastmath_speedup} apresenta as diferenças de desempenho entre as funções da \texttt{math} e as implementações da biblioteca \texttt{fastmath}, ambas compiladas com o maior nível de otimização (\texttt{-O3}) e com a flag \texttt{-ffast-math} habilitada. Os resultados mostram que a maior parte das funções alcançou algum nível de ganho de desempenho. Entre os destaques estão \texttt{acos} e \texttt{asin}, que apresentaram \textit{speedup} aproximado de 2,09$\times$, enquanto a função \texttt{sqrt} atingiu ganhos de até 7,9$\times$ em relação à implementação da \texttt{math}. Dentre todas as funções avaliadas, apenas \texttt{atan} e \texttt{exp} não apresentaram ganhos de desempenho. A função \texttt{atan} registrou um \textit{slowdown} de aproximadamente 0,61$\times$, indicando uma perda de desempenho significativa. Já a função \texttt{exp} apresentou um \textit{slowdown} muito reduzido, de cerca de 0,05$\times$, mantendo um comportamento bastante próximo ao da implementação original.
 
 A \autoref{fig:fastmath_error} apresenta o erro relativo das implementações avaliadas. Observa-se que grande parte das funções manteve um erro relativo equivalente a aproximadamente seis casas decimais de precisão. As funções \texttt{acos} e \texttt{asin} apresentaram os menores níveis de erro, alcançando precisão próxima de dezessete casas decimais, enquanto \texttt{pow} apresentou o maior erro relativo, ficando em torno de cinco casas decimais. As funções que apresentaram maior desvio numérico, por padrão estão relacionadas ao processamento de valores em uma ampla faixa numérica, o que dificulta a aproximação.
 
@@ -144,7 +144,15 @@ A cláusula \textit{memo} habilita a memoização aproximada em blocos de códig
 
 Internamente, a técnica utiliza uma estrutura de tabela \textit{hash} local a cada \textit{thread}, denominada \texttt{kmp\_map\_t}. Essa estrutura armazena todas as regiões de código anotadas com a cláusula \textit{memo}. Cada região é identificada por uma chave inteira e associada a uma estrutura interna que mantém o estado da execução, o histórico de valores observados, as predições geradas e métricas de desempenho utilizadas para controle adaptativo. Essa organização permite que a \textit{runtime} intercepte a região anotada e gerencie o ciclo de vida dos dados sem contenção entre \textit{threads}.
 
-O funcionamento baseia-se em uma máquina de estados que controla o processo de aprendizado e validação da aproximação. Os estados utilizados são \textit{empty}, \textit{warmup}, \textit{computing}, \textit{predicting}, \textit{validating} e \textit{disabled}. Cada estado define uma etapa específica do ciclo de execução da memoização.
+O funcionamento baseia-se em uma máquina de estados que controla o processo de aprendizado e validação da aproximação. Os estados utilizados são \textit{empty}, \textit{warmup}, \textit{computing}, \textit{predicting}, \textit{validating} e \textit{disabled}. Cada estado define uma etapa específica do ciclo de execução da memoização, a \autoref{fig:memo} apresenta uma ilustração das transições entre esses estados.
+
+\begin{figure}[t]
+\caption{Diagrama de estados da cláusula \texttt{memo}.}
+\centering
+\includegraphics[width=0.4\textwidth]{figuras/memo.pdf}
+\fonte{}
+\label{fig:memo}
+\end{figure}
 
 Inicialmente, a região encontra-se no estado \textit{empty}, indicando que ainda não há dados associados àquela entrada na tabela. Em seguida, o sistema transita para o estado \textit{warmup}. Nesse estágio, o código original é executado normalmente por um número fixo de chamadas, atualmente configurado para 10 execuções. O objetivo é coletar uma referência inicial de tempo de execução da região, que será utilizada posteriormente para avaliar o custo adicional introduzido pela memoização.
 
