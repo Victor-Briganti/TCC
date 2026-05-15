@@ -24,7 +24,7 @@ Além das medições de tempo, a identificação das regiões quentes de código
 
 \section{Conjunto de \textit{Benchmarks}}\label{sec:benchmark}
 
-A seleção das aplicações que compõem o conjunto de benchmarks teve como principais critérios a tolerância a erros e a estrutura do algoritmo. Buscou-se contemplar uma gama ampla de domínios, incluindo \textit{machine learning}, álgebra linear, modelos estatísticos e multimídia. Outro objetivo foi preservar ao máximo o código original durante a inserção das regiões paralelizadas, evitando modificações significativas na implementação. As aplicações 2MM, Correlação, Deriche e Jacobi 2D foram obtidas a partir do conjunto PolyBench~\cite{polybench}, K-Means foi obtida a partir do Rodinia~\cite{rodinia} e o Mandelbrot e PI de Monte Carlo foram adaptações do Debian Benchmarks Game~\cite{debianBenchmarksGame}. Em relação à precisão dos dados, o tipo padrão adotado foi o \texttt{double}, com exceção do Deriche e do K-Means, que operam com \texttt{float}. Esse tipo padrão foi definido, com o objetivo de submeter as aplicações a um ambiente de alta carga computacional.
+A seleção das aplicações que compõem o conjunto de benchmarks teve como principais critérios a tolerância a erros e a estrutura do algoritmo. Buscou-se contemplar uma gama ampla de domínios, incluindo \textit{machine learning}, álgebra linear, modelos estatísticos e multimídia. Outro objetivo foi preservar ao máximo o código original durante a inserção das regiões paralelizadas, evitando modificações significativas na implementação. As aplicações 2MM, Correlação, Deriche e Jacobi 2D foram obtidas a partir do conjunto PolyBench~\cite{polybench}, K-Means foi obtida a partir do Rodinia~\cite{rodinia} e o Mandelbrot e PI de Monte Carlo foram adaptações do Debian Benchmarks Game~\cite{debianBenchmarksGame}. Em relação à precisão dos dados, o tipo padrão adotado foi o \texttt{double}, com exceção do Deriche e do K-Means, que operam com \texttt{float}. Esse tipo padrão foi definido, para submeter as aplicações a um ambiente de alta carga computacional.
 
 \subsection{2MM}\label{subsec:2mm}
 
@@ -246,7 +246,7 @@ No processamento de imagens, o algoritmo de Deriche aplica uma filtragem recursi
 
 Diferente de abordagens baseadas em janelas de convolução fixas, o filtro de Deriche armazena e reaproveita os cálculos intermediários de \textit{pixels} vizinhos. Por ser um filtro separável, a operação bidimensional ocorre em etapas unidimensionais independentes. A implementação processa a imagem primeiramente na vertical em ambos os sentidos, e em seguida, processa a matriz na horizontal, também em ambos os sentidos. Essa abordagem proporciona uma suavização eficiente do ruído enquanto preserva as bordas estruturais.
 
-O parâmetro $\alpha$ controla a intensidade da suavização. Ele ajusta o equilíbrio entre a atenuação de ruído e a precisão na localização das bordas. Este parâmetro define os coeficientes $a$ e $b$, utilizados nas equações de recorrência. As Equações~\ref{eq:deriche_esq} e~\ref{eq:deriche_dir} exemplificam o cálculo unidimensional da varredura horizontal, aplicadas nas direções causal e anticausal, respectivamente. A varredura vertical segue a mesma formulação matemática, alterando apenas os eixos de iteração.
+O parâmetro $\alpha$ controla a intensidade da suavização. Ele ajusta o equilíbrio entre a atenuação de ruído e a precisão na localização das bordas. Este parâmetro define os coeficientes $a$ e $b$, utilizados nas equações de recorrência. As Equações~\ref{eq:deriche_esq} e~\ref{eq:deriche_dir} exemplificam o cálculo unidimensional da varredura horizontal, aplicadas nas direções causal e anti causal, respectivamente. A varredura vertical segue a mesma formulação matemática, alterando apenas os eixos de iteração.
 
 \begin{equation}
     \label{eq:deriche_esq}
@@ -258,7 +258,7 @@ O parâmetro $\alpha$ controla a intensidade da suavização. Ele ajusta o equil
     y^2_{ij} = a_3x_{ij + 1} + a_4x_{ij + 2} + b_1y^2_{ij + 1} + b_2y^2_{ij + 2}
 \end{equation}
 
-A Figura~\ref{fig:deriche} demonstra o efeito prático do filtro utilizando o coeficiente $\alpha = 1.5$. A Figura~\ref{subfig:sunflower_orig} apresenta a entrada original em escala de cinza, enquanto a Figura~\ref{subfig:sunflower_deri} exibe a saída do processamento. O filtro atenua as texturas da imagem, o que facilita o processo computacional de identificar os contornos primários na etapa posterior.
+A Figura~\ref{fig:deriche} demonstra o efeito prático do filtro utilizando o coeficiente $\alpha = 1,5$. A Figura~\ref{subfig:sunflower_orig} apresenta a entrada original em escala de cinza, enquanto a Figura~\ref{subfig:sunflower_deri} exibe a saída do processamento. O filtro atenua as texturas da imagem, o que facilita o processo computacional de identificar os contornos primários na etapa posterior.
 
 \begin{figure}[htb]
     \caption{Aplicação do filtro de Deriche.}
@@ -276,9 +276,9 @@ A Figura~\ref{fig:deriche} demonstra o efeito prático do filtro utilizando o co
     \label{fig:deriche}
 \end{figure}
 
-O perfilamento desta aplicação mostrou que as chamadas de função relacionadas ao JPEG consomem a maior parte dos ciclos de execução, superando inclusive o próprio algoritmo de suavização. Apesar disso, como a implementação avaliada é derivada do trabalho presente no PolyBench~\cite{polybench}, que não inclui as chamadas de JPEG, optou-se por utilizar o \textit{kernel} de suavização como a região anotada. O \autoref{alg:deriche} detalha o \textit{kernel} implementado.
+O perfilamento desta aplicação mostrou que as chamadas de função relacionadas ao JPEG consomem a maioria dos ciclos de execução, superando inclusive o próprio algoritmo de suavização. Apesar disso, como a implementação avaliada é derivada do trabalho presente no PolyBench~\cite{polybench}, que não inclui as chamadas de JPEG, optou-se por utilizar o \textit{kernel} de suavização como a região anotada. O \autoref{alg:deriche} detalha o \textit{kernel} implementado.
 
-Para paralelizar a aplicação, definiu-se uma única região \texttt{OpenMP}, iniciada na linha 10, englobando as quatro fases de varredura do algoritmo. A cláusula \texttt{perfo} foi aplicada aos laços externos das linhas 10, 19, 28 e 37. Já a cláusula \texttt{fastmath} foi aplicada externamente, abrangendo todas as demais regiões de código a partir da linha 10. Por fim, a técnica \texttt{memo} foi empregada no corpo dos laços internos de cada varredura, iniciando nas linhas 13, 22, 31 e 40.
+Para paralelizar a aplicação, definiu-se uma única região \texttt{OpenMP}, iniciada na linha 10, englobando as quatro fases de varredura do algoritmo. A cláusula \texttt{perfo} foi aplicada aos laços externos das linhas 10, 19, 28 e 37. Já a cláusula \texttt{fastmath} foi aplicada externamente, abrangendo as demais regiões de código a partir da linha 10. Por fim, a técnica \texttt{memo} foi empregada no corpo dos laços internos de cada varredura, iniciando nas linhas 13, 22, 31 e 40.
 
 \subsection{Jacobi 2D}\label{subsec:jacobi2d}
 
@@ -321,7 +321,7 @@ O Jacobi 2D é uma aplicação do método de Jacobi adaptado para problemas em d
 	\fonte{Adaptado do \citet{polybench}}
 \end{sourcecode}
 
-O \autoref{alg:jacobi2d} apresenta dependência sequencial entre as etapas de atualização, dificultando a paralelização total do algoritmo. Além disso, sua carga computacional é semelhante à observada na aplicação 2MM, sendo dominada por operações sobre matrizes, o que faz com que essa etapa concentre a maior parte dos ciclos de execução da aplicação. Para contornar a dependência sequencial, a paralelização foi aplicada no laço mais externo da linha 1, permitindo que cada etapa de varredura seja executada em paralelo. Já os laços internos da linha 2 e 7, foram anotados com as diretivas \texttt{for}, de modo a dividir o trabalho entre as \textit{threads} e sincronizá-las, assegurando que os dados produzidos em uma etapa estejam disponíveis antes da próxima atualização.
+O \autoref{alg:jacobi2d} apresenta dependência sequencial entre as etapas de atualização, dificultando a paralelização total do algoritmo. Além disso, sua carga computacional é semelhante à observada na aplicação 2MM, sendo dominada por operações sobre matrizes, o que faz com que essa etapa concentre a maioria dos ciclos de execução da aplicação. Para contornar a dependência sequencial, a paralelização foi aplicada no laço mais externo da linha 1, permitindo que cada etapa de varredura seja executada em paralelo. Já os laços internos da linha 2 e 7, foram anotados com as diretivas \texttt{for}, de modo a dividir o trabalho entre as \textit{threads} e sincronizá-las, assegurando que os dados produzidos em uma etapa estejam disponíveis antes da próxima atualização.
 
 A cláusula \texttt{perfo} foi aplicada diretamente nas diretivas \texttt{for} dos dois laços intermediários. A \texttt{fastmath} foi aplicada em todo o bloco de código. E por fim a cláusula \texttt{memo} foi aplicada de modo a memoizar o corpo dos laços da linha 3 e 8.
 
@@ -458,7 +458,7 @@ O conjunto de Mandelbrot é bidimensional e definido no plano dos números compl
     z_{n + 1} = z_n^{2} + c
 \end{equation}
 
-Para gerar a representação visual do conjunto, mapeia-se cada \textit{pixel} de uma imagem para um número complexo $c$. As regiões do plano nas quais $c$ pertence ao conjunto recebem então uma representação visual específica. Os valores de $c$ são selecionados dentro de um retângulo no plano complexo. A parte real fica no intervalo $[-2, 1]$ e a parte imaginária no intervalo $[-1.5, 1.5]$. A conversão das coordenadas dos \textit{pixels} para o plano complexo utiliza as Equações~\ref{eq:mandelbrot-cx} e~\ref{eq:mandelbrot-cy}. Nessas equações, $p_x$ e $p_y$ representam as coordenadas do \textit{pixel}. Os parâmetros $x_{\text{min}}$ e $x_{\text{max}}$ definem o domínio da parte real, enquanto $y_{\text{min}}$ e $y_{\text{max}}$ definem o domínio da parte imaginária.
+Para gerar a representação visual do conjunto, cada \textit{pixel} de uma imagem é mapeado para um número complexo $c$. As regiões do plano nas quais $c$ pertence ao conjunto recebem então uma representação visual específica. Os valores de $c$ são selecionados em um retângulo no plano complexo. A parte real fica no intervalo $[-2, 1]$ e a parte imaginária no intervalo $[-1,5;1,5]$. A conversão das coordenadas dos \textit{pixels} para o plano complexo utiliza as Equações~\ref{eq:mandelbrot-cx} e~\ref{eq:mandelbrot-cy}. Nessas equações, $p_x$ e $p_y$ representam as coordenadas do \textit{pixel}. Os parâmetros $x_{\text{min}}$ e $x_{\text{max}}$ definem o domínio da parte real, enquanto $y_{\text{min}}$ e $y_{\text{max}}$ definem o domínio da parte imaginária.
 
 \begin{equation}
     \label{eq:mandelbrot-cx}
@@ -470,7 +470,7 @@ Para gerar a representação visual do conjunto, mapeia-se cada \textit{pixel} d
     c_y = y_{\text{min}} + \frac{p_y}{\text{altura da imagem}} \cdot (y_{\text{max}} - y_{\text{min}})
 \end{equation}
 
-Os valores $c_x$ e $c_y$ alimentam as iterações de Mandelbrot. O algoritmo testa cada ponto da imagem. Se a sequência $z_n$ não divergir após um limite máximo de iterações, o \textit{pixel} correspondente recebe a cor preta. A \autoref{fig:mandelbrot} mostra uma visualização clássica do conjunto. O \autoref{alg:mandelbrot}~\cite{debianBenchmarksGame} detalha o cálculo matemático, e o \autoref{alg:mandelbrot-image} descreve a rotina para desenhar a imagem.
+Os valores $c_x$ e $c_y$ são utilizados como entrada para o cálculo iterativo do conjunto de Mandelbrot. Para cada \textit{pixel} da imagem, a sequência $z_n$ é iterada até que ocorra divergência, ou seja atingido um número máximo de iterações. Caso a sequência permaneça limitada dentro desse limite, o \textit{pixel} correspondente é representado na cor preta, indicando que o ponto pertence ao conjunto de Mandelbrot. A \autoref{fig:mandelbrot} apresenta uma visualização clássica do conjunto gerado. Já o \autoref{alg:mandelbrot}~\cite{debianBenchmarksGame} detalha o cálculo matemático empregado durante as iterações, enquanto o \autoref{alg:mandelbrot-image} descreve a rotina responsável pela geração da imagem.
 
 \begin{sourcecode}[htb]
     \caption{Cálculo do conjunto de Mandelbrot.}
@@ -585,14 +585,14 @@ A aplicação do método para estimar $\pi$ é intuitiva. Considere um círculo 
     \fonte{}
 \end{sourcecode} 
 
-O domínio de amostragem corresponde à área do quadrado. O algoritmo gera múltiplos pontos aleatórios dentro desse limite. Para cada coordenada ($x$,$y$), calcula-se então a distância até a origem. O ponto pertence ao círculo se a distância for menor ou igual a 1. A \autoref{eq:pi_monte} demonstra que a estimativa de $\pi$ equivale a razão entre a quantidade de pontos contidos no círculo e o total de pontos gerados, mulltiplicados por 4. A \autoref{fig:pi} ilustra o processo de amostragem. O \autoref{alg:pi} detalha a implementação adotada no \textit{benchmark}.
+O domínio de amostragem corresponde à área do quadrado. O algoritmo gera múltiplos pontos aleatórios dentro desse limite. Para cada coordenada $(x,y)$, calcula-se então a distância até a origem. O ponto pertence ao círculo se a distância for menor ou igual a 1. A \autoref{eq:pi_monte} demonstra que a estimativa de $\pi$ equivale a razão entre a quantidade de pontos contidos no círculo e o total de pontos gerados, multiplicados por 4. A \autoref{fig:pi} ilustra o processo de amostragem. O \autoref{alg:pi} detalha a implementação adotada no \textit{benchmark}.
 
 \begin{equation}
 \label{eq:pi_monte}
 \pi \approx 4 \times \frac{\text{pontos dentro do círculo}}{\text{total de pontos}}
 \end{equation}
 
-O algoritmo utilizado para a geração de números pseudoaleatórios foi o \texttt{xorshift128+}~\cite{vigna2017}, escolhido principalmente por sua simplicidade e velocidade. A aplicação apresentada no \autoref{alg:pi} possui estrutura reduzida, sendo o laço principal responsável pela maior parte do tempo de execução. Dessa forma, todas as cláusulas de aproximação foram aplicadas nessa região. A paralelização e a cláusula \texttt{perfo} foram empregadas diretamente no laço principal, enquanto a cláusula \texttt{fastmath} foi aplicada sobre toda a operação realizada nessa região. Por fim, a técnica \texttt{memo} foi inserida a partir da linha 5, com o objetivo de memoizar os valores da variável $hit$.
+O algoritmo utilizado para a geração de números pseudoaleatórios foi o \texttt{xorshift128+}~\cite{vigna2017}, escolhido principalmente por sua simplicidade e velocidade. A aplicação apresentada no \autoref{alg:pi} possui estrutura reduzida, sendo o laço principal responsável pela maior parte do tempo de execução. Dessa forma, todas as cláusulas de aproximação foram aplicadas nessa região. A paralelização e a cláusula \texttt{perfo} foram empregadas diretamente no laço principal, enquanto a cláusula \texttt{fastmath} foi aplicada sobre toda a operação realizada nessa região. Por fim, a técnica \texttt{memo} foi inserida a partir da linha 5, para memoizar os valores da variável $hit$.
 
 \section{Resumo do conjunto de aplicações}\label{sec:resumo_exp}
 \begin{table}[H]
