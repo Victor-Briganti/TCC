@@ -180,6 +180,20 @@ O perfilamento dessa implementação mostrou que os dois códigos apresentados e
 
 No processamento de imagens, o algoritmo de Deriche aplica uma filtragem recursiva para suavização e detecção de bordas~\cite{deriche1987}. O método surgiu como uma otimização do detector de Canny. O objetivo é aproximar as propriedades de um filtro Gaussiano por meio de um filtro \gls{iir}.
 
+Diferente de abordagens baseadas em janelas de convolução fixas, o filtro de Deriche armazena e reaproveita os cálculos intermediários de \textit{pixels} vizinhos. Por ser um filtro separável, a operação bidimensional ocorre em etapas unidimensionais independentes. A implementação processa a imagem primeiramente na vertical em ambos os sentidos, e em seguida, processa a matriz na horizontal, também em ambos os sentidos. Essa abordagem proporciona uma suavização eficiente do ruído enquanto preserva as bordas estruturais.
+
+O parâmetro $\alpha$ controla a intensidade da suavização. Ele ajusta o equilíbrio entre a atenuação de ruído e a precisão na localização das bordas. Este parâmetro define os coeficientes $a$ e $b$, utilizados nas equações de recorrência. As Equações~\ref{eq:deriche_esq} e~\ref{eq:deriche_dir} exemplificam o cálculo unidimensional da varredura horizontal, aplicadas nas direções causal e anti causal, respectivamente. A varredura vertical segue a mesma formulação matemática, alterando apenas os eixos de iteração.
+
+\begin{equation}
+    \label{eq:deriche_esq}
+    y^1_{ij} = a_1x_{ij} + a_2x_{ij - 1} + b_1y^1_{ij - 1} + b_2y^1_{ij - 2}
+\end{equation}
+
+\begin{equation}
+    \label{eq:deriche_dir}
+    y^2_{ij} = a_3x_{ij + 1} + a_4x_{ij + 2} + b_1y^2_{ij + 1} + b_2y^2_{ij + 2}
+\end{equation}
+
 \begin{sourcecode}[H]
     \caption{Algoritmo Deriche de suavização 2D.}
     \label{alg:deriche}
@@ -243,20 +257,6 @@ No processamento de imagens, o algoritmo de Deriche aplica uma filtragem recursi
     \hrule
     \fonte{Adaptado de \citet{polybench}}
 \end{sourcecode}
-
-Diferente de abordagens baseadas em janelas de convolução fixas, o filtro de Deriche armazena e reaproveita os cálculos intermediários de \textit{pixels} vizinhos. Por ser um filtro separável, a operação bidimensional ocorre em etapas unidimensionais independentes. A implementação processa a imagem primeiramente na vertical em ambos os sentidos, e em seguida, processa a matriz na horizontal, também em ambos os sentidos. Essa abordagem proporciona uma suavização eficiente do ruído enquanto preserva as bordas estruturais.
-
-O parâmetro $\alpha$ controla a intensidade da suavização. Ele ajusta o equilíbrio entre a atenuação de ruído e a precisão na localização das bordas. Este parâmetro define os coeficientes $a$ e $b$, utilizados nas equações de recorrência. As Equações~\ref{eq:deriche_esq} e~\ref{eq:deriche_dir} exemplificam o cálculo unidimensional da varredura horizontal, aplicadas nas direções causal e anti causal, respectivamente. A varredura vertical segue a mesma formulação matemática, alterando apenas os eixos de iteração.
-
-\begin{equation}
-    \label{eq:deriche_esq}
-    y^1_{ij} = a_1x_{ij} + a_2x_{ij - 1} + b_1y^1_{ij - 1} + b_2y^1_{ij - 2}
-\end{equation}
-
-\begin{equation}
-    \label{eq:deriche_dir}
-    y^2_{ij} = a_3x_{ij + 1} + a_4x_{ij + 2} + b_1y^2_{ij + 1} + b_2y^2_{ij + 2}
-\end{equation}
 
 A Figura~\ref{fig:deriche} demonstra o efeito prático do filtro utilizando o coeficiente $\alpha = 1,5$. A Figura~\ref{subfig:sunflower_orig} apresenta a entrada original em escala de cinza, enquanto a Figura~\ref{subfig:sunflower_deri} exibe a saída do processamento. O filtro atenua as texturas da imagem, o que facilita o processo computacional de identificar os contornos primários na etapa posterior.
 
@@ -595,10 +595,11 @@ O domínio de amostragem corresponde à área do quadrado. O algoritmo gera múl
 O algoritmo utilizado para a geração de números pseudoaleatórios foi o \texttt{xorshift128+}~\cite{vigna2017}, escolhido principalmente por sua simplicidade e velocidade. A aplicação apresentada no \autoref{alg:pi} possui estrutura reduzida, sendo o laço principal responsável pela maior parte do tempo de execução. Dessa forma, todas as cláusulas de aproximação foram aplicadas nessa região. A paralelização e a cláusula \texttt{perfo} foram empregadas diretamente no laço principal, enquanto a cláusula \texttt{fastmath} foi aplicada sobre toda a operação realizada nessa região. Por fim, a técnica \texttt{memo} foi inserida a partir da linha 5, para memoizar os valores da variável $hit$.
 
 \section{Resumo do conjunto de aplicações}\label{sec:resumo_exp}
+
 \begin{table}[H]
     \centering
     \caption{Resumo das aplicações utilizadas nos experimentos e seus respectivos tamanhos de entrada.}
-    \begin{tabular}{|l|p{2.4cm}|l|p{4.2cm}|l|}
+    \begin{tabular}{|l|p{2.2cm}|p{3.8cm}|p{3.6cm}|l|}
         \hline
         \textbf{Aplicação} & \textbf{Fonte}                                     & \textbf{Domínio}            & \textbf{Entrada}                                                   & \textbf{Métrica} \\
         \hline

@@ -45,21 +45,13 @@ Na prática, as saídas são armazenadas em uma estrutura de dados e reutilizada
 
 \subsection{Aproximação de Ponto Flutuante}\label{subsec:pontoFlut}
 
-A representação de números reais por meio de números de ponto flutuante envolvem aproximação, devido à impossibilidade de representar valores contínuos com memória finita~\cite{monniaux2008}. Por esse motivo, aritmética com números de ponto flutuante usualmente introduz erros de aproximação que variam conforme a ordem de execução dessas operações. Um exemplo disso pode ser observado na \autoref{fig:floatPoint}.
-
-\begin{figure}[htb]
-    \caption{Erro introduzido na aritmética de ponto flutuante.}
-    \label{fig:floatPoint}
-    \includegraphics[scale=0.7]{figuras/fastmath.pdf}
-    \fonte{}
-    \addcontentsline{loge}{figure}{\protect\numberline{\thefigure}Erro introduzido na aritmética de ponto flutuante.}
-\end{figure}
+A representação de números reais por meio de números de ponto flutuante envolvem aproximação, devido à impossibilidade de representar valores contínuos com memória finita~\cite{monniaux2008}. Por esse motivo, aritmética com números de ponto flutuante usualmente introduz erros de aproximação que variam conforme a ordem de execução dessas operações.
 
 Para reduzir esse tipo de problema, compiladores evitam aplicar otimizações que possam amplificar erros em operações de ponto flutuante. No entanto, alguns compiladores permitem habilitar explicitamente tais otimizações. Por exemplo, \texttt{Clang} e \texttt{GCC} oferecem a opção \texttt{--ffast-math}, que permite aplicar essas otimizações durante a compilação de todo o módulo~\cite{gccffast, clangffast}. O Microsoft Visual C++ (\texttt{MSVC}) disponibiliza a diretiva \texttt{\#pragma float\_control}, que permite definir regiões específicas do código nas quais essas otimizações podem ser aplicadas~\cite{msvcfast}. Por fim, o compilador da Intel (\texttt{ICC}) também fornece suporte a aproximações em ponto flutuante por meio das \textit{flags} \texttt{fp-speculation}, \texttt{Qfp-speculation} e \texttt{-fp-model=fast[=1|2]}~\cite{intelfast}.
 
 \section{Impacto da Aproximação no Resultado de Computações}\label{sec:impacto}
 
-A aplicação de técnicas de computação aproximada introduz imprecisões nos resultados das computações. Essas imprecisões podem causar diferentes impactos no sistema, variando desde erros silenciosos até falhas que interrompem a execução da aplicação~\cite{fabricio2022} . Grande parte das pesquisas em computação aproximada concentra-se no controle dos erros silenciosos, pois, apesar da perda de precisão, o sistema ainda é capaz de produzir resultados úteis. Em contrapartida, falhas diretas comprometem o fluxo de execução e impedem a geração de saídas válidas, como ocorre em acessos inválidos à memória (\textit{segmentation faults}).
+A aplicação de técnicas de computação aproximada introduz imprecisões nos resultados das computações. Essas imprecisões podem causar diferentes impactos no sistema, variando desde erros silenciosos até falhas que interrompem a execução da aplicação~\cite{fabricio2022}. Grande parte das pesquisas em computação aproximada concentra-se no controle dos erros silenciosos, pois, apesar da perda de precisão, o sistema ainda é capaz de produzir resultados úteis. Em contrapartida, falhas diretas comprometem o fluxo de execução e impedem a geração de saídas válidas, como ocorre em acessos inválidos à memória (\textit{segmentation faults}).
 
 A \gls{ca} busca estabelecer um equilíbrio entre o nível de aproximação aplicado e as falhas resultantes, de modo que o usuário final sofra o menor impacto possível na precisão dos resultados, enquanto se obtém um ganho significativo no uso de recursos computacionais. Entretanto, um dos desafios enfrentados por essas técnicas está na dificuldade de caracterizar como as aproximações afetam o resultado, especialmente quando se consideram aplicações com naturezas e requisitos de precisão distintos.
 
@@ -206,7 +198,7 @@ O modelo \textit{fork-join} pode ser observado de forma esquemática na \autoref
 
 Esta seção apresenta arcabouços que utilizam técnicas de \gls{ca}, implementadas em nível de linguagem de programação, especialmente aqueles que utilizam anotações de código e mecanismos de execução em \textit{runtime}. Os arcabouços e aplicações selecionados buscam oferecer ao desenvolvedor maior controle sobre as técnicas utilizadas e sobre as regiões de código que podem ser aproximadas.
 
-O \texttt{Approximate C Compiler for Energy and Performance Trade-Off} (ACCEPT)~\cite{sampson2015} é um arcabouço implementado sobre a infraestrutura do \texttt{LLVM}, que introduz a palavra-chave \texttt{ACCEPT} na sintaxe das linguagens C/C++. Essa palavra-chave permite diferenciar regiões de código aproximadas daquelas que devem ser executadas de forma precisa. O arcabouço também implementa etapas de análise para verificar a possibilidade de aproximação dessas regiões, avaliando a validade das transformações, e viabilizando a aplicação de diferentes técnicas de otimização aproximada, de maneira análoga ao funcionamento de um compilador paralelizador.
+O Approximate C Compiler for Energy and Performance Trade-Off (ACCEPT)~\cite{sampson2015} é um arcabouço implementado sobre a infraestrutura do \texttt{LLVM}, que introduz a palavra-chave ACCEPT na sintaxe das linguagens C/C++. Essa palavra-chave permite diferenciar regiões de código aproximadas daquelas que devem ser executadas de forma precisa. O arcabouço também implementa etapas de análise para verificar a possibilidade de aproximação dessas regiões, avaliando a validade das transformações, e viabilizando a aplicação de diferentes técnicas de otimização aproximada, de maneira análoga ao funcionamento de um compilador paralelizador.
 
 A infraestrutura do ACCEPT permite, por meio de anotações de código e análises estáticas e dinâmicas, identificar regiões de código potencialmente aproximáveis. Essas regiões podem aplicar técnicas como perforação de laço, remoção de estruturas de sincronização e até mesmo o uso de redes neurais em \textit{hardware} para estimar saídas. Além disso, o arcabouço incorpora um \textit{autotuner} que utiliza métricas fornecidas pelo usuário para avaliar se as aproximações aplicadas mantêm a qualidade de saída nos limites esperados, garantindo que o programa não apresente falhas durante a execução.
 
@@ -225,7 +217,7 @@ Em contraste com outros trabalhos, nossa abordagem baseia-se na extensão da imp
 \begin{table}[htb]
     \centering
     \caption{Resumo e comparação entre os trabalhos citados.}
-    \begin{tabular}{|p{2.3cm}|p{3cm}|p{2cm}|p{3cm}|p{4cm}|}
+    \begin{tabular}{|p{2.5cm}|p{2.7cm}|p{2cm}|p{2.7cm}|p{3.8cm}|}
         \hline
         \textbf{Trabalho}                         & \textbf{Linguagem / Infraestrutura} & \textbf{Suporte a Paralelismo} & \textbf{Técnicas de Aproximação}                                                                        & \textbf{Diferenciais}                                                                                                                                                      \\
         \hline

@@ -126,7 +126,7 @@ Para determinar quais funções da biblioteca aproximada seriam utilizadas duran
 
 A \autoref{fig:fastmath_speedup} apresenta as diferenças de desempenho entre as funções da \texttt{math} e as implementações da biblioteca \texttt{fastmath}, ambas compiladas com o maior nível de otimização (\texttt{-O3}) e com a flag \texttt{-ffast-math} habilitada. Os resultados mostram que a maioria das funções alcançou algum nível de ganho de desempenho. Entre os destaques estão \texttt{acos} e \texttt{asin}, que apresentaram \textit{speedup} aproximado de 2,09$\times$, enquanto a função \texttt{sqrt} atingiu ganhos de até 7,9$\times$ em relação à implementação da \texttt{math}. Dentre todas as funções avaliadas, apenas \texttt{atan} e \texttt{exp} não apresentaram ganhos de desempenho. A função \texttt{atan} registrou um \textit{slowdown} de aproximadamente 0,61$\times$, indicando uma perda de desempenho significativa. Já a função \texttt{exp} apresentou um \textit{slowdown} muito reduzido, de cerca de 0,05$\times$, mantendo um comportamento bastante próximo ao da implementação original.
 
-A \autoref{fig:fastmath_error} apresenta o erro relativo das implementações avaliadas. Observa-se que grande parte das funções manteve um erro relativo equivalente a aproximadamente seis casas decimais de precisão. As funções \texttt{acos} e \texttt{asin} apresentaram os menores níveis de erro, alcançando precisão próxima de dezessete casas decimais, enquanto \texttt{pow} apresentou o maior erro relativo, ficando em torno de cinco casas decimais. As funções que apresentaram maior desvio numérico, por padrão estão relacionadas ao processamento de valores em uma ampla faixa numérica, o que dificulta a aproximação.
+A \autoref{fig:fastmath_error} apresenta o erro relativo das implementações avaliadas em escala logarítmica. Observa-se que grande parte das funções manteve um erro relativo equivalente a aproximadamente seis casas decimais de precisão. As funções \texttt{acos} e \texttt{asin} apresentaram os menores níveis de erro, alcançando precisão próxima de dezessete casas decimais, enquanto \texttt{pow} apresentou o maior erro relativo, ficando em torno de cinco casas decimais. As funções que apresentaram maior desvio numérico, por padrão estão relacionadas ao processamento de valores em uma ampla faixa numérica, o que dificulta a aproximação.
 
 Com base nos resultados obtidos, todas as funções avaliadas, com exceção da \texttt{atan}, foram mantidas para utilização pela cláusula durante o processo de substituição. Embora a função \texttt{exp} tenha apresentado uma pequena perda de desempenho, essa diferença permaneceu muito próxima da execução original, não justificando sua exclusão. Em contrapartida, a perda observada em \texttt{atan} foi significativamente maior, tornando inviável sua utilização na cláusula.
 
@@ -149,7 +149,7 @@ O funcionamento baseia-se em uma máquina de estados que controla o processo de 
 \begin{figure}[t]
 \caption{Diagrama de estados da cláusula \texttt{memo}.}
 \centering
-\includegraphics[width=0.4\textwidth]{figuras/memo.pdf}
+\includegraphics[width=1\textwidth]{figuras/memo.pdf}
 \fonte{}
 \label{fig:memo}
 \end{figure}
