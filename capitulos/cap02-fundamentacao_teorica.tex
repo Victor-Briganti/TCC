@@ -10,14 +10,14 @@ As diferentes estratégias de aproximação podem ser classificadas conforme a c
 
 Apesar de seus benefícios, essas técnicas enfrentam desafios significativos. Nem todas as aplicações são resilientes a erros em sua execução, limitando o uso de técnicas mais generalistas e torna necessário definir métricas que permitam ajustar o grau de precisão desejado, seja pelo usuário ou pela própria aplicação~\cite{mittal2016}. Além disso, medir corretamente o nível de erro introduzido não é trivial, pois nem sempre está claro qual métrica deve ser aplicada à saída da aplicação~\cite{felzmann2021}. Outro ponto crítico é a propagação dos erros, que pode comprometer toda a execução: em alguns casos, a aplicação pode falhar abruptamente; em outros, concluir sua execução de forma aparentemente correta, mas com resultados significativamente distantes do esperado~\cite{fabricio2020}.
 
-Diante disso, \gls{ca} não se restringe a um único método, mas a um conjunto de estratégias que exploram diferentes aspectos da execução de um programa. Na subseção seguinte, são detalhados quatro dessas estratégias: perforação de laço, memoização e a aproximação de ponto flutuante.
+Diante disso, \gls{ca} não se restringe a um único método, mas a um conjunto de estratégias que exploram diferentes aspectos da execução de um programa. Na subseção seguinte, são detalhados quatro dessas estratégias: \emph{perforação de laço, memoização e a aproximação de ponto flutuante}.
 
 \subsection{Perforação de Laço}\label{subsec:perfLaco}
 
 A perforação de laço (\textit{loop perforation}) é uma técnica de computação aproximada que visa reduzir o tempo de execução ao omitir determinadas iterações de um laço~\cite{sidiroglou2011}. Essa abordagem pode ser implementada de forma estática, em tempo de compilação, ou dinâmica, permitindo o ajuste do grau de omissão durante a execução da \textit{runtime}~\cite{li2018}. Frequentemente, essa otimização é aplicada em laços em formato canônico~\cite{openmp2018}, como o apresentado no \autoref{code:loopCanon}, que se caracteriza por possuir uma expressão inicial (limite inferior), uma expressão de teste (limite superior) e uma expressão de incremento ou decremento (passo).
 
 \begin{sourcecode}[htb]\caption{\label{code:loopCanon}Estrutura de um laço canônico.}
-\begin{lstlisting}[frame=single, language=C++]
+\begin{lstlisting}[frame=single, framesep=0pt, language=C++]
 for (int i = 0; i < N; i += a) {
     ...
 }
@@ -51,7 +51,7 @@ Para reduzir esse tipo de problema, compiladores evitam aplicar otimizações qu
 
 \section{Impacto da Aproximação no Resultado de Computações}\label{sec:impacto}
 
-A aplicação de técnicas de computação aproximada introduz imprecisões nos resultados das computações. Essas imprecisões podem causar diferentes impactos no sistema, variando desde erros silenciosos até falhas que interrompem a execução da aplicação~\cite{fabricio2022}. Grande parte das pesquisas em computação aproximada concentra-se no controle dos erros silenciosos, pois, apesar da perda de precisão, o sistema ainda é capaz de produzir resultados úteis. Em contrapartida, falhas diretas comprometem o fluxo de execução e impedem a geração de saídas válidas, como ocorre em acessos inválidos à memória (\textit{segmentation faults}).
+A aplicação de técnicas de \gls{ca} introduz imprecisões nos resultados das computações. Essas imprecisões podem causar diferentes impactos no sistema, variando desde erros silenciosos até falhas que interrompem a execução da aplicação~\cite{fabricio2022}. Grande parte das pesquisas em computação aproximada concentra-se no controle dos erros silenciosos, pois, apesar da perda de precisão, o sistema ainda é capaz de produzir resultados úteis. Em contrapartida, falhas diretas comprometem o fluxo de execução e impedem a geração de saídas válidas, como ocorre em acessos inválidos à memória (\textit{segmentation faults}).
 
 A \gls{ca} busca estabelecer um equilíbrio entre o nível de aproximação aplicado e as falhas resultantes, de modo que o usuário final sofra o menor impacto possível na precisão dos resultados, enquanto se obtém um ganho significativo no uso de recursos computacionais. Entretanto, um dos desafios enfrentados por essas técnicas está na dificuldade de caracterizar como as aproximações afetam o resultado, especialmente quando se consideram aplicações com naturezas e requisitos de precisão distintos.
 
@@ -119,23 +119,22 @@ Algumas arquiteturas foram além e incorporaram extensões \gls{simd}, permitind
 
 O \texttt{OpenMP} é estruturado em uma arquitetura em camadas, composta por anotações de código, suporte da \textit{runtime} e configurações do ambiente de execução, conforme ilustrado na \autoref{fig:ompArchitecture}. Esse modelo permite ao programador controlar diversos aspectos da execução por meio de diretivas e chamadas à biblioteca, como a definição do número de \textit{threads} em uma região paralela e a escolha do comportamento do escalonador. Dessa forma, o \texttt{OpenMP} oferece um controle flexível sobre o paralelismo do programa.
 
-O \autoref{code:produtoVet} apresenta a implementação sequencial de um produto escalar entre vetores. A paralelização utilizando a biblioteca \texttt{pthreads}, apresentado no \autoref{code:produtoThread}, exige a criação explícita de \textit{threads}, gerenciamento de regiões de memória e sincronização dos resultados parciais. Em contraste, a \autoref{code:produtoOmp} implementado com o \texttt{OpenMP}, evidencia a simplicidade proporcionada pelas diretivas: uma única anotação é suficiente para paralelizar o laço de cálculo, delegando à \textit{runtime} a criação e sincronização das \textit{threads}.
-
 \begin{sourcecode}[htb]
     \caption{Implementação sequencial de um produto escalar.}
     \label{code:produtoVet}
-    \begin{lstlisting}[frame=single, language=C++]
+    \begin{lstlisting}[frame=single, framesep=0pt, language=C++]
 for (int i = 0; i < N; i++) {
     result += a[i] * b[i];
-}
-    \end{lstlisting}
+}\end{lstlisting}
     \fonte{}
 \end{sourcecode}
+
+O \autoref{code:produtoVet} apresenta a implementação sequencial de um produto escalar entre vetores. A paralelização utilizando a biblioteca \texttt{pthreads}~\cite{padua2011}, apresentado no \autoref{code:produtoThread}, exige a criação explícita de \textit{threads}, gerenciamento de regiões de memória e sincronização dos resultados parciais. Em contraste, a \autoref{code:produtoOmp} implementado com o \texttt{OpenMP}, evidencia a simplicidade proporcionada pelas diretivas: uma única anotação é suficiente para paralelizar o laço de cálculo, delegando à \textit{runtime} a criação e sincronização das \textit{threads}.
 
 \begin{sourcecode}[htb]
     \caption{Implementação paralelizada com \texttt{pthreads} de um produto escalar.}
     \label{code:produtoThread}
-    \begin{lstlisting}[frame=single, language=C++]
+    \begin{lstlisting}[frame=single, framesep=0pt, language=C++]
 void *compute_partial_dot(void *arg) {
     ThreadArgs *args = (ThreadArgs *)arg;
     args->partial_sum = 0.0;
@@ -165,24 +164,24 @@ for (int i = 0; i < NUM_THREADS; i++) {
 for (int i = 0; i < NUM_THREADS; i++) {
     pthread_join(threads[i], NULL);
     result += args[i].partial_sum;    
-}
-    \end{lstlisting}
+}\end{lstlisting}
     \fonte{}
 \end{sourcecode}
+
+Tipicamente, uma diretiva \texttt{OpenMP} é aplicada a uma região de código, como um laço, para indicar que pode ser executada em paralelo. Durante a compilação, o compilador isola o bloco de código anotado e o transforma em uma função separada, conhecida como \textit{outlined function}, na qual variáveis privadas, memória de pilha e pontos de sincronização são automaticamente configurados. Em tempo de execução, a \textit{runtime} do \texttt{OpenMP} é responsável por gerenciar essas funções extraídas, criando e coordenando múltiplas \textit{threads} que executam cópias dessa função segundo o modelo \textit{fork-join}. Por exemplo, a diretiva \texttt{\#pragma omp parallel} cria um time de \textit{threads}, cada uma executando a função correspondente à região paralela. Ao final da região paralela, as \textit{threads} são sincronizadas (\textit{join}) e a execução retorna ao fluxo sequencial. Essa abordagem permite paralelizar regiões de código com esforço reduzido de gerenciamento, mantendo controle sobre sincronização e compartilhamento de dados~\cite{mattson2019}.
 
 \begin{sourcecode}[htb]
     \caption{Implementação paralelizada com OpenMP de um produto escalar.}
     \label{code:produtoOmp}
-    \begin{lstlisting}[frame=single, language=C++]
+    \begin{lstlisting}[frame=single, framesep=0pt, language=C++]
 #pragma omp parallel for reduction(+ : result)
 for (int i = 0; i < N; i++) {
     result += a[i] * b[i];
-}
-    \end{lstlisting}
+}\end{lstlisting}
     \fonte{}
 \end{sourcecode}
 
-Tipicamente, uma diretiva \texttt{OpenMP} é aplicada a uma região de código, como um laço, para indicar que ela pode ser executada em paralelo. Durante a compilação, o compilador isola o bloco de código anotado e o transforma em uma função separada, conhecida como \textit{outlined function}, na qual variáveis privadas, memória de pilha e pontos de sincronização são automaticamente configurados. Em tempo de execução, a \textit{runtime} do \texttt{OpenMP} é responsável por gerenciar essas funções extraídas, criando e coordenando múltiplas \textit{threads} que executam cópias dessa função segundo o modelo \textit{fork-join}. Por exemplo, a diretiva \texttt{\#pragma omp parallel} cria um time de \textit{threads}, cada uma executando a função correspondente à região paralela. Ao final da região paralela, as \textit{threads} são sincronizadas (\textit{join}) e a execução retorna ao fluxo sequencial. Essa abordagem permite paralelizar regiões de código com esforço reduzido de gerenciamento, mantendo controle sobre sincronização e compartilhamento de dados~\cite{mattson2019}.
+O modelo \textit{fork-join} pode ser observado de forma esquemática na \autoref{fig:ompExec}. Nele, a \textit{runtime} cria múltiplas \textit{threads} para a execução paralela, sincronizadas ao final, restando apenas a \textit{thread} principal para continuar a execução sequencial. O OpenMP também suporta regiões paralelas aninhadas, possibilitando hierarquias de paralelismo.
 
 \begin{figure}[htb]
     \caption{Modelo \textit{fork-join} de execução do \texttt{OpenMP}.}
@@ -191,8 +190,6 @@ Tipicamente, uma diretiva \texttt{OpenMP} é aplicada a uma região de código, 
     \fonte{}
     \addcontentsline{loge}{figure}{\protect\numberline{\thefigure}Modelo \textit{fork-join} de execução do \texttt{OpenMP}.}
 \end{figure}
-
-O modelo \textit{fork-join} pode ser observado de forma esquemática na \autoref{fig:ompExec}. Nele, a \textit{runtime} cria múltiplas \textit{threads} para a execução paralela, sincronizadas ao final, restando apenas a \textit{thread} principal para continuar a execução sequencial. O OpenMP também suporta regiões paralelas aninhadas, possibilitando hierarquias de paralelismo.
 
 \section{Trabalhos Relacionados}\label{sec:trabRelac}
 
@@ -216,7 +213,7 @@ Em contraste com outros trabalhos, nossa abordagem baseia-se na extensão da imp
 
 \begin{table}[htb]
     \centering
-    \caption{Resumo e comparação entre os trabalhos citados.}
+    \caption{Resumo e comparação entre os trabalhos relacionados.}
     \begin{tabular}{|p{2.5cm}|p{2.7cm}|p{2cm}|p{2.7cm}|p{3.8cm}|}
         \hline
         \textbf{Trabalho}                         & \textbf{Linguagem / Infraestrutura} & \textbf{Suporte a Paralelismo} & \textbf{Técnicas de Aproximação}                                                                        & \textbf{Diferenciais}                                                                                                                                                      \\

@@ -24,11 +24,11 @@ Além das medições de tempo, a identificação das regiões quentes de código
 
 \section{Conjunto de \textit{Benchmarks}}\label{sec:benchmark}
 
-A seleção das aplicações que compõem o conjunto de benchmarks teve como principais critérios a tolerância a erros e a estrutura do algoritmo. Buscou-se contemplar uma gama ampla de domínios, incluindo \textit{machine learning}, álgebra linear, modelos estatísticos e multimídia. Outro objetivo foi preservar ao máximo o código original durante a inserção das regiões paralelizadas, evitando modificações significativas na implementação. As aplicações 2MM, Correlação, Deriche e Jacobi 2D foram obtidas a partir do conjunto PolyBench~\cite{polybench}, K-Means foi obtida a partir do Rodinia~\cite{rodinia} e o Mandelbrot e PI de Monte Carlo foram adaptações do Debian Benchmarks Game~\cite{debianBenchmarksGame}. Em relação à precisão dos dados, o tipo padrão adotado foi o \texttt{double}, com exceção do Deriche e do K-Means, que operam com \texttt{float}. Esse tipo padrão foi definido, para submeter as aplicações a um ambiente de alta carga computacional.
+A seleção das aplicações que compõem o conjunto de \textit{benchmarks} teve como principais critérios a tolerância a erros e a estrutura do algoritmo. Buscou-se contemplar uma gama ampla de domínios, incluindo \textit{machine learning}, álgebra linear, modelos estatísticos e multimídia. Outro objetivo foi preservar ao máximo o código original durante a inserção das regiões paralelizadas, evitando modificações significativas na implementação. As aplicações \emph{2MM}, \emph{Correlação}, \emph{Deriche} e \emph{Jacobi 2D} foram obtidas a partir do conjunto PolyBench~\cite{polybench}, K-Means foi obtida a partir do Rodinia~\cite{rodinia} e o Mandelbrot e PI de Monte Carlo foram adaptações do Debian Benchmarks Game~\cite{debianBenchmarksGame}. Em relação à precisão dos dados, o tipo padrão adotado foi o \texttt{double}, com exceção do \emph{Deriche} e do \emph{K-Means}, que operam com \texttt{float}. Esse tipo padrão foi definido, para submeter as aplicações a um ambiente de alta carga computacional.
 
 \subsection{2MM}\label{subsec:2mm}
 
-O \textit{benchmark} 2mm~\cite{polybench} realiza a multiplicação sequencial de matrizes utilizando três matrizes distintas: A, B e C. O processo de execução é ilustrado pelas Equações~\ref{eq:dot_matrix_a} e~\ref{eq:dot_matrix_b}.
+O \textit{benchmark} 2MM~\cite{polybench} realiza a multiplicação sequencial de matrizes utilizando três matrizes distintas: A, B e C. O processo de execução é ilustrado pelas Equações~\ref{eq:dot_matrix_a} e~\ref{eq:dot_matrix_b}.
 
 \begin{equation}
 	\label{eq:dot_matrix_a}
