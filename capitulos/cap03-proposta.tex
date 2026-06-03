@@ -77,9 +77,7 @@ Por fim, o modificador \texttt{large} difere das técnicas anteriores por ser im
 
 A cláusula \texttt{fastmath} introduz otimizações agressivas de ponto flutuante em regiões específicas do código. Diferentemente da \textit{flag} de compilação \texttt{-ffast-math} do \texttt{Clang}~\cite{clangffast}, que atua globalmente sobre todo o módulo, essa cláusula oferece um controle granular ao restringir as otimizações aos blocos delimitados pela diretiva \texttt{\#pragma omp approx fastmath}. Assim, trechos de código podem se beneficiar de ganhos de desempenho sem comprometer a acurácia de trechos críticos do restante do programa. Além disso, ao contrário da cláusula \texttt{perfo}, a \texttt{fastmath} não se limita a laços de repetição, podendo ser aplicada a blocos arbitrários de código. 
 
-Quando a cláusula é utilizada, o compilador passa a habilitar as mesmas otimizações associadas à \texttt{-ffast-math}, flexibilizando operações de ponto flutuante, permitindo reordenação de operações aritméticas e eliminando verificações de segurança que impactam o desempenho. Além disso, a cláusula integra uma biblioteca matemática aproximada desenvolvida pelo próprio autor especificamente para este projeto\footnote{Disponível em: https://github.com/Victor-Briganti/fastmath/tree/main}. Essa biblioteca utiliza aproximações polinomiais baseadas em polinômios de Chebyshev~\cite{lloyd2019}, que permitem calcular funções matemáticas com menor custo computacional, explorando propriedades de aproximação numérica em intervalos bem definidos.
-
-A arquitetura da cláusula opera, portanto, em dois níveis. No primeiro nível, as otimizações de ponto flutuante equivalentes à \texttt{-ffast-math} são ativadas apenas para o bloco de código anotado. No segundo nível, durante a compilação, chamadas para determinadas funções matemáticas dentro dessa região são substituídas por suas versões aproximadas presentes na biblioteca. A sintaxe da diretiva é apresentada no \autoref{code:pragmaFastmath}.
+Quando a cláusula é utilizada, o compilador passa a habilitar as mesmas otimizações associadas à \texttt{-ffast-math}, flexibilizando operações de ponto flutuante, permitindo reordenação de operações aritméticas e eliminando verificações de segurança que impactam o desempenho. Além disso, a cláusula integra uma biblioteca matemática aproximada desenvolvida pelo próprio autor especificamente para este projeto. A sintaxe da diretiva é apresentada no \autoref{code:pragmaFastmath}.
 
 \begin{sourcecode}[htb]\caption{\label{code:pragmaFastmath}Sintaxe da cláusula \texttt{fastmath}.}
 \begin{lstlisting}[frame=single, language=C++]
@@ -88,7 +86,7 @@ A arquitetura da cláusula opera, portanto, em dois níveis. No primeiro nível,
 \fonte{}
 \end{sourcecode}
 
-O \autoref{code:exFastmath} apresenta um exemplo de uso da cláusula. Ao aplicá-la, o compilador habilita otimizações agressivas de ponto flutuante para a região marcada e substitui chamadas às funções matemáticas suportadas por suas versões aproximadas, reduzindo o custo computacional das operações e favorecendo o uso de vetorização.
+O \autoref{code:exFastmath} apresenta um exemplo de uso da cláusula. Ao aplicá-la, o compilador habilita otimizações agressivas de ponto flutuante para a região marcada.
 
 \begin{sourcecode}[htb]
 \caption{Exemplo de aplicação da cláusula \texttt{fastmath}.}
@@ -103,32 +101,6 @@ void kernel(float *a, float *b, int n) {
 \end{lstlisting}
 \fonte{}
 \end{sourcecode}
-
-\subsection{Avaliação Experimental da Biblioteca Aproximada}
-
-\begin{figure}[htbp]
-\caption{Comparativo de \textit{speedup} entre a biblioteca \texttt{fastmath} e a \texttt{math}.}
-\centering
-\includegraphics[width=0.7\textwidth]{figuras/fastmath_speedup.pdf}
-\fonte{}
-\label{fig:fastmath_speedup}
-\end{figure}
-
-\begin{figure}[htbp]
-\caption{Erro relativo entre as funções da \texttt{fastmath}.}
-\centering
-\includegraphics[width=0.7\textwidth]{figuras/fastmath_error.pdf}
-\fonte{}
-\label{fig:fastmath_error}
-\end{figure}
-
-Para determinar quais funções da biblioteca aproximada seriam utilizadas durante a substituição, foi realizada uma análise experimental comparando o desempenho das implementações aproximadas com as funções originais da \texttt{math}. Essa análise considerou duas métricas principais: \textit{speedup} e erro relativo.
-
-A \autoref{fig:fastmath_speedup} apresenta as diferenças de desempenho entre as funções da \texttt{math} e as implementações da biblioteca \texttt{fastmath}, ambas compiladas com o maior nível de otimização (\texttt{-O3}) e com a flag \texttt{-ffast-math} habilitada. Os resultados mostram que a maioria das funções alcançou algum nível de ganho de desempenho. Entre os destaques estão \texttt{acos} e \texttt{asin}, que apresentaram \textit{speedup} aproximado de 2,09$\times$, enquanto a função \texttt{sqrt} atingiu ganhos de até 7,9$\times$ em relação à implementação da \texttt{math}. Dentre todas as funções avaliadas, apenas \texttt{atan} e \texttt{exp} não apresentaram ganhos de desempenho. A função \texttt{atan} registrou um \textit{slowdown} de aproximadamente 0,61$\times$, indicando uma perda de desempenho significativa. Já a função \texttt{exp} apresentou um \textit{slowdown} muito reduzido, de cerca de 0,05$\times$, mantendo um comportamento bastante próximo ao da implementação original.
-
-A \autoref{fig:fastmath_error} apresenta o erro relativo das implementações avaliadas em escala logarítmica. Observa-se que grande parte das funções manteve um erro relativo equivalente a aproximadamente seis casas decimais de precisão. As funções \texttt{acos} e \texttt{asin} apresentaram os menores níveis de erro, alcançando precisão próxima de dezessete casas decimais, enquanto \texttt{pow} apresentou o maior erro relativo, ficando em torno de cinco casas decimais. As funções que apresentaram maior desvio numérico, por padrão estão relacionadas ao processamento de valores em uma ampla faixa numérica, o que dificulta a aproximação.
-
-Com base nos resultados obtidos, todas as funções avaliadas, com exceção da \texttt{atan}, foram mantidas para utilização pela cláusula durante o processo de substituição. Embora a função \texttt{exp} tenha apresentado uma pequena perda de desempenho, essa diferença permaneceu muito próxima da execução original, não justificando sua exclusão. Em contrapartida, a perda observada em \texttt{atan} foi significativamente maior, tornando inviável sua utilização na cláusula.
 
 \section{Memoização}\label{subsec:pragmaMemo}
 
